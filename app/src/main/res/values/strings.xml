@@ -1,0 +1,187 @@
+<resources>
+    <string name="app_name">HomeView</string>
+    <string name="browse_title"><![CDATA[Videos by Your Company]]></string>
+    <string name="related_movies">Related Videos</string>
+    <string name="vertical_grid_title"><![CDATA[Vertical Video Grid]]></string>
+    <string name="error">Error</string>
+    <string name="ok">OK</string>
+    <string name="pause">Pause</string>
+    <string name="play">Play</string>
+    <string name="stop">Stop</string>
+    <string name="init_text">00:00</string>
+    <string name="play_pause_description">Play Pause Button</string>
+    <string name="loading">Loading&#8230;</string>
+    <string name="no_video_found">No video was found</string>
+    <string name="about_app">About DemoCast Player</string>
+    <string name="version">Version: %1$s</string>
+    <string name="popular_header">Popular Videos</string>
+    <string name="preferences">PREFERENCES</string>
+    <string name="grid_view">Grid View</string>
+    <string name="error_fragment">Error Fragment</string>
+    <string name="should_start">shouldStart</string>
+    <string name="start_position">startPosition</string>
+
+    <!-- Error messages -->
+    <string name="video_error_media_load_timeout">Media loading timed out</string>
+    <string name="video_error_server_inaccessible">Media server was not reachable</string>
+    <string name="video_error_unknown_error">Failed to load video</string>
+    <string name="error_fragment_message">An error occurred</string>
+    <string name="dismiss_error">Dismiss</string>
+    <string name="oops">Oops</string>
+
+    <string name="unknown">Unknown</string>
+    <string name="Season">"Season"</string>
+    <string name="Episode">"Episode"</string>
+    <string name="episodes">"episodes"</string>
+    <string name="unwatched">"unwatched"</string>
+
+    <string name="serverchoice_breadcrumb">Settings</string>
+    <string name="serverchoice_title">Servers Discovered</string>
+    <string name="serverchoice_desc">Select a server for use</string>
+
+    <string name="servermanual_breadcrumb">Settings</string>
+    <string name="servermanual_title">Server Input</string>
+    <string name="servermanual_desc">Enter server information for use</string>
+
+    <string name="serverhost_desc">Enter Port Hostname or IP</string>
+    <string name="serverport_desc">Enter Server Port</string>
+
+    <string name="doneserver_title">Done</string>
+    <string name="doneserver_desc">Verify and use settings</string>
+
+    <string name="manual_server_choice">Manual Input</string>
+    <string name="cancel_server_choice">Cancel</string>
+    <string name="cancel_server_desc"></string>
+    <string name="back_server_choice">Back</string>
+    <string name="back_server_desc"></string>
+    <string name="invalid_server">Could not verify server choice</string>
+
+    <string name="settings">Settings</string>
+    <string name="settings_server">Server</string>
+    <string name="settings_settings">Settings</string>
+
+    <string name="main_landscape_rows">sections;home.continue</string>
+    <string name="main_rows_header_strip"> Sections; Content</string>
+
+    <string name="mid_dot">\u00B7</string>
+    <string name="hours_abbrev">hr</string>
+    <string name="minutes_abbrev">min</string>
+    <string name="season_abbrev">Season</string>
+    <string name="episodes_abbrev">Ep</string>
+
+    <string name="gridview_poster_columns">6</string>
+    <string name="gridview_scene_columns">4</string>
+
+    <string name="detailview_header_video">Chapters</string>
+    <string name="detailview_header_show">Seasons</string>
+    <string name="detailview_header_season">Episodes</string>
+    <string name="detailview_column_count_show">6</string>
+    <string name="detailview_column_count_season">4</string>
+    <string name="detailview_column_count_chapter">4</string>
+
+    <string name="extras_row_header">Extras</string>
+
+    <string name="action_play">Play</string>
+    <string name="action_watched">Watched</string>
+    <string name="action_unwatched">Unwatched</string>
+
+    <string name="recommendations_max">8</string>
+    <string name="recommendations_priority_base">50</string>
+    <string name="recommendations_priority_span">3</string>
+
+
+    <string name="search_results">Search results for \'%1$s\'</string>
+    <string name="no_search_results">No search results found for \'%1$s\'</string>
+    <string name="search_label">HomeView</string>
+    <string name="search_hint">Search for media</string>
+    <string name="settings_description">HomeView media</string>
+    <string name="search_hint_shows">Search for shows</string>
+    <string name="settings_description_shows">HomeView Shows</string>
+
+
+    <string name="preferences_settings">Settings</string>
+    <string name="preferences_server">Server Settings</string>
+    <string name="preferences_server_server">Current</string>
+    <string name="preferences_server_smb">SMB media access</string>
+    <string name="preferences_server_smb_summary">Use SMB for media access?</string>
+    <string name="preferences_server_smb_root">Root path for SMB</string>
+    <string name="preferences_server_smb_root_summary">Path to append to server host before media path</string>
+    <string name="preferences_server_smb_root_dialog">Enter root path for SMB root (default: \'/\')</string>
+    <string name="preferences_server_smb_user">SMB Username</string>
+    <string name="preferences_server_smb_user_summary">Username</string>
+    <string name="preferences_server_smb_user_dialog">Enter username for SMB login</string>
+    <string name="preferences_server_smb_pass">SMB password</string>
+    <string name="preferences_server_smb_pass_summary">Password</string>
+    <string name="preferences_server_smb_pass_dialog">Enter password for SMB login</string>
+    <string name="preferences_navigation">App Navigation</string>
+    <string name="preferences_navigation_thememusic">Play Theme Music</string>
+    <string name="preferences_navigation_thememusic_summary">Play theme music during season/episode selection?</string>
+    <string name="preferences_navigation_showallseason">Show \'All Episodes\' season</string>
+    <string name="preferences_navigation_showallseason_summary">Display the option Show season selection which includes all episodes</string>
+    <string name="preferences_navigation_collapsesingleseason">Collapse single season shows</string>
+    <string name="preferences_navigation_collapsesingleseason_summary">Skip season selection for shows with one season?</string>
+    <string name="preferences_playback">Playback</string>
+    <string name="preferences_playback_resume">Resume playback</string>
+    <string name="preferences_playback_resume_summary">How would you like to resume a file that was already started</string>
+    <string name="preferences_playback_resume_dialog">Pick a resume option</string>
+    <string name="preferences_playback_resume_entries_default">ask</string>
+    <string name="preferences_playback_playnext">Play next track</string>
+    <string name="preferences_playback_playnext_summary">Play next episode/movie after media finishes?</string>
+    <string name="preferences_playback_playnext_dialog">Select play next option</string>
+    <string name="preferences_playback_playnext_entries_default">always</string>
+    <string name="preferences_device_refreshrate">Refresh rate switching</string>
+    <string name="preferences_device_refreshrate_summary">Switch refrsh rate, if available, to media\'s native rate?</string>
+    <string name="preferences_device_passthrough">Audio passthrough</string>
+    <string name="preferences_device_passthrough_summary">Passthrough audio tracks, if available, to receiver/display?</string>
+    <string name="preferences_device_speakers">Speaker Setup</string>
+    <string name="preferences_device_speakers_summary">Choose your speaker configuration</string>
+    <string name="preferences_device_speakers_dialog">Select speaker configuration</string>
+    <string name="preferences_device_speakers_entries_default">8</string>
+    <string name="preferences_device">Device Setup</string>
+
+    <string name="preferences_nextup_episode">Next episode threshold</string>
+    <string name="preferences_nextup_episode_summary">At how many seconds before the end of the current episode do you wish to see the next episode to be played</string>
+    <string name="preferences_nextup_episode_dialog">When to advertise the next episode?</string>
+    <string name="preferences_nextup_episode_default">45</string>
+
+    <string name="preferences_nextup_movies">Next movie threshold</string>
+    <string name="preferences_nextup_movies_summary">At how many seconds before the end of the current movie do you wish to see the next movie to be played</string>
+    <string name="preferences_nextup_movies_dialog">When to advertise the next movie?</string>
+    <string name="preferences_nextup_movies_default">300</string>
+
+    <string name="preferences_setvalue">Set value</string>
+    <string name="preferences_save">Save</string>
+    <string name="preferences_save_desc"></string>
+    <string name="preferences_cancel">Cancel</string>
+    <string name="preferences_cancel_desc"></string>
+    <string name="preferences_checked_true">On</string>
+    <string name="preferences_checked_false">Off</string>
+
+    <string name="queue_name">Media Queue</string>
+
+    <string name="start_filter">All</string>
+    <string name="chapter">Chapter</string>
+    <string name="chapters">Chapters</string>
+    <string name="time_divider">:</string>
+    <string name="Forced">Forced</string>
+    <string name="skip_forward_seconds">30</string>
+    <string name="skip_back_seconds">30</string>
+
+    <string name="nextup_poster">NextUp Poster</string>
+    <string name="nextup_comingup">Coming Up Next</string>
+    <string name="codeccard_image_desc"></string>
+
+    <string name="section_toolbar_hub">Hub</string>
+    <string name="section_toolbar_filter">Filter</string>
+
+    <string name="container_filter_selection_title">Filters</string>
+    <string name="container_filter_selection_summary">Please choose a filter</string>
+
+    <string name="playback_start_dialog">Choose where to begin playback</string>
+    <string name="playback_start_dialog_begin">From beginning</string>
+    <string name="playback_start_dialog_resume">From last viewed position</string>
+
+    <string name="about_title">About - Licenses"</string>
+
+    <string name="preferences_about">About</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="brand_color" format="reference" />
+    <attr name="card_normal" format="reference" />
+    <attr name="card_translucent" format="reference" />
+    <attr name="card_selected" format="reference" />
+    <attr name="brand_accent" format="reference" />
+</resources>

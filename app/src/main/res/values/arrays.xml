@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="preferences_playback_resume_entries_text">
+        <item>Play from start</item>
+        <item>Resume from last view</item>
+        <item>Ask each time</item>
+    </string-array>
+    <string-array name="preferences_playback_resume_entries">
+        <item>play</item>
+        <item>resume</item>
+        <item>ask</item>
+    </string-array>
+    <string-array name="preferences_playback_playnext_entries_text">
+        <item>Always</item>
+        <item>Shows only</item>
+        <item>Movies only</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="preferences_playback_playnext_entries">
+        <item>always</item>
+        <item>shows</item>
+        <item>movies</item>
+        <item>never</item>
+    </string-array>
+    <string-array name="preferences_device_speakers_entries_text">
+        <item>1.0</item>
+        <item>2.0</item>
+        <item>2.1</item>
+        <item>4.0</item>
+        <item>5.0</item>
+        <item>5.1</item>
+        <item>6.1</item>
+        <item>7.1</item>
+    </string-array>
+    <string-array name="preferences_device_speakers_entries">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+    </string-array>
+
+</resources>

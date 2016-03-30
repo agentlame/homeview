@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <ImageView
+        android:id="@+id/unwatched"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:src="@drawable/right_flag"
+        android:visibility="gone"
+        tools:visibility="visible"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/caption_text_size" >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
+
+
+            <TextView
+                android:id="@+id/lb_details_description_year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                tools:text="Year"
+                style="?attr/detailsDescriptionTitleStyle"
+                />
+
+            <TextView
+                android:id="@+id/lb_details_description_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Title of your content"
+                android:maxLines="3"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/lb_details_description_year"
+                style="?attr/detailsDescriptionTitleStyle"
+                />
+
+        </RelativeLayout>
+
+        <ProgressBar
+            android:id="@+id/progress"
+            android:layout_width="match_parent"
+            android:layout_height="16dp"
+            tools:progress="50"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:progressTint="?attr/brand_accent"
+            android:indeterminate="false"
+            android:indeterminateOnly="false"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/lb_details_description_studio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                tools:text="Studio"
+                style="?attr/detailsDescriptionSubtitleStyle"
+                />
+
+            <TextView
+                android:id="@+id/lb_details_description_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="3"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/lb_details_description_studio"
+                tools:text="Subtitle goes here"
+                style="?attr/detailsDescriptionSubtitleStyle"
+                />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/caption_text_size">
+
+            <TextView
+                android:id="@+id/lb_details_description_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                tools:text="Duration"
+                style="?attr/detailsDescriptionSubtitleStyle"
+                />
+
+            <TextView
+                android:id="@+id/lb_details_description_content"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Content line goes here"
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/lb_details_description_duration"
+                android:maxLines="3"
+                style="?attr/detailsDescriptionSubtitleStyle"
+                />
+
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/lb_details_description_body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Summary of your content.  This is probably going to be a few lines long"
+            style="?attr/detailsDescriptionBodyStyle"
+            />
+
+    </LinearLayout>
+
+</FrameLayout>

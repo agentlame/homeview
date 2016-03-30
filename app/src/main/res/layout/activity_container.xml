@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true" >
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:fitsSystemWindows="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <FrameLayout
+        android:id="@+id/toolbar"
+        android:layout_width="80dp"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center" >
+
+            <Button
+                android:id="@+id/hubBtn"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/toolbar_buttonheight"
+                android:text="@string/section_toolbar_hub"
+                android:layout_margin="@dimen/toolbar_padding"
+                android:background="?android:attr/selectableItemBackground"
+                android:focusableInTouchMode="true"
+                android:clickable="true"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_margin="@dimen/toolbar_padding" >
+
+                <Button
+                    android:id="@+id/filterBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/toolbar_buttonheight"
+                    android:text="@string/section_toolbar_filter"
+                    android:focusableInTouchMode="true"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true" />
+
+                <TextView
+                    android:id="@+id/filterText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    tools:text="All"/>
+
+            </LinearLayout>
+
+            <ListView
+                android:id="@+id/list_shortcut"
+                android:paddingTop="@dimen/toolbar_list_padding"
+                android:paddingLeft="@dimen/toolbar_list_padding"
+                android:layout_gravity="left|center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:divider="@android:color/transparent"
+                android:dividerHeight="@dimen/jumprow_dividerheight"
+                android:focusableInTouchMode="true"
+                android:clickable="true"/>
+        </LinearLayout>
+    </FrameLayout>
+
+</android.support.design.widget.CoordinatorLayout>

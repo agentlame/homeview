@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.monsterbutt.homeview">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="true" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:largeHeap="true"
+        android:theme="@style/AppTheme">
+
+        <activity
+            android:name=".ui.activity.MainActivity"
+            android:banner="@drawable/banner"
+            android:icon="@drawable/launcher"
+            android:label="@string/app_name"
+            android:logo="@drawable/launcher"
+            android:screenOrientation="landscape">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+
+        </activity>
+
+        <activity android:name=".ui.activity.AboutActivity" />
+        <activity android:name=".ui.activity.ServerChoiceActivity" />
+        <activity android:name=".ui.activity.SettingsActivity" />
+        <activity android:name=".ui.activity.SettingEditTextActivity" />
+        <activity android:name=".ui.activity.SettingsArrayActivity" />
+        <activity android:name=".ui.activity.SectionHubActivity" />
+
+        <activity
+            android:name="com.monsterbutt.homeview.ui.activity.SearchActivity"
+            android:exported="true" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+
+        </activity>
+
+        <activity android:name=".ui.activity.PlaybackActivity"/>
+        <activity android:name=".ui.activity.DetailsActivity"/>
+        <activity android:name=".ui.activity.FilterChoiceActivity"/>
+        <activity android:name=".ui.activity.ContainerActivity" />
+
+        <service android:exported="false" android:name=".services.ThemeService" >
+            <intent-filter>
+                <action android:name="com.monsterbutt.homeview.services.ThemeService.action.PLAY" />
+                <data android:scheme="http" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.monsterbutt.homeview.services.ThemeService.action.STOP" />
+            </intent-filter>
+        </service>
+        <service android:name=".services.GDMService" />
+        <service
+            android:name="com.monsterbutt.homeview.services.UpdateRecommendationsService"
+            android:enabled="true" />
+
+        <receiver
+            android:name="com.monsterbutt.homeview.ui.activity.BootupActivity"
+            android:enabled="true"
+            android:exported="false">
+
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+
+        </receiver>
+
+        <provider
+            android:name=".provider.MediaContentProvider"
+            android:authorities="com.monsterbutt.homeview.provider.MediaContentProvider"
+            android:exported="true" />
+
+        <provider
+            android:name="com.monsterbutt.homeview.provider.BackgroundContentProvider"
+            android:authorities="com.monsterbutt.homeview.provider.BackgroundContentProvider"
+            android:exported="true" />
+
+        <provider
+            android:name="com.monsterbutt.homeview.provider.SearchImagesProvider"
+            android:authorities="com.monsterbutt.homeview.provider.SearchImagesProvider"
+            android:exported="true" />
+
+    </application>
+
+</manifest>

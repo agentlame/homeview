@@ -1,0 +1,171 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/preferences_settings">
+	
+	<PreferenceCategory
+        android:title="@string/preferences_server">
+
+		<Preference 
+			android:title="@string/preferences_server_server"
+            android:drawable="@drawable/ic_settings_remote_white_48dp">
+
+            <intent
+                android:targetPackage="com.monsterbutt.homeview.ui.activity"
+                android:targetClass="com.monsterbutt.homeview.ui.activity.ServerChoiceActivity"/>
+
+        </Preference>
+
+
+        <CheckBoxPreference
+            android:key="preferences_server_smb"
+            android:drawable="@drawable/ic_folder_shared_white_48dp"
+            android:title="@string/preferences_server_smb"
+            android:summary="@string/preferences_server_smb_summary"
+            android:enabled="false"
+            android:defaultValue="false" />
+
+        <EditTextPreference
+            android:key="preferences_server_smb_root"
+            android:drawable="@drawable/ic_code_white_48dp"
+            android:dependency="preferences_server_smb"
+            android:title="@string/preferences_server_smb_root"
+            android:summary="@string/preferences_server_smb_root_summary"
+            android:dialogTitle="@string/preferences_server_smb_root_dialog"
+            android:enabled="false"
+            android:defaultValue=""/>
+
+        <EditTextPreference
+            android:key="preferences_server_smb_user"
+            android:drawable="@drawable/ic_face_white_48dp"
+            android:dependency="preferences_server_smb"
+            android:title="@string/preferences_server_smb_user"
+            android:summary="@string/preferences_server_smb_user_summary"
+            android:dialogTitle="@string/preferences_server_smb_user_dialog"
+            android:enabled="false"
+            android:defaultValue=""/>
+
+        <EditTextPreference
+            android:key="preferences_server_smb_pass"
+            android:drawable="@drawable/ic_verified_user_white_48dp"
+            android:dependency="preferences_server_smb"
+            android:title="@string/preferences_server_smb_pass"
+            android:summary="@string/preferences_server_smb_pass_summary"
+            android:dialogTitle="@string/preferences_server_smb_pass_dialog"
+            android:enabled="false"
+            android:defaultValue=""/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/preferences_navigation">
+
+        <CheckBoxPreference
+            android:key="preferences_navigation_thememusic"
+            android:drawable="@drawable/ic_music_video_white_48dp"
+            android:title="@string/preferences_navigation_thememusic"
+            android:summary="@string/preferences_navigation_thememusic_summary"
+            android:defaultValue="true" />
+
+        <CheckBoxPreference
+            android:key="preferences_navigation_showallseason"
+            android:drawable="@drawable/ic_list_white_48dp"
+            android:title="@string/preferences_navigation_showallseason"
+            android:summary="@string/preferences_navigation_showallseason_summary"
+            android:defaultValue="false" />
+
+        <CheckBoxPreference
+            android:key="preferences_navigation_collapsesingleseason"
+            android:drawable="@drawable/ic_format_indent_increase_white_48dp"
+            android:title="@string/preferences_navigation_collapsesingleseason"
+            android:summary="@string/preferences_navigation_collapsesingleseason_summary"
+            android:defaultValue="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/preferences_playback">
+
+        <ListPreference
+            android:key="preferences_playback_resume"
+            android:drawable="@drawable/ic_play_circle_outline_white_48dp"
+            android:title="@string/preferences_playback_resume"
+            android:summary="@string/preferences_playback_resume_summary"
+            android:entries="@array/preferences_playback_resume_entries_text"
+            android:entryValues="@array/preferences_playback_resume_entries"
+            android:dialogTitle="@string/preferences_playback_resume_dialog"
+            android:defaultValue="@string/preferences_playback_resume_entries_default" />
+
+        <ListPreference
+            android:key="preferences_playback_playnext"
+            android:drawable="@drawable/ic_queue_play_next_white_48dp"
+            android:title="@string/preferences_playback_playnext"
+            android:summary="@string/preferences_playback_playnext_summary"
+            android:entries="@array/preferences_playback_playnext_entries_text"
+            android:entryValues="@array/preferences_playback_playnext_entries"
+            android:dialogTitle="@string/preferences_playback_playnext_dialog"
+            android:defaultValue="@string/preferences_playback_playnext_entries_default" />
+
+        <EditTextPreference
+            android:key="preferences_playback_nextup_movies"
+            android:drawable="@drawable/ic_movie_white_48dp"
+            android:title="@string/preferences_nextup_movies"
+            android:summary="@string/preferences_nextup_movies_summary"
+            android:dialogTitle="@string/preferences_nextup_movies_dialog"
+            android:defaultValue="@string/preferences_nextup_movies_default"/>
+
+
+        <EditTextPreference
+            android:key="preferences_playback_nextup_episode"
+            android:drawable="@drawable/ic_video_label_white_48dp"
+            android:title="@string/preferences_nextup_episode"
+            android:summary="@string/preferences_nextup_episode_summary"
+            android:dialogTitle="@string/preferences_nextup_episode_dialog"
+            android:defaultValue="@string/preferences_nextup_episode_default"/>
+
+    </PreferenceCategory>
+
+
+    <PreferenceCategory
+        android:title="@string/preferences_device">
+
+        <CheckBoxPreference
+            android:key="preferences_device_refreshrate"
+            android:drawable="@drawable/ic_slow_motion_video_white_48dp"
+            android:title="@string/preferences_device_refreshrate"
+            android:summary="@string/preferences_device_refreshrate_summary"
+            android:defaultValue="true" />
+
+        <CheckBoxPreference
+            android:key="preferences_device_passthrough"
+            android:drawable="@drawable/ic_surround_sound_white_48dp"
+            android:title="@string/preferences_device_passthrough"
+            android:summary="@string/preferences_device_passthrough_summary"
+            android:defaultValue="true" />
+
+        <ListPreference
+            android:key="preferences_device_speakers"
+            android:drawable="@drawable/ic_volume_up_white_48dp"
+            android:title="@string/preferences_device_speakers"
+            android:summary="@string/preferences_device_speakers_summary"
+            android:entries="@array/preferences_device_speakers_entries_text"
+            android:entryValues="@array/preferences_device_speakers_entries"
+            android:dialogTitle="@string/preferences_device_speakers_dialog"
+            android:defaultValue="@string/preferences_device_speakers_entries_default" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/preferences_about" >
+
+        <Preference
+            android:title="@string/preferences_about"
+            android:drawable="@drawable/ic_help_white_48dp">
+
+            <intent
+                android:targetPackage="com.monsterbutt.homeview.ui.activity"
+                android:targetClass="com.monsterbutt.homeview.ui.activity.AboutActivity"/>
+
+        </Preference>
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" >
+
+    <LinearLayout
+        style="?attr/imageCardViewImageStyle"
+        android:orientation="vertical"
+        android:layout_height="@dimen/codeccard_height"
+        android:background="?attr/card_normal"
+        android:layout_width="@dimen/codeccard_width" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:orientation="horizontal" >
+
+            <ImageView
+                android:id="@+id/imageA"
+                android:scaleType="centerInside"
+                android:layout_weight="1"
+                tools:src="@drawable/ic_subtitles_white_48dp"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:padding="@dimen/codeccard_text_padding"
+                android:contentDescription="@string/codeccard_image_desc"
+                style="?attr/imageCardViewImageStyle" />
+
+            <ImageView
+                android:id="@+id/imageB"
+                android:scaleType="centerInside"
+                android:layout_weight="1"
+                tools:src="@drawable/ic_subtitles_white_48dp"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:padding="@dimen/codeccard_text_padding"
+                android:contentDescription="@string/codeccard_image_desc"
+                style="?attr/imageCardViewImageStyle" />
+
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/main_text"
+            tools:text="Main Text Here"
+            android:textSize="@dimen/caption_text_size"
+            android:textAlignment="center"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="@dimen/codeccard_text_banner_height"
+            android:background="?attr/card_selected"
+            android:padding="@dimen/codeccard_text_padding_small" />
+
+    </LinearLayout>
+
+</merge>

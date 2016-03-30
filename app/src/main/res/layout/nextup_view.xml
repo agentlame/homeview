@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="@dimen/nextup_poster_height"
+    android:layout_width="wrap_content"
+    android:orientation="horizontal"
+    android:visibility="visible" >
+
+    <ImageView
+        android:id="@+id/nextup_poster"
+        android:background="?attr/card_normal"
+        android:contentDescription="@string/nextup_poster"
+        android:layout_height="@dimen/nextup_poster_height"
+        android:layout_width="@dimen/nextup_poster_width" />
+
+    <RelativeLayout
+        android:layout_width="@dimen/nextup_text_width"
+        android:layout_height="match_parent" >
+
+        <RelativeLayout
+            android:id="@+id/topbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:background="?attr/card_selected"
+            android:padding="@dimen/nextup_view_padding">
+
+            <TextView
+                android:id="@+id/nextup_title"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/nextup_subtitle"
+                android:textSize="@dimen/nextup_view_textsize_secondary"
+                android:layout_alignParentStart="true"
+                android:layout_below="@id/nextup_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/nextup_extra"
+                android:textSize="@dimen/nextup_view_textsize_secondary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_below="@id/nextup_title" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/upnext"
+            android:layout_alignParentBottom="true"
+            android:textSize="@dimen/nextup_view_textsize_secondary"
+            android:textAlignment="center"
+            android:paddingBottom="@dimen/nextup_view_padding_small"
+            android:background="?attr/card_normal"
+            android:text="@string/nextup_comingup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/nextup_summary"
+            android:textSize="@dimen/nextup_view_textsize_secondary"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/topbar"
+            android:layout_above="@id/upnext"
+            android:background="?attr/card_normal"
+            android:padding="@dimen/nextup_view_padding" />
+
+    </RelativeLayout>
+</LinearLayout>

@@ -1,0 +1,51 @@
+<resources>
+
+    <style name="Theme.App.Current.Leanback" parent="Theme.App.BlueGrey.Leanback">
+        <item name="android:windowEnterTransition">@android:transition/fade</item>
+        <item name="android:windowExitTransition">@android:transition/fade</item>
+        <item name="android:windowSharedElementExitTransition">@android:transition/move</item>
+        <item name="android:windowSharedElementEnterTransition">@android:transition/move</item>
+        <item name="android:windowAllowReturnTransitionOverlap">true</item>
+        <item name="android:windowAllowEnterTransitionOverlap">true</item>
+        <item name="android:windowContentTransitions">true</item>
+    </style>
+
+    <style name="Theme.App.Current.Leanback.Browse" parent="Theme.App.BlueGrey.Leanback.Browse">
+        <item name="android:windowEnterTransition">@android:transition/fade</item>
+        <item name="android:windowExitTransition">@android:transition/fade</item>
+        <item name="android:windowSharedElementExitTransition">@android:transition/move</item>
+        <item name="android:windowSharedElementEnterTransition">@android:transition/move</item>
+        <item name="android:windowAllowReturnTransitionOverlap">true</item>
+        <item name="android:windowAllowEnterTransitionOverlap">true</item>
+        <item name="android:windowContentTransitions">true</item>
+    </style>
+
+    <style name="Theme.App.BlueGrey.Leanback" parent="Theme.Leanback">
+        <item name="android:colorPrimary">@color/BlueGrey.Primary</item>
+        <item name="android:colorPrimaryDark">@color/BlueGrey.DarkPrimary</item>
+        <item name="colorPrimary">@color/BlueGrey.Primary</item>
+        <item name="colorPrimaryDark">@color/BlueGrey.DarkPrimary</item>
+        <!-- <item name="android:colorPrimaryLight">@color/BlueGrey.LightPrimary</item> -->
+        <item name="android:textColor">@color/BlueGrey.Text</item>
+        <item name="android:colorAccent">@color/BlueGrey.Accent</item>
+        <item name="colorAccent">@color/BlueGrey.Accent</item>
+        <item name="android:textColorPrimary">@color/BlueGrey.PrimaryText</item>
+        <item name="android:textColorSecondary">@color/BlueGrey.SecondaryText</item>
+        <item name="android:divider">@color/BlueGrey.DividerColor</item>
+        <item name="brand_color">@color/BlueGrey.Primary</item>
+        <item name="card_translucent">@color/BlueGrey.Primary.Translucent</item>
+    </style>
+    <style name="Theme.App.BlueGrey.Leanback.Browse" parent="Theme.Leanback.Browse">
+        <item name="android:colorPrimary">@color/BlueGrey.Primary</item>
+        <item name="android:colorPrimaryDark">@color/BlueGrey.DarkPrimary</item>
+        <!-- <item name="android:colorPrimaryLight">@color/BlueGrey.LightPrimary</item> -->
+        <item name="android:textColor">@color/BlueGrey.Text</item>
+        <item name="android:colorAccent">@color/BlueGrey.Accent</item>
+        <item name="android:textColorPrimary">@color/BlueGrey.PrimaryText</item>
+        <item name="android:textColorSecondary">@color/BlueGrey.SecondaryText</item>
+        <item name="android:divider">@color/BlueGrey.DividerColor</item>
+        <item name="brand_color">@color/BlueGrey.Primary</item>
+        <item name="windowActionBarOverlay">true</item>
+        <item name="card_translucent">@color/BlueGrey.Primary.Translucent</item>
+    </style>
+</resources>

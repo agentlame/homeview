@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/about_padding">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:textSize="@dimen/about_title_text"
+        android:text="@string/about_title"
+        android:padding="@dimen/about_padding"/>
+
+    <TextView
+        android:id="@+id/about_text"
+        android:focusable="true"
+        android:isScrollContainer="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/about_padding"
+        android:scrollbars="vertical"/>
+
+</LinearLayout>

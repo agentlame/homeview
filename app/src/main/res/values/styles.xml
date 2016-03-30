@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="AppTheme" parent="@style/Theme.App.Current.Leanback">
+        <item name="card_normal">?android:colorPrimaryDark</item>
+        <item name="card_selected">?android:colorPrimary</item>
+        <item name="brand_color">?android:colorPrimary</item>
+        <item name="brand_accent">?android:colorAccent</item>
+    </style>
+
+    <style name="AppTheme.Browse" parent="@style/Theme.App.Current.Leanback.Browse">
+        <item name="card_normal">?android:colorPrimaryDark</item>
+        <item name="card_selected">?android:colorPrimary</item>
+        <item name="brand_color">?android:colorPrimary</item>
+        <item name="brand_accent">?android:colorAccent</item>
+    </style>
+
+</resources>
