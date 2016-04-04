@@ -22,7 +22,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.SurfaceTexture;
 import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
@@ -47,14 +46,15 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
-import android.view.TextureView;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.WindowManager;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.google.android.exoplayer.AspectRatioFrameLayout;
 import com.google.android.exoplayer.ExoPlayer;
-import com.google.android.exoplayer.TrackRenderer;
 import com.google.android.exoplayer.util.Util;
 import com.monsterbutt.homeview.BuildConfig;
 import com.monsterbutt.homeview.R;
@@ -94,8 +94,10 @@ import static android.media.session.MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS
  */
 public class PlaybackFragment
         extends android.support.v17.leanback.app.PlaybackOverlayFragment
-        implements TextureView.SurfaceTextureListener, VideoPlayer.Listener, PlexServerTaskCaller,
-        OnItemViewClickedListener, HomeViewActivity.OnStopKeyListener, PlaybackControlHelper.ProgressUpdateCallback, HomeViewActivity.OnBackPressedListener {
+        implements VideoPlayer.Listener, PlexServerTaskCaller,
+        OnItemViewClickedListener, HomeViewActivity.OnStopKeyListener,
+        PlaybackControlHelper.ProgressUpdateCallback, HomeViewActivity.OnBackPressedListener,
+        SurfaceHolder.Callback {
 
     private static final String TAG = "PlaybackOverlayFragment";
     private static final boolean DEBUG = BuildConfig.DEBUG;
@@ -120,11 +122,13 @@ public class PlaybackFragment
     private ListRow mCodecsRow = null;
     private ListRow mExtrasRow = null;
 
+    private AspectRatioFrameLayout videoFrame;
+
     private StartPosition mStartPosition;
     private static final String mNextUpLock = "nextuplock";
     private long mNextUpThreshold = PlexVideoItem.NEXTUP_DISABLED;
 
-    private SurfaceTexture mCacheSurfaceTexture = null;
+    private Surface mCacheSurface = null;
     private PlexServer mServer;
 
     @Override
@@ -182,8 +186,9 @@ public class PlaybackFragment
         super.onCreate(savedInstanceState);
 
         // Initialize instance variables.
-        TextureView textureView = (TextureView) getActivity().findViewById(R.id.texture_view);
-        textureView.setSurfaceTextureListener(this);
+        videoFrame = (AspectRatioFrameLayout) getActivity().findViewById(R.id.video_frame);
+        SurfaceView surfaceView = (SurfaceView) getActivity().findViewById(R.id.surface_view);
+        surfaceView.getHolder().addCallback(this);
 
         mQueue = new ArrayList<>();
 
@@ -410,10 +415,10 @@ public class PlaybackFragment
             mPlayer.addListener(this);
             mPlayer.seekTo(mStartPosition.getStartPosition());
             mPlayer.prepare();
-            if (mCacheSurfaceTexture != null) {
+            if (mCacheSurface != null) {
 
-                mPlayer.setSurface(new Surface(mCacheSurfaceTexture));
-                mCacheSurfaceTexture = null;
+                mPlayer.setSurface(mCacheSurface);
+                mCacheSurface = null;
             }
         } else {
             mPlayer.stop();
@@ -519,36 +524,11 @@ public class PlaybackFragment
     }
 
     @Override
-    public void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees,
+    public void onVideoSizeChanged(final int width, final int height, int unappliedRotationDegrees,
                                    float pixelWidthHeightRatio) {
-        // Do nothing.
-    }
 
-    @Override
-    public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
-        if (mPlayer != null) {
-            mPlayer.setSurface(new Surface(surfaceTexture));
-        }
-        else
-            mCacheSurfaceTexture = surfaceTexture;
-    }
-
-    @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        // Do nothing.
-    }
-
-    @Override
-    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        if (mPlayer != null) {
-            mPlayer.blockingClearSurface();
-        }
-        return true;
-    }
-
-    @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-        // Do nothing.
+        videoFrame.setAspectRatio(
+                height == 0 ? 1 : (width * pixelWidthHeightRatio) / height);
     }
 
     private int getPlaybackState() {
@@ -880,6 +860,28 @@ public class PlaybackFragment
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+
+        if (mPlayer != null) {
+            mPlayer.setSurface(holder.getSurface());
+        }
+        else
+            mCacheSurface = holder.getSurface();
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+
+        if (mPlayer != null) {
+            mPlayer.blockingClearSurface();
+        }
     }
 
     // An event was triggered by MediaController.TransportControls and must be handled here.

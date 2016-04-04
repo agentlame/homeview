@@ -2,13 +2,23 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/black"
     android:orientation="vertical">
 
-    <TextureView
-        android:id="@+id/texture_view"
+    <com.google.android.exoplayer.AspectRatioFrameLayout
+        android:id="@+id/video_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center" />
+        android:layout_gravity="center">
+
+        <SurfaceView
+            android:id="@+id/surface_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center|center_vertical"/>
+
+    </com.google.android.exoplayer.AspectRatioFrameLayout>
+
 
     <com.monsterbutt.homeview.ui.android.NextUpView
         android:id="@+id/nextup_view"

@@ -16,6 +16,7 @@ package com.monsterbutt.homeview.ui.activity;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.graphics.Color;
 import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -43,6 +44,7 @@ public class PlaybackActivity extends HomeViewActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_playback);
+        getWindow().getDecorView().setBackgroundColor(Color.BLACK);
         mNextUp = (NextUpView) findViewById(R.id.nextup_view);
     }
 
