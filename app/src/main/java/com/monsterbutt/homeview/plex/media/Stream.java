@@ -23,6 +23,10 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     public final static  String AudioCodec = "audioCodec";
     public final static  String AudioChannels = "audioChannels";
 
+    private final static String Profile_DTS_MA = "ma";
+    private final static String Profile_DTS_HR = "hra";
+
+
     final us.nineworlds.plex.rest.model.impl.Stream mStream;
     final boolean modeA;
     public Stream (us.nineworlds.plex.rest.model.impl.Stream stream, boolean modeA) {
@@ -219,5 +223,9 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         mStream.writeToParcel(dest, flags);
         dest.writeInt(modeA ? 1 : 0);
+    }
+
+    public static boolean profileIsDtsHdVariant(String profile) {
+        return profile.equals(Profile_DTS_MA) || profile.equals(Profile_DTS_MA);
     }
 }

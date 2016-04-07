@@ -473,14 +473,14 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         else {
             for (us.nineworlds.plex.rest.model.impl.Stream stream : part.getStreams()) {
 
-                if (stream.getStreamType() == com.monsterbutt.homeview.plex.media.Stream.Audio_Stream) {
+                if (stream.getStreamType() == Stream.Audio_Stream) {
 
                     if (hasAudio)
                         continue;
                     hasAudio = true;
                     adapter.add(new CodecCard(context, CodecCard.CodecCardType.AudioCodec, stream));
                 }
-                else if (stream.getStreamType() == com.monsterbutt.homeview.plex.media.Stream.Subtitle_Stream) {
+                else if (stream.getStreamType() == Stream.Subtitle_Stream) {
 
                     if (hasSubs)
                         continue;
@@ -598,5 +598,29 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     public String getPathKey() {
 
         return getMedia().get(0).getVideoPart().get(0).getKey();
+    }
+
+    public boolean trackIsDtsHd(String trackId) {
+
+        // plex track ids are 0 based, media trackids are 1 based
+        if (TextUtils.isEmpty(trackId) || Integer.valueOf(trackId) <= 0)
+            return false;
+        int trackIndex = Integer.valueOf(trackId) - 1;
+
+        boolean ret = false;
+        Media media = getMedia() != null ? getMedia().get(0) : null;
+        if (media != null && media.getVideoPart() != null && media.getVideoPart().get(0).getStreams() != null) {
+
+            List<us.nineworlds.plex.rest.model.impl.Stream> streams = media.getVideoPart().get(0).getStreams();
+            for(us.nineworlds.plex.rest.model.impl.Stream stream : streams) {
+
+                if (stream.getStreamType() == Stream.Audio_Stream && trackIndex == Integer.valueOf(stream.getIndex())) {
+
+                    ret = Stream.profileIsDtsHdVariant(stream.getProfile());
+                    break;
+                }
+            }
+        }
+        return ret;
     }
 }
