@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.view.View;
 
 import com.monsterbutt.homeview.plex.PlexServer;
@@ -52,10 +53,10 @@ public abstract class CardObject {
 
     public boolean useItemBackgroundArt() { return false; }
 
-    public abstract boolean onClicked(Fragment fragment, View transitionView);
+    public abstract boolean onClicked(Fragment fragment, Bundle extras, View transitionView);
 
-    public boolean onPlayPressed(Fragment fragment, View transitionView) {
-        return onClicked(fragment, transitionView);
+    public boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView) {
+        return onClicked(fragment, extras, transitionView);
     }
 
     @Override

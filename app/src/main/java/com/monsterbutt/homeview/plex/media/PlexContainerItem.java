@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.view.View;
 
 import com.monsterbutt.homeview.data.VideoContract;
+import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.provider.MediaContentProvider;
 import com.monsterbutt.homeview.provider.SearchImagesProvider;
 import com.monsterbutt.homeview.ui.activity.ContainerActivity;
@@ -230,8 +231,13 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public String getThemeKey() {
-        return mDirectory.getThemeKey();
+    public String getThemeKey(PlexServer server) {
+        String ret = mDirectory.getThemeKey();
+        if (TextUtils.isEmpty(ret))
+            ret = mDirectory.getParentThemeKey();
+        if (!TextUtils.isEmpty(ret))
+            ret = server.makeServerURL(ret);
+        return ret;
     }
 
     @Override
@@ -329,7 +335,7 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
         int ret = 0;
         int unwatched = getUnwatchedCount();
         if (unwatched > 0)
-            ret = (int) (100 * ((double) unwatched / Double.valueOf(mDirectory.getLeafCount())));
+            ret = 100 - (int)  (100 * ((double) unwatched / Double.valueOf(mDirectory.getLeafCount())));
         return ret;
     }
 
@@ -372,10 +378,13 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public boolean onClicked(Fragment fragment, View transitionView) {
+    public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
         Intent intent = new Intent(fragment.getActivity(), ContainerActivity.class);
         intent.putExtra(ContainerActivity.KEY, getKey());
+        intent.putExtra(ContainerActivity.BACKGROUND, getBackgroundImageURL());
+        if (extras != null)
+            intent.putExtras(extras);
 
         Bundle bundle = null;
         if (transitionView != null) {
@@ -391,11 +400,13 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public boolean onPlayPressed(Fragment fragment, View transitionView) {
+    public boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView) {
 
         Intent intent = new Intent(fragment.getActivity(), PlaybackActivity.class);
         intent.putExtra(PlaybackActivity.KEY, getKey());
         intent.putExtra(PlaybackActivity.FILTER, getCurrentFilter());
+        if (extras != null)
+            intent.putExtras(extras);
 
         Bundle bundle = null;
         if (transitionView != null) {

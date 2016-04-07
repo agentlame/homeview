@@ -259,7 +259,7 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
     @Override
     public boolean playKeyPressed() {
 
-        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, mCurrentCardTransitionImage);
+        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
     }
 
 }

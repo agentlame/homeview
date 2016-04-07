@@ -45,6 +45,7 @@ import com.google.android.exoplayer.upstream.BandwidthMeter;
 import com.google.android.exoplayer.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer.util.DebugTextViewHelper;
 import com.google.android.exoplayer.util.PlayerControl;
+import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -201,6 +202,8 @@ public class VideoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventL
     private Format videoFormat;
     private int videoTrackToRestore;
 
+    private PlexVideoItem mPreparedVideo;
+
     private BandwidthMeter bandwidthMeter;
     private boolean backgrounded;
 
@@ -305,10 +308,11 @@ public class VideoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventL
         }
     }
 
-    public void prepare() {
+    public void prepare(PlexVideoItem video) {
         if (rendererBuildingState == RENDERER_BUILDING_STATE_BUILT) {
             player.stop();
         }
+        mPreparedVideo = video;
         rendererBuilder.cancel();
         videoFormat = null;
         videoRenderer = null;
@@ -640,5 +644,7 @@ public class VideoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventL
                     videoRenderer, MediaCodecVideoTrackRenderer.MSG_SET_SURFACE, surface);
         }
     }
+
+    public PlexVideoItem getPreparedVideo() { return mPreparedVideo; }
 
 }

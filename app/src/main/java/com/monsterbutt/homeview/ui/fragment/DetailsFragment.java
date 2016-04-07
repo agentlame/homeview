@@ -49,12 +49,12 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.plex.tasks.ToggleWatchedStateTask;
 import com.monsterbutt.homeview.presenters.DetailsDescriptionPresenter;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.services.ThemeService;
-import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.android.ImageCardView;
 import com.monsterbutt.homeview.ui.handler.MediaCardBackgroundHandler;
 import com.monsterbutt.homeview.R;
@@ -85,6 +85,8 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     private View mCurrentCardTransitionImage = null;
     private CardObject mCurrentCard = null;
     private DetailsDescriptionPresenter mDetailPresenter;
+    private boolean mContinueTheme = false;
+    private boolean mThemeAlreadyRun = false;
 
     final static int ACTION_PLAY        = 1;
     final static int ACTION_VIEWSTATUS  = 2;
@@ -94,6 +96,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     private PlexServer mServer;
     private PlexLibraryItem mItem = null;
     private MediaCardBackgroundHandler mBackgroundHandler;
+    private String mBackgroundURL = "";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -105,42 +108,39 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         mBackgroundHandler = new MediaCardBackgroundHandler(activity);
 
         mItem = activity.getIntent().getParcelableExtra(DetailsActivity.ITEM);
+        mBackgroundURL = activity.getIntent().getStringExtra(DetailsActivity.BACKGROUND);
+        mThemeAlreadyRun = activity.getIntent().getBooleanExtra(ThemeService.THEME_ALREADY_RUN, false);
         setOnItemViewClickedListener(this);
         setOnItemViewSelectedListener(this);
         setupDetailsOverviewRowPresenter();
+
+        if (!TextUtils.isEmpty(mBackgroundURL)) {
+            mBackgroundURL = mServer.makeServerURL(mBackgroundURL);
+            mBackgroundHandler.updateBackground(mBackgroundURL, false);
+        }
         if (mItem != null)
             setupDetailsOverviewRow();
     }
 
-
-    public void startTheme() {
-
-        Activity activity = getActivity();
-        String theme = mItem != null ? mItem.getThemeKey() : "";
-        if (activity != null && !activity.isFinishing() && !activity.isDestroyed() &&
-            SettingsManager.getInstance(activity.getApplicationContext()).getBoolean("preferences_navigation_thememusic")
-                && !TextUtils.isEmpty(theme)) {
-
-            Intent intent = new Intent(getActivity(), ThemeService.class);
-            intent.setAction(ThemeService.ACTION_PLAY);
-            intent.setData(Uri.parse(mServer.makeServerURL(theme)));
-            activity.startService(intent);
-        }
+    @Override
+    public void onResume() {
+        super.onResume();
+        mContinueTheme = false;
+        if (!TextUtils.isEmpty(mBackgroundURL))
+            mBackgroundHandler.updateBackground(mBackgroundURL, false);
     }
 
     @Override
     public void onPause() {
+
         super.onPause();
-        Intent intent = new Intent(getActivity(), ThemeService.class);
-        intent.setAction(ThemeService.ACTION_STOP);
-        getActivity().stopService(intent);
-    }
 
-    @Override
-    public void onStop() {
-
-        super.onStop();
         mBackgroundHandler.cancel();
+        if (mContinueTheme || !mThemeAlreadyRun ||
+                (getActivity() != null && getActivity().isFinishing() &&
+                        (mItem instanceof Episode || mItem instanceof Season)))
+            return;
+        ThemeService.stopTheme(getActivity());
     }
 
     @Override
@@ -156,7 +156,10 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     private void setupDetailsOverviewRow() {
 
-        mBackgroundHandler.updateBackground(mServer.makeServerURL(mItem.getBackgroundImageURL()));
+        if (TextUtils.isEmpty(mBackgroundURL)) {
+            mBackgroundURL = mServer.makeServerURL(mItem.getBackgroundImageURL());
+            mBackgroundHandler.updateBackground(mBackgroundURL, true);
+        }
         boolean usePoster = !(mItem instanceof Episode);
         final DetailsOverviewRow row = new DetailsOverviewRow(mItem);
 
@@ -214,7 +217,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     public void onActionClicked(Action action) {
 
         if (action.getId() == ACTION_PLAY)
-            mItem.onPlayPressed(this, null);
+            mItem.onPlayPressed(this, null, null);
         else if (action.getId() == ACTION_VIEWSTATUS)
             toggleWatched();
     }
@@ -278,8 +281,6 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         public DetailPresenter(Presenter detailsPresenter, DetailsOverviewLogoPresenter logoPresenter) {
             super(detailsPresenter, logoPresenter);
         }
-
-
     }
 
     private void setupDetailsOverviewRowPresenter() {
@@ -315,14 +316,18 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
                               RowPresenter.ViewHolder rowViewHolder, Row row) {
 
-        if (item instanceof PosterCard && !(item instanceof CodecCard))
-            ((PosterCard)item).onClicked(this, ((ImageCardView) itemViewHolder.view).getMainImageView());
+        if (item instanceof PosterCard && !(item instanceof CodecCard)) {
+            mContinueTheme = true; // keep playing music through episodes
+            Bundle extras = new Bundle();
+            extras.putBoolean(ThemeService.THEME_ALREADY_RUN, true);
+            ((PosterCard) item).onClicked(this, extras, ((ImageCardView) itemViewHolder.view).getMainImageView());
+        }
     }
 
     @Override
     public boolean playKeyPressed() {
 
-        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, mCurrentCardTransitionImage);
+        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
     }
 
     @Override
@@ -374,20 +379,32 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
             if (extras != null)
                 mAdapter.add(extras);
 
-            new LoadRelatedTask().execute(mItem.getRelated());
-            startTheme();
+            HubList list = new HubList(mItem.getRelated());
+            new LoadRelatedTask().execute(list);
+
+            if (!mThemeAlreadyRun)
+                mThemeAlreadyRun = ThemeService.startTheme(getActivity(), mItem.getThemeKey(mServer));
         }
     }
 
-    private class LoadRelatedTask extends AsyncTask<List<Hub>, Void, List<MediaContainer>> {
+    private class HubList extends ArrayList<Hub> {
+
+        public HubList(List<Hub> list) {
+            if (list != null && !list.isEmpty())
+               this.addAll(list);
+        }
+    }
+
+    private class LoadRelatedTask extends AsyncTask<HubList, Void, List<MediaContainer>> {
 
         @Override
-        protected List<MediaContainer> doInBackground(List<Hub>... params) {
+        protected List<MediaContainer> doInBackground(HubList... params) {
 
             List<MediaContainer> mcs = new ArrayList<>();
             if (params != null && params.length > 0 && params[0] != null) {
 
-                for (Hub hub : params[0]) {
+                HubList list = params[0];
+                for (Hub hub : list) {
 
                     MediaContainer mc = mServer.getRelatedForKey(hub.getKey());
                     if (mc != null) {

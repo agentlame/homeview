@@ -58,7 +58,7 @@ public class Show extends PlexContainerItem implements Parcelable {
     };
 
     @Override
-    public boolean onClicked(Fragment fragment, View transitionView) {
+    public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
         boolean collapseSingleSeason = SettingsManager.getInstance(fragment.getActivity())
                                             .getBoolean("preferences_navigation_collapsesingleseason");
@@ -67,6 +67,10 @@ public class Show extends PlexContainerItem implements Parcelable {
             Intent intent = new Intent(fragment.getActivity(), ContainerActivity.class);
             intent.putExtra(ContainerActivity.KEY, getKey().replace(Season.CHILDREN, Season.ALL_SEASONS));
             intent.putExtra(ContainerActivity.USE_SCENE, true);
+            intent.putExtra(ContainerActivity.BACKGROUND, getBackgroundImageURL());
+            if (extras != null)
+                intent.putExtras(extras);
+
             Bundle bundle = null;
             if (transitionView != null) {
 
@@ -81,6 +85,9 @@ public class Show extends PlexContainerItem implements Parcelable {
 
             Intent intent = new Intent(fragment.getActivity(), DetailsActivity.class);
             intent.putExtra(DetailsActivity.ITEM, this);
+            intent.putExtra(DetailsActivity.BACKGROUND, getBackgroundImageURL());
+            if (extras != null)
+                intent.putExtras(extras);
 
             Bundle bundle = null;
             if (transitionView != null) {
@@ -118,24 +125,15 @@ public class Show extends PlexContainerItem implements Parcelable {
         PlexContainerItem all = getAllEpisodes();
         if (all != null)
             return getEpisodeCount() - Integer.valueOf(all.getViewedLeafCount());
-        return 0;
+        return super.getUnwatchedCount();
     }
 
     @Override
     public String getCardContent(Context context) {
 
-        int episodes = getEpisodeCount();
-        int unwatched = getUnwatchedEpisodeCount();
         String ret = mDirectory.getParentYear();
         if (ret == null)
             ret = mDirectory.getYear();
-        if (0 < episodes)
-            ret += String.format(" %s %d %s",   context.getString(R.string.mid_dot),
-                                                episodes,
-                                                context.getString(R.string.episodes));
-        if (0 < unwatched)
-            ret += String.format(" (%d %s)",    unwatched,
-                                                context.getString(R.string.unwatched));
         return ret;
     }
 

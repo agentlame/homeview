@@ -20,6 +20,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.media.MediaDescription;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.View;
@@ -225,7 +226,7 @@ public final class Video extends CardObject implements Parcelable {
     public String getFrameRate() { return frameRate;}
 
     @Override
-    public boolean onClicked(Fragment fragment, View transitionView) {
+    public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
         return false;
     }
 

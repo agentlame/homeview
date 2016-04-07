@@ -22,6 +22,7 @@ public class ContainerActivity extends HomeViewActivity {
     public static final String KEY = "key";
     public static final String USE_SCENE = "scenelayout";
     public static final String SHARED_ELEMENT_NAME = "hero";
+    public static final String BACKGROUND = "background";
 
     private ListView mQuickList = null;
     private ContainerGridFragment mFragment;

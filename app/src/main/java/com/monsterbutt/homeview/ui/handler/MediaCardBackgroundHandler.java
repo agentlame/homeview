@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.support.v17.leanback.app.BackgroundManager;
 import android.util.DisplayMetrics;
 
+import com.bumptech.glide.DrawableRequestBuilder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
@@ -62,7 +63,7 @@ public class MediaCardBackgroundHandler {
         }
     }
 
-    public void updateBackground(String uri) {
+    public void updateBackground(String uri, boolean animate) {
 
         if (mActivity.isDestroyed() || mActivity.isFinishing())
             return;
@@ -82,11 +83,14 @@ public class MediaCardBackgroundHandler {
                     }
                 }
             };
-            Glide.with(mActivity)
-                    .load(uri)
-                    .centerCrop()
-                    .error(mDefaultBackground)
-                    .into(mTarget);
+
+            DrawableRequestBuilder builder = Glide.with(mActivity)
+                                            .load(uri)
+                                            .centerCrop()
+                                            .error(mDefaultBackground);
+            if (!animate)
+               builder.dontAnimate();
+            builder.into(mTarget);
         }
     }
 
@@ -97,7 +101,7 @@ public class MediaCardBackgroundHandler {
         mBackgroundTimer.schedule(new UpdateBackgroundTask(path), BACKGROUND_UPDATE_DELAY);
     }
 
-    public void updateBackgroundTimed(PlexServer server, CardObject item) {
+    public String updateBackgroundTimed(PlexServer server, CardObject item) {
 
         String url;
         if (item instanceof SceneCard) {
@@ -106,7 +110,7 @@ public class MediaCardBackgroundHandler {
             if (!card.useItemBackgroundArt()) {
 
                 new GetRandomArtForSectionTask(server).execute(card.getSectionId());
-                return;
+                return "";
             }
             else
                 url = item.getBackgroundImageUrl();
@@ -120,6 +124,7 @@ public class MediaCardBackgroundHandler {
 
         if (url != null && !url.isEmpty())
             startBackgroundTimer(server.makeServerURL(url));
+        return url;
     }
 
     private class UpdateBackgroundTask extends TimerTask {
@@ -136,7 +141,7 @@ public class MediaCardBackgroundHandler {
                 @Override
                 public void run() {
                     if (mBackgroundURI != null) {
-                        updateBackground(mBackgroundURI.toString());
+                        updateBackground(mBackgroundURI.toString(), true);
                     }
                 }
             });

@@ -42,9 +42,7 @@ import android.support.v17.leanback.widget.PlaybackControlsRowPresenter;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.Display;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -173,11 +171,8 @@ public class PlaybackFragment
 
             if (selectedHasMissingData())
                 new GetFullInfo().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mSelectedVideo.getKey());
-            else {
-
-                setupVideoForPlayback();
-                preparePlayer(true);
-            }
+            else
+                playVideo(mSelectedVideo, mAutoPlayExtras);
         }
     }
 
@@ -353,23 +348,6 @@ public class PlaybackFragment
         updatePlaybackRow();
         updateMetadata();
         updateCodecAndExtras();
-
-        Activity act = getActivity();
-        act.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        SettingsManager mgr = SettingsManager.getInstance(getActivity());
-        if (mgr.getBoolean("preferences_device_refreshrate")) {
-
-            WindowManager wm = (WindowManager) act.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            Display.Mode[] modes = display.getSupportedModes();
-            int requestMode = getBestFrameRate(modes, convertFrameRate(mSelectedVideo.getMedia().get(0).getVideoFrameRate()));
-            if (requestMode != -1 && display.getMode().getRefreshRate() != modes[requestMode].getRefreshRate()) {
-
-                WindowManager.LayoutParams params = act.getWindow().getAttributes();
-                params.preferredDisplayModeId = modes[requestMode].getModeId();
-                act.getWindow().setAttributes(params);
-            }
-        }
     }
 
     private void updateCodecAndExtras() {
@@ -408,13 +386,13 @@ public class PlaybackFragment
         }
     }
 
-    private void preparePlayer(boolean playWhenReady) {
+    private void preparePlayer(boolean playWhenReady, PlexVideoItem video) {
 
         if (mPlayer == null) {
             mPlayer = new VideoPlayer(getRendererBuilder());
             mPlayer.addListener(this);
             mPlayer.seekTo(mStartPosition.getStartPosition());
-            mPlayer.prepare();
+            mPlayer.prepare(video);
             if (mCacheSurface != null) {
 
                 mPlayer.setSurface(mCacheSurface);
@@ -424,7 +402,7 @@ public class PlaybackFragment
             mPlayer.stop();
             mPlayer.seekTo(mStartPosition.getStartPosition());
             mPlayer.setRendererBuilder(getRendererBuilder());
-            mPlayer.prepare();
+            mPlayer.prepare(video);
         }
 
         if (mStartPosition.getStartType() == StartPosition.PlaybackStartType.Ask) {
@@ -446,27 +424,26 @@ public class PlaybackFragment
                                                         @Override
                                                         public void run() {
 
-                                                            long pos = mStartPosition.getVideoOffset();
-                                                            boolean ready = ExoPlayer.STATE_READY == mPlayer.getPlaybackState();
-                                                            switch (mPlayer.getPlaybackState()) {
+                                long pos = mStartPosition.getVideoOffset();
+                                switch (mPlayer.getPlaybackState()) {
 
-                                                                case ExoPlayer.STATE_READY:
-                                                                case ExoPlayer.STATE_ENDED:
-                                                                case ExoPlayer.STATE_BUFFERING:
+                                    case ExoPlayer.STATE_READY:
+                                    case ExoPlayer.STATE_ENDED:
+                                    case ExoPlayer.STATE_BUFFERING:
 
-                                                                    setPosition(pos);
-                                                                    break;
+                                        setPosition(pos);
+                                        break;
 
-                                                                case ExoPlayer.STATE_IDLE:
-                                                                case ExoPlayer.STATE_PREPARING:
+                                    case ExoPlayer.STATE_IDLE:
+                                    case ExoPlayer.STATE_PREPARING:
 
-                                                                    mPlayer.seekTo(pos);
-                                                                    break;
-                                                                default:
-                                                                    break;
-                                                            }
-                                                        }
-                                                    });
+                                        mPlayer.seekTo(pos);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        });
                         dialog.dismiss();
                     }
                 })
@@ -594,124 +571,7 @@ public class PlaybackFragment
                 });
     }
 
-    private static final int NO_MATCH = -1;
-    private int hasFrameRate(Display.Mode[] possible, double desired) {
 
-        int match = NO_MATCH;
-        double matchDiff = 10000;
-        for (int i = 0; i < possible.length; ++i) {
-
-            double curr = possible[i].getRefreshRate();
-            if (curr == desired)
-                return i;
-
-            if (Math.floor(desired) == Math.floor(curr)) {
-
-                double discrepency = getFrameDiff(desired, curr);
-                if (matchDiff > discrepency) {
-
-                    matchDiff = discrepency;
-                    match = i;
-                }
-            }
-            else if (Math.ceil(desired) == Math.floor(curr)) {
-
-                double discrepency = getFrameDiff(desired, curr);
-                if (matchDiff > discrepency) {
-
-                    matchDiff = discrepency;
-                    match = i;
-                }
-            }
-
-        }
-        return match;
-    }
-
-    private int findBestForTwoPossibleFrames(Display.Mode[] possible, double desired, double backup) {
-
-        int matchA = hasFrameRate(possible, desired);
-        if (NO_MATCH != matchA && desired == possible[matchA].getRefreshRate())
-            return matchA;
-        int matchB = hasFrameRate(possible, backup);
-        if (UNKNOWN != backup && NO_MATCH != matchB) {
-            if (NO_MATCH != matchA) {
-
-                double discrepencyA = getFrameDiff(desired, possible[matchA].getRefreshRate());
-                double discrepencyB = getFrameDiff(desired, possible[matchB].getRefreshRate());
-                if (discrepencyA < discrepencyB)
-                    return matchA;
-                return matchB;
-            }
-            else
-                return matchB;
-        }
-        else if (NO_MATCH != matchA)
-            return matchA;
-        return -1;
-    }
-
-    private static final float UNKNOWN = (float)0.0;
-    private static final float FILM = (float)23.976;
-    private static final float PAL_FILM = (float)25.0;
-    private static final float NTSC_INTERLACED = (float)29.97;
-    private static final float DIGITAL_30 = (float)30.0;
-    private static final float PAL = (float)50.0;
-    private static final float NTSC = (float)59.94;
-    private static final float DIGITAL_60 = (float) 60.0;
-
-    private int getBestFrameRate(Display.Mode[] possible, double desired) {
-
-        int ret = -1;
-        if (desired == DIGITAL_60)
-            ret = findBestForTwoPossibleFrames(possible, DIGITAL_60, NTSC);
-        else if (desired == NTSC)
-            ret = findBestForTwoPossibleFrames(possible, NTSC, DIGITAL_60);
-        else if (desired == PAL)
-            ret = findBestForTwoPossibleFrames(possible, PAL, UNKNOWN);
-        else if (desired == DIGITAL_30) {
-            ret = findBestForTwoPossibleFrames(possible, DIGITAL_30, DIGITAL_60);
-            if (ret == -1)
-                ret =findBestForTwoPossibleFrames(possible, NTSC_INTERLACED, NTSC);
-        }
-        else if (desired == NTSC_INTERLACED) {
-            ret = findBestForTwoPossibleFrames(possible, NTSC_INTERLACED, NTSC);
-            if (ret == -1)
-                ret = findBestForTwoPossibleFrames(possible, DIGITAL_30, DIGITAL_60);
-        }
-        else if (desired == PAL_FILM)
-            ret = findBestForTwoPossibleFrames(possible, PAL_FILM, PAL);
-        else if (desired == FILM)
-            return findBestForTwoPossibleFrames(possible, FILM, UNKNOWN);
-
-        return ret;
-    }
-
-    private float convertFrameRate(String frameRate) {
-
-        float ret = UNKNOWN;
-        if (TextUtils.isEmpty(frameRate))
-            return UNKNOWN;
-        if (frameRate.equals("PAL") || frameRate.startsWith("50"))
-            ret = PAL;
-        else if (frameRate.equals("24p") || frameRate.startsWith("23"))
-            ret = FILM;
-        else if (frameRate.equals("NTSC") || frameRate.startsWith("59"))
-            ret = NTSC;
-        else if (frameRate.startsWith("25"))
-            ret = PAL_FILM;
-        else if (frameRate.startsWith("29"))
-            ret = NTSC_INTERLACED;
-        else if (frameRate.startsWith("30"))
-            ret = DIGITAL_30;
-        else if (frameRate.startsWith("60"))
-            ret = DIGITAL_60;
-        return ret;
-    }
-
-    private double getFrameDiff(double a, double b) {
-        return  Math.abs(a - b);
-    }
 
     private void playVideo(PlexVideoItem video, Bundle extras) {
 
@@ -726,7 +586,7 @@ public class PlaybackFragment
             }
         }
         setupVideoForPlayback();
-        preparePlayer(true);
+        preparePlayer(true, mSelectedVideo);
         setPlaybackState(PlaybackState.STATE_PAUSED);
         playPause(extras.getBoolean(AUTO_PLAY));
     }

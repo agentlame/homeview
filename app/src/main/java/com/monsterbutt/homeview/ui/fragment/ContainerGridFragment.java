@@ -14,10 +14,13 @@ import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.VerticalGridPresenter;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.monsterbutt.homeview.plex.media.Episode;
+import com.monsterbutt.homeview.services.ThemeService;
 import com.monsterbutt.homeview.ui.activity.FilterChoiceActivity;
 import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
@@ -53,6 +56,9 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
     private PlexServer mServer = null;
     private MediaContainer mContainer = null;
     private boolean mUseScene = false;
+    private boolean mThemeAlreadyRun = false;
+    private boolean mContinueTheme = false;
+    private String mBackgroundURL = "";
 
     private final SectionFilter mAllFilter = new SectionFilter("All", PlexContainerItem.ALL);
 
@@ -114,8 +120,16 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
             prepareEntranceTransition();
 
         Activity act = getActivity();
+        mServer = PlexServerManager.getInstance(act.getApplicationContext()).getSelectedServer();
         mUseScene = act.getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false);
+        mThemeAlreadyRun = act.getIntent().getBooleanExtra(ThemeService.THEME_ALREADY_RUN, false);
         mBackgroundHandler = new MediaCardBackgroundHandler(act);
+
+        mBackgroundURL = act.getIntent().getStringExtra(ContainerActivity.BACKGROUND);
+        if (!TextUtils.isEmpty(mBackgroundURL)) {
+            mBackgroundURL = mServer.makeServerURL(mBackgroundURL);
+            mBackgroundHandler.updateBackground(mBackgroundURL, false);
+        }
         VerticalGridPresenter gridPresenter = new VerticalGridPresenter();
         String colCount = mUseScene ? act.getString(R.string.gridview_scene_columns)
                                     : act.getString(R.string.gridview_poster_columns);
@@ -125,31 +139,44 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
         setGridPresenter(gridPresenter);
         setOnItemViewSelectedListener(this);
         setOnItemViewClickedListener(this);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-
-        super.onActivityCreated(savedInstanceState);
-        Activity act = getActivity();
-        mServer = PlexServerManager.getInstance(act.getApplicationContext()).getSelectedServer();
         ((HomeViewActivity) act).setPlayKeyListener(this);
         String key = act.getIntent().getStringExtra(ContainerActivity.KEY);
         new GetContainerTask().execute(key);
     }
 
     @Override
-    public void onStop() {
+    public void onResume() {
+        super.onResume();
+        mContinueTheme = false;
+        if (!TextUtils.isEmpty(mBackgroundURL))
+            mBackgroundHandler.updateBackground(mBackgroundURL, false);
+    }
 
-        super.onStop();
+    @Override
+    public void onPause() {
+
+        super.onPause();
+
         mBackgroundHandler.cancel();
+        if (mContinueTheme || !mThemeAlreadyRun ||
+                (getActivity() != null && getActivity().isFinishing()
+                        && mContainer.getDirectories() == null))
+            return;
+        ThemeService.stopTheme(getActivity());
     }
 
     @Override
     public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
 
-        if (item instanceof PosterCard)
-            ((PosterCard) item).onClicked(this, ((ImageCardView) itemViewHolder.view).getMainImageView());
+        if (item instanceof PosterCard) {
+            Bundle extras = null;
+            mContinueTheme = true;
+            if (mThemeAlreadyRun) {
+                extras = new Bundle();
+                extras.putBoolean(ThemeService.THEME_ALREADY_RUN, true);
+            }
+            ((PosterCard) item).onClicked(this, extras, ((ImageCardView) itemViewHolder.view).getMainImageView());
+        }
     }
 
     @Override
@@ -160,7 +187,7 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
             mCurrentCard = (CardObject) item;
             mCurrentCardTransitionImage = ((ImageCardView) itemViewHolder.view).getMainImageView();
             if (!mUseScene)
-                mBackgroundHandler.updateBackgroundTimed(mServer, (CardObject) item);
+                mBackgroundURL = mBackgroundHandler.updateBackgroundTimed(mServer, mCurrentCard);
         }
     }
 
@@ -217,6 +244,8 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
                 else {
 
                     item = PlexVideoItem.getItem(currVid);
+                    if (item instanceof Episode)
+                        ((Episode) item).setSeasonNum(mContainer.getParentIndex());
                     currVid = itVideos.hasNext() ? itVideos.next() : null;
                 }
 
@@ -261,7 +290,7 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
     @Override
     public boolean playKeyPressed() {
 
-        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, mCurrentCardTransitionImage);
+        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
     }
 
     public void hubButtonClicked() {
@@ -357,8 +386,17 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
 
                 String art = container.getArt();
                 if (art != null && !art.isEmpty())
-                    mBackgroundHandler.updateBackground(mServer.makeServerURL(art));
+                    mBackgroundHandler.updateBackground(mServer.makeServerURL(art), true);
                 updateAdapter(container);
+            }
+
+            if (!mThemeAlreadyRun) {
+                String theme = mContainer.getThemeKey();
+                if (TextUtils.isEmpty(theme))
+                    theme = mContainer.getGrandparentTheme();
+                if (!TextUtils.isEmpty(theme))
+                    theme = mServer.makeServerURL(theme);
+                mThemeAlreadyRun = ThemeService.startTheme(getActivity(), theme);
             }
         }
     }

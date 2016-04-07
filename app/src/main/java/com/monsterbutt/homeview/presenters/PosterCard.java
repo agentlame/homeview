@@ -3,6 +3,7 @@ package com.monsterbutt.homeview.presenters;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -85,9 +86,10 @@ public class PosterCard extends CardObject {
     public boolean useItemBackgroundArt() { return item.useItemBackgroundArt(); }
 
     @Override
-    public boolean onClicked(Fragment fragment, View transitionView) { return item.onClicked(fragment, transitionView); }
+    public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
+        return item.onClicked(fragment, extras, transitionView); }
 
-    public boolean onPlayPressed(Fragment fragment, View transitionView) {
-        return item.onPlayPressed(fragment, transitionView);
+    public boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView) {
+        return item.onPlayPressed(fragment, extras, transitionView);
     }
 }

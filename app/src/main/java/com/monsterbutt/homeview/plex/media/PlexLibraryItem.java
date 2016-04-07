@@ -3,6 +3,7 @@ package com.monsterbutt.homeview.plex.media;
 import android.app.Fragment;
 import android.content.Context;
 import android.database.MatrixCursor;
+import android.os.Bundle;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
@@ -109,7 +110,7 @@ public abstract class PlexLibraryItem {
 
     public abstract int getViewedProgress();
 
-    public String getThemeKey() {
+    public String getThemeKey(PlexServer server) {
         return "";
     }
 
@@ -124,9 +125,9 @@ public abstract class PlexLibraryItem {
         return null;
     }
 
-    public abstract boolean onClicked(Fragment fragment, View transitionView);
+    public abstract boolean onClicked(Fragment fragment, Bundle extras, View transitionView);
 
-    public abstract boolean onPlayPressed(Fragment fragment, View transitionView);
+    public abstract boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView);
 
     public abstract void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride, boolean isStartOverride);
 

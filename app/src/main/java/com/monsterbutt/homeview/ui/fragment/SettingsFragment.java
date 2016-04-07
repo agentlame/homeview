@@ -93,7 +93,7 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewClicke
                               RowPresenter.ViewHolder rowViewHolder, Row row) {
 
         if (item instanceof CardObject) {
-            if (((CardObject) item).onClicked(this, null)) {
+            if (((CardObject) item).onClicked(this, null, null)) {
                 ((ImageCardView) itemViewHolder.view).setContentText(((CardObject) item).getContent());
             }
         }
@@ -102,6 +102,6 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewClicke
     @Override
     public boolean playKeyPressed() {
 
-        return (mCurrentCard != null && mCurrentCard.onPlayPressed(this, null));
+        return (mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, null));
     }
 }

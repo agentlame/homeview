@@ -3,6 +3,7 @@ package com.monsterbutt.homeview.plex.media;
 import android.app.Fragment;
 import android.content.Context;
 import android.database.MatrixCursor;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.View;
@@ -193,12 +194,12 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public boolean onClicked(Fragment fragment, View transitionView) {
+    public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
         return false;
     }
 
     @Override
-    public boolean onPlayPressed(Fragment fragment, View transitionView) {
+    public boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView) {
         return false;
     }
 

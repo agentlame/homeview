@@ -145,5 +145,6 @@ public class CardPresenter extends Presenter {
         cardView.setBadgeImage(null);
         cardView.setMainImage(null);
         cardView.setFlag(null, "");
+        cardView.setProgress(0);
     }
 }

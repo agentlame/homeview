@@ -335,10 +335,13 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     @Override
-    public boolean onClicked(Fragment fragment, View transitionView) {
+    public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
         Intent intent = new Intent(fragment.getActivity(), DetailsActivity.class);
         intent.putExtra(DetailsActivity.ITEM, this);
+        intent.putExtra(DetailsActivity.BACKGROUND, getBackgroundImageURL());
+        if (extras != null)
+            intent.putExtras(extras);
 
         Bundle bundle = null;
         if (transitionView != null) {
@@ -354,11 +357,13 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     @Override
-    public boolean onPlayPressed(Fragment fragment, View transitionView) {
+    public boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView) {
 
         Intent intent = new Intent(fragment.getActivity(), PlaybackActivity.class);
         intent.putExtra(PlaybackActivity.KEY, getKey());
         intent.putExtra(PlaybackActivity.VIDEO, this);
+        if (extras != null)
+            intent.putExtras(extras);
 
         Bundle bundle = null;
         if (transitionView != null) {

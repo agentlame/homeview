@@ -181,12 +181,14 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public boolean onClicked(Fragment fragment, View transitionView) {
+    public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
         Intent intent = new Intent(fragment.getActivity(), PlaybackActivity.class);
         intent.putExtra(PlaybackActivity.KEY, getKey());
         intent.putExtra(PlaybackActivity.START_OFFSET, mChapter.getStartTimeOffset());
         intent.putExtra(PlaybackActivity.VIDEO, mVideo);
+        if (extras != null)
+            intent.putExtras(extras);
 
         Bundle bundle = null;
         if (transitionView != null) {
@@ -201,8 +203,8 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public boolean onPlayPressed(Fragment fragment, View transitionView) {
-        return onClicked(fragment, transitionView);
+    public boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView) {
+        return onClicked(fragment, extras, transitionView);
     }
 
     @Override

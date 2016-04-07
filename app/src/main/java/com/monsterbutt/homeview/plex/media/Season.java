@@ -75,10 +75,6 @@ public class Season extends PlexContainerItem implements Parcelable {
         return mDirectory.getParentThumbKey();
     }
 
-    public String getShowThemeKey() {
-        return mDirectory.getThemeKey();
-    }
-
     public int getEpisodeCount() {
         return Integer.valueOf(mDirectory.getLeafCount());
     }
@@ -103,11 +99,14 @@ public class Season extends PlexContainerItem implements Parcelable {
     }
 
     @Override
-    public boolean onClicked(Fragment fragment, View transitionView) {
+    public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
         Intent intent = new Intent(fragment.getActivity(), ContainerActivity.class);
         intent.putExtra(ContainerActivity.KEY, getKey());
         intent.putExtra(ContainerActivity.USE_SCENE, true);
+        intent.putExtra(ContainerActivity.BACKGROUND, getBackgroundImageURL());
+        if (extras != null)
+            intent.putExtras(extras);
 
         Bundle bundle = null;
         if (transitionView != null) {

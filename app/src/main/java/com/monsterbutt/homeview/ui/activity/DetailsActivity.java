@@ -31,6 +31,7 @@ public class DetailsActivity extends HomeViewActivity {
     public static final String SHARED_ELEMENT_NAME = "hero";
     public static final String KEY = "KEY";
     public static final String ITEM = "item";
+    public static final String BACKGROUND = "background";
 
 
     /**

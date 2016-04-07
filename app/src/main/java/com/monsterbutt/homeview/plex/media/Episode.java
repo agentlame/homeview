@@ -3,8 +3,10 @@ package com.monsterbutt.homeview.plex.media;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.plex.PlexServer;
 
 import us.nineworlds.plex.rest.model.impl.Video;
 
@@ -65,8 +67,11 @@ public class Episode extends PlexVideoItem implements Parcelable {
     }
 
     @Override
-    public String getThemeKey() {
-        return mVideo.getGrandparentThemeKey();
+    public String getThemeKey(PlexServer server) {
+        String ret = mVideo.getGrandparentThemeKey();
+        if (!TextUtils.isEmpty(ret))
+            ret = server.makeServerURL(ret);
+        return ret;
     }
 
     public String getSeasonNum() {
@@ -163,4 +168,8 @@ public class Episode extends PlexVideoItem implements Parcelable {
     @Override
     public String getDetailContent(Context context) { return getCardContent(context
     ); }
+
+    public void setSeasonNum(long parentIndex) {
+        mVideo.setSeason(Long.toString(parentIndex));
+    }
 }

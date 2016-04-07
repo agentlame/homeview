@@ -13,6 +13,7 @@ import android.support.v17.leanback.widget.OnItemViewSelectedListener;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -37,6 +38,7 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
 
     private View mCurrentCardTransitionImage = null;
     private CardObject mCurrentCard = null;
+    private String mBackgroundURL = "";
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -58,9 +60,17 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
     }
 
     @Override
-    public void onStop() {
+    public void onResume() {
 
-        super.onStop();
+        super.onResume();
+        if (!TextUtils.isEmpty(mBackgroundURL))
+            mBackgroundHandler.updateBackground(mBackgroundURL, false);
+    }
+
+    @Override
+    public void onPause() {
+
+        super.onPause();
         mBackgroundHandler.cancel();
     }
 
@@ -71,7 +81,7 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
         if (item instanceof CardObject) {
             mCurrentCard = (CardObject) item;
             mCurrentCardTransitionImage = ((ImageCardView) itemViewHolder.view).getMainImageView();
-            mBackgroundHandler.updateBackgroundTimed(mServer, (CardObject) item);
+            mBackgroundURL = mBackgroundHandler.updateBackgroundTimed(mServer, mCurrentCard);
         }
     }
 
@@ -80,13 +90,13 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
                               RowPresenter.ViewHolder rowViewHolder, Row row) {
 
         if (item instanceof CardObject)
-            ((CardObject) item).onClicked(this, mCurrentCardTransitionImage);
+            ((CardObject) item).onClicked(this, null, mCurrentCardTransitionImage);
     }
 
     @Override
     public boolean playKeyPressed() {
 
-        return  mCurrentCard != null && mCurrentCard.onPlayPressed(this, mCurrentCardTransitionImage);
+        return  mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
     }
 
     private class LoadMetadataTask extends AsyncTask<String, Void, MediaContainer> {

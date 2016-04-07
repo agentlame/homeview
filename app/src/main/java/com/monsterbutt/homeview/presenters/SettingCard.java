@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
@@ -83,12 +84,14 @@ public class SettingCard extends CardObject {
     }
 
     @Override
-    public boolean onClicked(Fragment fragment, View transitionView) {
+    public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
         if (mSetting instanceof SettingArray) {
 
             Intent intent = new Intent(fragment.getActivity(), SettingsArrayActivity.class);
             intent.putExtra(SettingsArrayActivity.SETTING, mSetting);
+            if (extras != null)
+                intent.putExtras(extras);
             fragment.startActivityForResult(intent, BASE_RESULT);
         }
         else if (mSetting instanceof SettingBoolean)
@@ -97,6 +100,8 @@ public class SettingCard extends CardObject {
 
             Intent intent = new Intent(fragment.getActivity(), SettingEditTextActivity.class);
             intent.putExtra(SettingEditTextActivity.SETTING, mSetting);
+            if (extras != null)
+                intent.putExtras(extras);
             fragment.startActivityForResult(intent, BASE_RESULT);
         }
         else if (mSetting instanceof SettingLaunch) {
@@ -104,7 +109,10 @@ public class SettingCard extends CardObject {
             try {
                 SettingLaunch launch = (SettingLaunch) mSetting;
                 Class clas = Class.forName(launch.className());
-                fragment.startActivityForResult(new Intent(fragment.getActivity(), clas), launch.result());
+                Intent intent = new Intent(fragment.getActivity(), clas);
+                if (extras != null)
+                    intent.putExtras(extras);
+                fragment.startActivityForResult(intent, launch.result());
                 return true;
             }
             catch (ClassNotFoundException e) {
