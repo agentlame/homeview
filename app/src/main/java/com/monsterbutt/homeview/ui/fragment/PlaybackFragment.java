@@ -486,6 +486,8 @@ public class PlaybackFragment
 
                     mMediaController.getTransportControls().skipToNext();
                 }
+                else
+                    getActivity().onBackPressed();
                 break;
             case ExoPlayer.STATE_IDLE:
                 // Do nothing.
