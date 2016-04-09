@@ -46,13 +46,16 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.google.android.exoplayer.AspectRatioFrameLayout;
 import com.google.android.exoplayer.ExoPlayer;
+import com.google.android.exoplayer.text.Cue;
 import com.google.android.exoplayer.util.Util;
 import com.monsterbutt.homeview.BuildConfig;
 import com.monsterbutt.homeview.R;
@@ -61,6 +64,7 @@ import com.monsterbutt.homeview.player.ExtractorRendererBuilder;
 import com.monsterbutt.homeview.player.StartPosition;
 import com.monsterbutt.homeview.player.VideoPlayer;
 import com.monsterbutt.homeview.player.PlaybackControlHelper;
+import com.monsterbutt.homeview.player.text.PgsCue;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.plex.media.Chapter;
@@ -79,6 +83,7 @@ import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import java.util.ArrayList;
 import java.util.List;
 
+import us.nineworlds.plex.rest.model.impl.Media;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 import static android.media.session.MediaSession.FLAG_HANDLES_MEDIA_BUTTONS;
@@ -95,7 +100,7 @@ public class PlaybackFragment
         implements VideoPlayer.Listener, PlexServerTaskCaller,
         OnItemViewClickedListener, HomeViewActivity.OnStopKeyListener,
         PlaybackControlHelper.ProgressUpdateCallback, HomeViewActivity.OnBackPressedListener,
-        SurfaceHolder.Callback {
+        SurfaceHolder.Callback, VideoPlayer.CaptionListener {
 
     private static final String TAG = "PlaybackOverlayFragment";
     private static final boolean DEBUG = BuildConfig.DEBUG;
@@ -121,13 +126,18 @@ public class PlaybackFragment
     private ListRow mExtrasRow = null;
 
     private AspectRatioFrameLayout videoFrame;
-
+    private int mSourceHeight = 0;
+    private int mSourceWidth = 0;
     private StartPosition mStartPosition;
     private static final String mNextUpLock = "nextuplock";
     private long mNextUpThreshold = PlexVideoItem.NEXTUP_DISABLED;
 
     private Surface mCacheSurface = null;
     private PlexServer mServer;
+
+    private ImageView mSubtitlesImage = null;
+
+    private boolean mSubsEnabled = false;
 
     @Override
     public void onAttach(Context context) {
@@ -181,16 +191,18 @@ public class PlaybackFragment
         super.onCreate(savedInstanceState);
 
         // Initialize instance variables.
-        videoFrame = (AspectRatioFrameLayout) getActivity().findViewById(R.id.video_frame);
-        SurfaceView surfaceView = (SurfaceView) getActivity().findViewById(R.id.surface_view);
+        Activity act = getActivity();
+        videoFrame = (AspectRatioFrameLayout) act.findViewById(R.id.video_frame);
+        SurfaceView surfaceView = (SurfaceView) act.findViewById(R.id.surface_view);
         surfaceView.getHolder().addCallback(this);
+
+        mSubtitlesImage = (ImageView) act.findViewById(R.id.imageSubtitles);
 
         mQueue = new ArrayList<>();
 
         // Set up UI.
         setBackgroundType(BACKGROUND_TYPE);
 
-        Activity act = getActivity();
         mServer = PlexServerManager.getInstance(act.getApplicationContext()).getSelectedServer();
         Intent intent = act.getIntent();
         mSelectedVideo = intent.getParcelableExtra(PlaybackActivity.VIDEO);
@@ -390,6 +402,7 @@ public class PlaybackFragment
 
         if (mPlayer == null) {
             mPlayer = new VideoPlayer(getRendererBuilder());
+            mPlayer.setCaptionListener(this);
             mPlayer.addListener(this);
             mPlayer.seekTo(mStartPosition.getStartPosition());
             mPlayer.prepare(video);
@@ -479,6 +492,7 @@ public class PlaybackFragment
                 break;
             case ExoPlayer.STATE_PREPARING:
                 mIsMetadataSet = false;
+
                 break;
             case ExoPlayer.STATE_READY:
 
@@ -576,7 +590,7 @@ public class PlaybackFragment
     private void playVideo(PlexVideoItem video, Bundle extras) {
 
         mSelectedVideo = video;
-
+        setCurrentSourceStats();
         if (mQueue.size() > 1 && mQueueIndex != mQueue.size()-1) {
 
             synchronized (mNextUpLock) {
@@ -742,6 +756,43 @@ public class PlaybackFragment
         if (mPlayer != null) {
             mPlayer.blockingClearSurface();
         }
+    }
+
+    @Override
+    public void onCues(List<Cue> cues) {
+
+        if (getActivity() == null || getActivity().isFinishing() || getActivity().isDestroyed())
+            return;
+
+        final Cue cue = (cues != null && !cues.isEmpty()) ? cues.get(0) : null;
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // if no cue... duh
+                // or if cue is not PGS (we only handle that currently)
+                // or subs are turned off but we are checking for forced subs and it isn't forced
+                if (cue == null || !(cue instanceof PgsCue) ||
+                        (!mSubsEnabled && !((PgsCue)cue).isForcedSubtitle())) {
+
+                    mSubtitlesImage.setImageBitmap(null);
+                    mSubtitlesImage.setVisibility(View.INVISIBLE);
+                }
+                // pgs sub and subs are on or it is forced
+                else {
+                    ((PgsCue)cue).updateParams((int) videoFrame.getX(), (int) videoFrame.getY(),
+                            videoFrame.getWidth(), videoFrame.getHeight(), mSourceWidth, mSourceHeight,
+                            mSubtitlesImage);
+
+                }
+            }
+        });
+    }
+
+    private void setCurrentSourceStats() {
+
+        Media media = mSelectedVideo.getMedia().get(0);
+        mSourceHeight = Integer.valueOf(media.getHeight());
+        mSourceWidth = Integer.valueOf(media.getWidth());
     }
 
     // An event was triggered by MediaController.TransportControls and must be handled here.

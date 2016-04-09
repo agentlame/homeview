@@ -35,6 +35,7 @@ import com.google.android.exoplayer.upstream.DataSource;
 import com.google.android.exoplayer.upstream.DefaultAllocator;
 import com.google.android.exoplayer.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer.upstream.DefaultUriDataSource;
+import com.monsterbutt.homeview.player.parser.PgsParser;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.settings.SettingsManager;
 
@@ -102,7 +103,7 @@ public class ExtractorRendererBuilder implements VideoPlayer.RendererBuilder {
                 player.getMainHandler(), player, 50);
         AudioCodecTrackRenderer audioRenderer = AudioCodecTrackRenderer.getRenderer(activity, player, sampleSource);
         TrackRenderer textRenderer = new TextTrackRenderer(sampleSource, player,
-                player.getMainHandler().getLooper());
+                player.getMainHandler().getLooper(), new PgsParser());
 
         // Invoke the callback.
         TrackRenderer[] renderers = new TrackRenderer[VideoPlayer.RENDERER_COUNT];
