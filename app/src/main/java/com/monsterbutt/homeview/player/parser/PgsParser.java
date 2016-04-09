@@ -99,13 +99,13 @@ public class PgsParser implements SubtitleParser {
 
         if (builder != null) {
 
-            Log.d(TAG, String.format("Parsed Subtitle. id=%d, object=%d, x=%d, y=%d, height=%d, width=%d",
+           /* Log.d(TAG, String.format("Parsed Subtitle. id=%d, object=%d, x=%d, y=%d, height=%d, width=%d",
                     ctx.presentation.id_number, ctx.presentation.object_number,
-                    ctx.presentation.x, ctx.presentation.y, ctx.picture.h, ctx.picture.w));
+                    ctx.presentation.x, ctx.presentation.y, ctx.picture.h, ctx.picture.w));*/
             return builder.build();
         }
 
-        Log.d(TAG, "Failed to parse data");
+        Log.e(TAG, "Failed to parse data");
         return new PgsSubtitle.PgsBuilder().build();
     }
 
