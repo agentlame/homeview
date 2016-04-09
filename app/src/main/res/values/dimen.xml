@@ -65,7 +65,11 @@
     <dimen name="toolbar_list_padding">20dp</dimen>
     <dimen name="toolbar_buttonheight">25dp</dimen>
 
-    <dimen name="about_title_text">44sp</dimen>
-    <dimen name="about_text">16sp</dimen>
-    <dimen name="about_padding">12dp</dimen>
+    <dimen name="about_title_text">24sp</dimen>
+    <dimen name="about_header_text">36sp</dimen>
+    <dimen name="about_path">10sp</dimen>
+    <dimen name="about_blurb">12sp</dimen>
+    <dimen name="about_text">14sp</dimen>
+    <dimen name="about_padding">16dp</dimen>
+    <dimen name="about_list_padding">48dp</dimen>
 </resources>

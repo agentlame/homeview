@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/card_normal"
+    android:layout_margin="@dimen/about_padding" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="@dimen/about_padding" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textSize="@dimen/about_title_text"
+                tools:text="Large Text"/>
+
+            <TextView
+                android:id="@+id/path"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textSize="@dimen/about_path"
+                android:layout_marginStart="@dimen/about_padding"
+                android:layout_marginEnd="@dimen/about_padding"
+                tools:text="http://this.is.a.path/here"/>
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/blurb"
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/about_padding"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:layout_gravity="end|center_vertical"
+            android:textAlignment="textEnd"
+            android:textSize="@dimen/about_blurb"
+            android:maxLines="3"
+            android:textColor="?attr/colorAccent"
+            tools:text="Blurb for explaining why I am \nusing this goes here\nIt can be up to 3 lines, okay?"/>
+
+    </LinearLayout>
+
+
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="@dimen/about_text"
+        android:layout_marginStart="@dimen/about_padding"
+        android:layout_marginEnd="@dimen/about_padding"
+        android:layout_marginBottom="@dimen/about_padding"
+        android:padding="@dimen/about_padding"
+        android:background="?attr/card_selected"
+        tools:text="All the licensing information goes here\nand it should wrap"/>
+
+</LinearLayout>

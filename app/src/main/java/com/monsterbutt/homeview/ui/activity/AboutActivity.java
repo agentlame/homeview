@@ -1,10 +1,16 @@
 package com.monsterbutt.homeview.ui.activity;
 
-import android.app.Activity;
+import android.app.ListActivity;
+import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.monsterbutt.homeview.R;
@@ -16,11 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AboutActivity extends Activity {
-
-
-    private static final int CANCEL   = 1001;
-
+public class AboutActivity extends ListActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,14 +30,11 @@ public class AboutActivity extends Activity {
         super.onCreate(savedInstanceState);
         if (null == savedInstanceState) {
 
-            List<AboutItem> items = parseAbout();
             setContentView(R.layout.activity_about);
-            TextView text = (TextView) findViewById(R.id.about_text);
-            String str = "";
-            for(AboutItem item : items)
-                str += item.toString() + "\n\n";
-
-            text.setText(str);
+            ListView listView = (ListView) findViewById(android.R.id.list);
+            View headerView = getLayoutInflater().inflate(R.layout.lb_list_header, listView, false);
+            getListView().addHeaderView(headerView, null, false);
+            setListAdapter(new AboutItemArrayAdapter(this, parseAbout()));
         }
     }
 
@@ -58,10 +57,7 @@ public class AboutActivity extends Activity {
                 xml.next();
                 text = xml.getText();
             }
-            catch (XmlPullParserException e) {
-                e.printStackTrace();
-            }
-            catch (IOException e) {
+            catch (XmlPullParserException|IOException e) {
                 e.printStackTrace();
             }
         }
@@ -90,8 +86,9 @@ public class AboutActivity extends Activity {
             int eventType = xml.getEventType();
             while (eventType != XmlPullParser.END_DOCUMENT)
             {
-                if(eventType == XmlPullParser.START_DOCUMENT);
-                else if(eventType == XmlPullParser.START_TAG) {
+                /*if(eventType == XmlPullParser.START_DOCUMENT);
+                else*/
+                if(eventType == XmlPullParser.START_TAG) {
 
                     switch(xml.getName()) {
                         case AboutItem.TAG:
@@ -105,13 +102,45 @@ public class AboutActivity extends Activity {
                 eventType = xml.next();
             }
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        catch (XmlPullParserException e) {
+        catch (IOException|XmlPullParserException e) {
             e.printStackTrace();
         }
 
         return items;
+    }
+
+    public class AboutItemArrayAdapter extends ArrayAdapter<AboutItem> {
+
+        private final Context context;
+        private final List<AboutItem> values;
+
+        public AboutItemArrayAdapter(Context context, List<AboutItem> values) {
+            super(context, R.layout.lb_aboutitem, values);
+            this.context = context;
+            this.values = values;
+        }
+
+        @Override
+        public View getView(int position, View row, ViewGroup parent) {
+
+            View rowView = row;
+            if (rowView == null) {
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                rowView =inflater.inflate(R.layout.lb_aboutitem, parent, false);
+            }
+            final AboutItem item = values.get(position);
+            setTextValue(rowView, R.id.title, item.title);
+            setTextValue(rowView, R.id.blurb, item.blurb);
+            setTextValue(rowView, R.id.path,  item.path);
+            setTextValue(rowView, R.id.text,  item.text);
+
+            return rowView;
+        }
+
+        private void setTextValue(View rowView, int id, String text) {
+
+            TextView view = (TextView) rowView.findViewById(id);
+            view.setText(text);
+        }
     }
 }
