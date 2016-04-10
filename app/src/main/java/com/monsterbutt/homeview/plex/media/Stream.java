@@ -266,7 +266,9 @@ public class Stream extends PlexLibraryItem implements Parcelable {
 
         String codec = getCodec();
         String profile = getProfile();
-        if (!TextUtils.isEmpty(profile))
+        if (codec.equals("pcm"))
+            codec = profile;
+        else if (!TextUtils.isEmpty(profile))
             codec += "-" + profile;
         return codec;
     }
@@ -311,8 +313,37 @@ public class Stream extends PlexLibraryItem implements Parcelable {
 
     public String getFrameRate () { return mStream.getFrameRate(); }
 
-    public String getAudioChannelLayout() { return mStream.getAudioChannelLayout(); }
+    public String getAudioChannelLayout() {
 
+        String ret = mStream.getAudioChannelLayout();
+        if (TextUtils.isEmpty(ret))
+            ret = convertToLayout(mStream.getChannels());
+        return ret;
+    }
+
+    private String convertToLayout(String channels) {
+
+        if (TextUtils.isEmpty(channels))
+            return "";
+        int chnls = Integer.valueOf(channels);
+        if (8 == chnls)
+                return "7.1";
+        if (7 == chnls)
+                return "6.1";
+        if (6 == chnls)
+            return "5.1";
+        if (5 == chnls)
+            return "4.1";
+        if (4 == chnls)
+            return "4.0";
+        if (3 == chnls)
+            return "2.1";
+        if (2 == chnls)
+            return "2.0";
+        if (1 == chnls)
+            return "1.0";
+         return "";
+    }
 
     public static class StreamChoice {
 
