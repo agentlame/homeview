@@ -38,7 +38,7 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     public Stream (us.nineworlds.plex.rest.model.impl.Stream stream, int trackIndex, MediaCodecCapabilities capabilities) {
         mStream = stream;
         mTrackTypeIndex = trackIndex;
-        if (mTrackTypeIndex == MediaTrackSelector.SubtitleOffTrackIndex)
+        if (mTrackTypeIndex == MediaTrackSelector.TrackTypeOff)
             mDecodeStatus = MediaCodecCapabilities.DecodeType.Hardware;
         else
             mDecodeStatus = capabilities.determineDecoderType(  getMimeTypeForTrackType(),

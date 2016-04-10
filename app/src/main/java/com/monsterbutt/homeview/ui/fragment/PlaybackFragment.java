@@ -539,10 +539,12 @@ public class PlaybackFragment
             Stream subs = mSelectedVideoTracks.getSelectedTrack(Stream.Subtitle_Stream);
             if (subs != null) {
 
-                mSubsEnabled = subs.getTrackTypeIndex() != MediaTrackSelector.SubtitleOffTrackIndex
+                mSubsEnabled = subs.getTrackTypeIndex() != MediaTrackSelector.TrackTypeOff
                             && mSelectedVideoTracks.didManuallySelectSubs();
-                mPlayer.setSelectedTrack(VideoPlayer.TYPE_TEXT, subs.getTrackTypeIndex());
-                return true;
+
+                final int index = mSelectedVideoTracks.getAdjustedIndexForSelectedTrack(Stream.Subtitle_Stream);
+                mPlayer.setSelectedTrack(VideoPlayer.TYPE_TEXT, index);
+                return index != MediaTrackSelector.TrackTypeOff;
             }
 
         }
@@ -553,12 +555,9 @@ public class PlaybackFragment
 
         if (mPlayer != null) {
 
-            Stream audio = mSelectedVideoTracks.getSelectedTrack(Stream.Audio_Stream);
-            if (audio != null) {
-
-                mPlayer.setSelectedTrack(VideoPlayer.TYPE_AUDIO, audio.getTrackTypeIndex());
-                return true;
-            }
+            final int index = mSelectedVideoTracks.getAdjustedIndexForSelectedTrack(Stream.Audio_Stream);
+            mPlayer.setSelectedTrack(VideoPlayer.TYPE_AUDIO, index);
+            return index != MediaTrackSelector.TrackTypeOff;
         }
         return false;
     }
