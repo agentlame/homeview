@@ -20,6 +20,10 @@
         <item name="android:windowContentTransitions">true</item>
     </style>
 
+    <style name="AlertDialogStyle" parent="@android:style/Theme.DeviceDefault.Dialog.Alert">
+        <item name="android:background">@color/BlueGrey.DarkPrimary</item>
+    </style>
+
     <style name="Theme.App.BlueGrey.Leanback" parent="Theme.Leanback">
         <item name="android:colorPrimary">@color/BlueGrey.Primary</item>
         <item name="android:colorPrimaryDark">@color/BlueGrey.DarkPrimary</item>

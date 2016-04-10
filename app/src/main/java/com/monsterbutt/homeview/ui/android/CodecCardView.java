@@ -3,11 +3,10 @@ package com.monsterbutt.homeview.ui.android;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.v17.leanback.widget.BaseCardView;
+import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,31 +17,15 @@ public class CodecCardView extends BaseCardView {
     private ImageView mImageViewA;
     private ImageView mImageViewB;
     private TextView mTitleView;
+    private TextView mSubtitleView;
+    private TextView mDecoderView;
     private boolean mAttachedToWindow;
-
-    /**
-     * Create an ImageCardView using a given theme for customization.
-     *
-     * @param context    The Context the view is running in, through which it can
-     *                   access the current theme, resources, etc.
-     * @param themeResId The resourceId of the theme you want to apply to the ImageCardView. The theme
-     *                   includes attributes "imageCardViewStyle", "imageCardViewTitleStyle",
-     *                   "imageCardViewContentStyle" etc. to customize individual part of ImageCardView.
-     * @deprecated Calling this constructor inefficiently creates one ContextThemeWrapper per card,
-     * you should share it in card Presenter: wrapper = new ContextThemeWrapper(context, themResId);
-     * return new ImageCardView(wrapper);
-     */
-    @Deprecated
-    public CodecCardView(Context context, int themeResId) {
-        this(new ContextThemeWrapper(context, themeResId));
-    }
+    private ImageView mTracksFlag;
+    private TextView mTrackCount;
 
     public CodecCardView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        buildImageCardView(attrs, defStyleAttr, android.support.v17.leanback.R.style.Widget_Leanback_ImageCardView);
-    }
 
-    private void buildImageCardView(AttributeSet attrs, int defStyleAttr, int defStyle) {
         // Make sure the ImagePlusCardView is focusable.
         setFocusable(true);
         setFocusableInTouchMode(true);
@@ -53,6 +36,10 @@ public class CodecCardView extends BaseCardView {
         mImageViewA = (ImageView) findViewById(R.id.imageA);
         mImageViewB = (ImageView) findViewById(R.id.imageB);
         mTitleView = (TextView) findViewById(R.id.main_text);
+        mSubtitleView = (TextView) findViewById(R.id.sub_text);
+        mDecoderView = (TextView) findViewById(R.id.decode_text);
+        mTracksFlag = (ImageView) findViewById(R.id.flag_image);
+        mTrackCount = (TextView) findViewById(R.id.flag_text);
     }
 
     public CodecCardView(Context context) {
@@ -73,33 +60,6 @@ public class CodecCardView extends BaseCardView {
         return mImageViewB;
     }
 
-    /**
-     * Enables or disables adjustment of view bounds on the main image.
-     */
-    public void setMainImageAdjustViewBounds(boolean adjustViewBounds) {
-        if (mImageViewA != null) {
-            mImageViewA.setAdjustViewBounds(adjustViewBounds);
-        }
-    }
-    public void setSecondaryImageAdjustViewBounds(boolean adjustViewBounds) {
-        if (mImageViewB != null) {
-            mImageViewB.setAdjustViewBounds(adjustViewBounds);
-        }
-    }
-
-    /**
-     * Sets the ScaleType of the main image.
-     */
-    public void setMainImageScaleType(ImageView.ScaleType scaleType) {
-        if (mImageViewA != null) {
-            mImageViewA.setScaleType(scaleType);
-        }
-    }
-    public void setSecondaryImageScaleType(ImageView.ScaleType scaleType) {
-        if (mImageViewB != null) {
-            mImageViewB.setScaleType(scaleType);
-        }
-    }
 
     /**
      * Sets the image drawable with fade-in animation.
@@ -140,68 +100,45 @@ public class CodecCardView extends BaseCardView {
         }
     }
 
-    /**
-     * Sets the layout dimensions of the ImageView.
-     */
-    public void setMainImageDimensions(int width, int height) {
-        setImageDimensions(mImageViewA, width, height);
-    }
-    public void setSecondaryImageDimensions(int width, int height) {
-        setImageDimensions(mImageViewB, width, height);
-    }
-    private  void setImageDimensions(ImageView image, int width, int height) {
-        ViewGroup.LayoutParams lp = image.getLayoutParams();
-        lp.width = width;
-        lp.height = height;
-        image.setLayoutParams(lp);
-    }
-
-    /**
-     * Returns the ImageView drawable.
-     */
-    public Drawable getMainImage() {
-        if (mImageViewA == null) {
-            return null;
-        }
-
-        return mImageViewA.getDrawable();
-    }
-
-    public Drawable getSecondaryImage() {
-        if (mImageViewB == null) {
-            return null;
-        }
-
-        return mImageViewB.getDrawable();
-    }
-
-    /**
-     * Sets the title text.
-     */
     public void setTitleText(CharSequence text) {
-        if (mTitleView == null) {
+        if (mTitleView == null)
             return;
-        }
         mTitleView.setText(text);
     }
 
-    /**
-     * Returns the title text.
-     */
-    public CharSequence getTitleText() {
-        if (mTitleView == null) {
-            return null;
-        }
-
-        return mTitleView.getText();
+    public void setSubtitleText(CharSequence text) {
+        if (mSubtitleView == null)
+            return;
+        mSubtitleView.setText(text);
     }
 
+    public void setDecoderText(CharSequence text) {
+        if (mDecoderView == null)
+            return;
+        mDecoderView.setText(text);
+    }
 
     private void fadeIn(ImageView image) {
         image.setAlpha(0f);
         if (mAttachedToWindow) {
             image.animate().alpha(1f).setDuration(
                     image.getResources().getInteger(android.R.integer.config_shortAnimTime));
+        }
+    }
+
+    public void setFlag(Drawable drawable, String text) {
+
+        if (drawable == null)
+            mTracksFlag.setVisibility(View.INVISIBLE);
+        else {
+            mTracksFlag.setImageDrawable(drawable);
+            mTracksFlag.setVisibility(View.VISIBLE);
+        }
+        if (TextUtils.isEmpty(text))
+            mTrackCount.setVisibility(View.INVISIBLE);
+        else {
+            mTrackCount.setText(text);
+            mTrackCount.setVisibility(View.VISIBLE);
         }
     }
 

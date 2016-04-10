@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:lb="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" >
 
     <FrameLayout
         style="?attr/imageCardViewImageStyle" >
@@ -11,23 +11,10 @@
             style="?attr/imageCardViewImageStyle"
             tools:src="@drawable/default_video_cover"
             tools:layout_width="129dp"
-            tools:layout_height="212dp"/>
+            tools:layout_height="212dp"
+            android:contentDescription="@string/codeccard_image_desc"/>
 
-        <ImageView
-            android:id="@+id/flag_image"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|right"
-            android:foregroundGravity="top"
-            tools:src="@drawable/right_flag"/>
-
-        <TextView
-            android:id="@+id/flag_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/caption_text_size"
-            android:layout_gravity="top|right"
-            tools:text="00"/>
+        <include layout="@layout/lb_corner_flag" />
 
         <ProgressBar
             android:id="@+id/card_progress"

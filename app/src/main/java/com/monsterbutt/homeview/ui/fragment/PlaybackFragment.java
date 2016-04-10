@@ -43,12 +43,16 @@ import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
@@ -61,6 +65,8 @@ import com.monsterbutt.homeview.BuildConfig;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.model.Video;
 import com.monsterbutt.homeview.player.ExtractorRendererBuilder;
+import com.monsterbutt.homeview.player.MediaCodecCapabilities;
+import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.player.StartPosition;
 import com.monsterbutt.homeview.player.VideoPlayer;
 import com.monsterbutt.homeview.player.PlaybackControlHelper;
@@ -70,10 +76,12 @@ import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.plex.media.Chapter;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
+import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.tasks.GetVideoQueueTask;
 import com.monsterbutt.homeview.plex.tasks.GetVideoTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTaskCaller;
+import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
@@ -82,6 +90,7 @@ import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import us.nineworlds.plex.rest.model.impl.Media;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
@@ -115,6 +124,7 @@ public class PlaybackFragment
     private final MediaController.Callback mMediaControllerCallback = new MediaControllerCallback();
     private int mQueueIndex = -1;
     private PlexVideoItem mSelectedVideo = null; // Video is the currently playing Video and its metadata.
+    private MediaTrackSelector mSelectedVideoTracks = null;
     private ArrayObjectAdapter mRowsAdapter;
     private List<MediaSession.QueueItem> mQueue;
     private MediaSession mSession; // MediaSession is used to hold the state of our media playback.
@@ -122,7 +132,7 @@ public class PlaybackFragment
     private PlaybackControlHelper mGlue;
     private VideoPlayer mPlayer;
     private boolean mIsMetadataSet = false;
-    private ListRow mCodecsRow = null;
+    private ListRow mCodecRow = null;
     private ListRow mExtrasRow = null;
 
     private AspectRatioFrameLayout videoFrame;
@@ -205,7 +215,9 @@ public class PlaybackFragment
 
         mServer = PlexServerManager.getInstance(act.getApplicationContext()).getSelectedServer();
         Intent intent = act.getIntent();
-        mSelectedVideo = intent.getParcelableExtra(PlaybackActivity.VIDEO);
+        PlexVideoItem intentVideo = intent.getParcelableExtra(PlaybackActivity.VIDEO);
+        mSelectedVideoTracks = intent.getParcelableExtra(PlaybackActivity.TRACKS);
+        setSelectedVideo(intentVideo);
         mStartPosition = new StartPosition(act, intent, mSelectedVideo != null ?
                                                             mSelectedVideo.getViewedOffset() : 0);
 
@@ -364,14 +376,14 @@ public class PlaybackFragment
 
     private void updateCodecAndExtras() {
 
-        if (mCodecsRow != null)
-            mRowsAdapter.remove(mCodecsRow);
+        if (mCodecRow != null)
+            mRowsAdapter.remove(mCodecRow);
         if (mExtrasRow != null)
             mRowsAdapter.remove(mExtrasRow);
 
-        mCodecsRow = mSelectedVideo.getCodecsRow(getActivity(), mServer);
-        if (mCodecsRow != null)
-            mRowsAdapter.add(mCodecsRow);
+        mCodecRow = mSelectedVideo.getCodecsRow(getActivity(), mServer, mSelectedVideoTracks);
+        if (mCodecRow != null)
+            mRowsAdapter.add(mCodecRow);
         mExtrasRow = mSelectedVideo.getChildren(getActivity(), mServer);
         if (mExtrasRow != null)
             mRowsAdapter.add(mExtrasRow);
@@ -420,22 +432,19 @@ public class PlaybackFragment
 
         if (mStartPosition.getStartType() == StartPosition.PlaybackStartType.Ask) {
 
-            final CharSequence[] array = new String[2];
-            array[0] = getActivity().getString(R.string.playback_start_dialog_begin);
-            array[1] = getActivity().getString(R.string.playback_start_dialog_resume);
-            new AlertDialog.Builder(getActivity())
+            new AlertDialog.Builder(getActivity(), R.style.AlertDialogStyle)
                 .setIcon(R.drawable.launcher)
                 .setTitle(R.string.playback_start_dialog)
-                .setItems(array, new DialogInterface.OnClickListener() {
+                .setAdapter(getResumeChoiceAdapter(), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
-                       final StartPosition.PlaybackStartType val = StartPosition.PlaybackStartType.values()[which];
+                        final StartPosition.PlaybackStartType val = StartPosition.PlaybackStartType.values()[which];
                         if (val == StartPosition.PlaybackStartType.Begining)
                             return;
-                       getActivity().runOnUiThread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
 
                                 long pos = mStartPosition.getVideoOffset();
                                 switch (mPlayer.getPlaybackState()) {
@@ -464,6 +473,16 @@ public class PlaybackFragment
                 .show();
         }
         mPlayer.setPlayWhenReady(playWhenReady);
+    }
+
+    private ResumeChoiceArrayAdapter getResumeChoiceAdapter() {
+
+        Activity activity = getActivity();
+        List<ResumeChoice> list = new ArrayList<>();
+        list.add(new ResumeChoice(0, R.drawable.ic_slow_motion_video_white_48dp, activity.getString(R.string.playback_start_dialog_resume)));
+        list.add(new ResumeChoice(1, R.drawable.ic_play_circle_outline_white_48dp, activity.getString(R.string.playback_start_dialog_begin)));
+
+        return new ResumeChoiceArrayAdapter(getActivity(), list);
     }
 
     private void releasePlayer() {
@@ -495,6 +514,8 @@ public class PlaybackFragment
             case ExoPlayer.STATE_PREPARING:
                 mIsMetadataSet = false;
 
+                resetCurrentAudioTrack();
+                resetCurrentSubtitleTrack();
                 break;
             case ExoPlayer.STATE_READY:
 
@@ -509,6 +530,37 @@ public class PlaybackFragment
                 // Do nothing.
                 break;
         }
+    }
+
+    private boolean resetCurrentSubtitleTrack() {
+
+        if (mPlayer != null) {
+
+            Stream subs = mSelectedVideoTracks.getSelectedTrack(Stream.Subtitle_Stream);
+            if (subs != null) {
+
+                mSubsEnabled = subs.getTrackTypeIndex() != MediaTrackSelector.SubtitleOffTrackIndex
+                            && mSelectedVideoTracks.didManuallySelectSubs();
+                mPlayer.setSelectedTrack(VideoPlayer.TYPE_TEXT, subs.getTrackTypeIndex());
+                return true;
+            }
+
+        }
+        return false;
+    }
+
+    private boolean resetCurrentAudioTrack() {
+
+        if (mPlayer != null) {
+
+            Stream audio = mSelectedVideoTracks.getSelectedTrack(Stream.Audio_Stream);
+            if (audio != null) {
+
+                mPlayer.setSelectedTrack(VideoPlayer.TYPE_AUDIO, audio.getTrackTypeIndex());
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -591,7 +643,7 @@ public class PlaybackFragment
 
     private void playVideo(PlexVideoItem video, Bundle extras) {
 
-        mSelectedVideo = video;
+        setSelectedVideo(video);
         setCurrentSourceStats();
         if (mQueue.size() > 1 && mQueueIndex != mQueue.size()-1) {
 
@@ -605,6 +657,16 @@ public class PlaybackFragment
         preparePlayer(true, mSelectedVideo);
         setPlaybackState(PlaybackState.STATE_PAUSED);
         playPause(extras.getBoolean(AUTO_PLAY));
+    }
+
+    private void setSelectedVideo(PlexVideoItem video) {
+
+        mSelectedVideo = video;
+        if (mSelectedVideoTracks == null) {
+            mSelectedVideoTracks = mSelectedVideo.fillTrackSelector(getActivity(),
+                                                            Locale.getDefault().getISO3Language(),
+                                                            MediaCodecCapabilities.getInstance(getActivity()));
+        }
     }
 
     @Override
@@ -633,7 +695,7 @@ public class PlaybackFragment
                 // Set the queue index to the selected video.
                 if ( mSelectedVideo == null || v.shouldPlaybackFirst()) {
 
-                    mSelectedVideo = v;
+                    setSelectedVideo(v);
                     mQueueIndex = mQueue.size();
                 }
 
@@ -643,7 +705,8 @@ public class PlaybackFragment
             if (mQueueIndex == -1 && !mQueue.isEmpty()) {
 
                 if (mSelectedVideo == null && first != null) {
-                    mSelectedVideo = first;
+
+                    setSelectedVideo(first);
                     mStartPosition.setVideoOffset(mSelectedVideo.getViewedOffset());
                 }
                 mQueueIndex = 0;
@@ -695,6 +758,42 @@ public class PlaybackFragment
             setPlaybackState(pos > currPos ? PlaybackState.STATE_REWINDING : PlaybackState.STATE_FAST_FORWARDING);
             setPosition(pos);
             setPlaybackState(prevState);
+        }
+        else if (item instanceof CodecCard) {
+
+            final CodecCard card = (CodecCard) item;
+            final int trackTypeClicked = card.getTrackType();
+            card.onCardClicked(getActivity(), mServer, mSelectedVideoTracks, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                    mSelectedVideoTracks.setSelectedTrack(trackTypeClicked, which);
+                    ArrayObjectAdapter adapter = (ArrayObjectAdapter) mCodecRow.getAdapter();
+                    int index = adapter.indexOf(card);
+                    if (0 <= index) {
+                        adapter.replace(index, new CodecCard(getActivity(),
+                                mSelectedVideoTracks.getSelectedTrack(trackTypeClicked),
+                                trackTypeClicked,
+                                mSelectedVideoTracks.getCountForType(trackTypeClicked)));
+
+                        adapter.notifyArrayItemRangeChanged(index, 1);
+                    }
+                    dialog.dismiss();
+                    switch(trackTypeClicked) {
+
+                        case Stream.Audio_Stream:
+                            resetCurrentAudioTrack();
+                            break;
+
+                        case Stream.Subtitle_Stream:
+                            resetCurrentSubtitleTrack();
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+            });
         }
     }
 
@@ -840,6 +939,7 @@ public class PlaybackFragment
             int nextIndex = ++mQueueIndex;
             if (nextIndex < mQueue.size()) {
 
+                mSelectedVideoTracks = null;
                 MediaSession.QueueItem item = mQueue.get(nextIndex);
                 Bundle extra = item.getDescription().getExtras();
                 mStartPosition.reset(extra != null ? extra.getLong(NextUpView.BUNDLE_EXTRA_VIEWEDOFFSET) : 0);
@@ -877,6 +977,7 @@ public class PlaybackFragment
             int prevIndex = --mQueueIndex;
             if (prevIndex >= 0) {
 
+                mSelectedVideoTracks = null;
                 MediaSession.QueueItem item = mQueue.get(prevIndex);
                 Bundle extra = item.getDescription().getExtras();
                 mStartPosition.reset(extra != null ? extra.getLong(NextUpView.BUNDLE_EXTRA_VIEWEDOFFSET) : 0);
@@ -977,5 +1078,48 @@ public class PlaybackFragment
 
         updatePlaybackRow();
         updateMetadata();
+    }
+
+    private static class ResumeChoice {
+
+        public final int id;
+        public final int drawable;
+        public final String text;
+
+        public ResumeChoice(int id, int drawable, String text) {
+
+            this.id = id;
+            this.drawable = drawable;
+            this.text = text;
+        }
+
+    }
+
+    private static class ResumeChoiceArrayAdapter extends ArrayAdapter<ResumeChoice> {
+
+        private final List<ResumeChoice> values;
+        private final Context context;
+
+        public ResumeChoiceArrayAdapter(Context context, List<ResumeChoice> values) {
+            super(context, R.layout.lb_aboutitem, values);
+            this.context = context;
+            this.values = values;
+        }
+
+        @Override
+        public View getView(int position, View row, ViewGroup parent) {
+
+            View rowView = row;
+            if (rowView == null) {
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                rowView = inflater.inflate(R.layout.lb_resumechoice, parent, false);
+            }
+            final ResumeChoice item = values.get(position);
+            ImageView image = (ImageView) rowView.findViewById(R.id.resumeimage);
+            image.setImageDrawable(context.getDrawable(item.drawable));
+            TextView desc = (TextView) rowView.findViewById(R.id.resumedesc);
+            desc.setText(item.text);
+            return rowView;
+        }
     }
 }

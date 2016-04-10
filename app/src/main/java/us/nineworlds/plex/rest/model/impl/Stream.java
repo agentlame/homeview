@@ -37,7 +37,12 @@ import org.simpleframework.xml.Root;
 public class Stream implements Parcelable {
 
 	public Stream () {
-
+		id = -1;
+		forced = 0;
+		defaultStream = 0;
+		codec = "";
+		key = "";
+		bitDepth = 0;
 	}
 
 	@Attribute(name="id",required=false)
@@ -78,6 +83,9 @@ public class Stream implements Parcelable {
 
 	@Attribute(required=false)
 	private long forced;
+
+	@Attribute(name="default",required=false)
+	private long defaultStream;
 	
 	@Attribute(name="language",required=false)
 	private String language;
@@ -88,10 +96,25 @@ public class Stream implements Parcelable {
 	@Attribute(name="title", required=false)
 	private String title;
 
-	protected Stream(Parcel in) {
+	@Attribute(name="height", required=false)
+	private String height;
+
+	@Attribute(required=false)
+	private String frameRate;
+
+	@Attribute(required=false)
+	private String audioChannelLayout;
+
+	@Attribute(required=false)
+	private long bitDepth;
+
+	public Stream(Parcel in) {
 		id = in.readLong();
-		title = in.readString();
 		streamType = in.readLong();
+		forced = in.readLong();
+		defaultStream = in.readLong();
+		bitDepth = in.readLong();
+		title = in.readString();
 		codec = in.readString();
 		index = in.readString();
 		channels = in.readString();
@@ -104,6 +127,9 @@ public class Stream implements Parcelable {
 		key = in.readString();
 		language = in.readString();
 		languageCode = in.readString();
+		height = in.readString();
+		frameRate = in.readString();
+		audioChannelLayout = in.readString();
 	}
 
 	public static final Creator<Stream> CREATOR = new Creator<Stream>() {
@@ -152,6 +178,10 @@ public class Stream implements Parcelable {
 
 	public String getCodec() {
 		return codec;
+	}
+
+	public String getHeight() {
+		return height;
 	}
 
 	public void setCodec(String codec) {
@@ -234,6 +264,14 @@ public class Stream implements Parcelable {
 
 	public long getForced() { return forced; }
 
+	public long getDefault() { return defaultStream; }
+
+	public String getFrameRate() { return frameRate; }
+
+	public long getBitDepth() { return bitDepth; }
+
+	public String getAudioChannelLayout() { return audioChannelLayout; }
+
 	@Override
 	public int describeContents() {
 		return 0;
@@ -242,8 +280,11 @@ public class Stream implements Parcelable {
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeLong(id);
-		dest.writeString(title);
 		dest.writeLong(streamType);
+		dest.writeLong(forced);
+		dest.writeLong(defaultStream);
+		dest.writeLong(bitDepth);
+		dest.writeString(title);
 		dest.writeString(codec);
 		dest.writeString(index);
 		dest.writeString(channels);
@@ -256,5 +297,8 @@ public class Stream implements Parcelable {
 		dest.writeString(key);
 		dest.writeString(language);
 		dest.writeString(languageCode);
+		dest.writeString(height);
+		dest.writeString(frameRate);
+		dest.writeString(audioChannelLayout);
 	}
 }

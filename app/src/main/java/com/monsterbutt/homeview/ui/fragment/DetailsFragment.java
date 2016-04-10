@@ -15,11 +15,11 @@
 package com.monsterbutt.homeview.ui.fragment;
 
 import android.app.Activity;
+
 import android.content.Context;
-import android.content.Intent;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v17.leanback.widget.Action;
@@ -32,6 +32,7 @@ import android.support.v17.leanback.widget.FullWidthDetailsOverviewSharedElement
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
+import android.support.v17.leanback.widget.ObjectAdapter;
 import android.support.v17.leanback.widget.OnActionClickedListener;
 import android.support.v17.leanback.widget.OnItemViewClickedListener;
 import android.support.v17.leanback.widget.OnItemViewSelectedListener;
@@ -49,12 +50,15 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.monsterbutt.homeview.player.MediaCodecCapabilities;
+import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.plex.tasks.ToggleWatchedStateTask;
 import com.monsterbutt.homeview.presenters.DetailsDescriptionPresenter;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.services.ThemeService;
+import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.android.ImageCardView;
 import com.monsterbutt.homeview.ui.handler.MediaCardBackgroundHandler;
 import com.monsterbutt.homeview.R;
@@ -71,6 +75,7 @@ import com.monsterbutt.homeview.ui.activity.DetailsActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import us.nineworlds.plex.rest.model.impl.Hub;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
@@ -97,6 +102,9 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     private PlexLibraryItem mItem = null;
     private MediaCardBackgroundHandler mBackgroundHandler;
     private String mBackgroundURL = "";
+    private MediaTrackSelector mTracks = null;
+
+    private ListRow mCodecRow = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -186,13 +194,6 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         setActions(actions, mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched);
         row.setActionsAdapter(actions);
         mAdapter.add(row);
-        // setup codecs
-        if (mItem instanceof PlexVideoItem) {
-
-            ListRow codecs = ((PlexVideoItem)mItem).getCodecsRow(context, mServer);
-            if (codecs != null)
-                mAdapter.add(codecs);
-        }
     }
 
     private void setActions(SparseArrayObjectAdapter adapter, boolean isWatched) {
@@ -213,11 +214,19 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         new ToggleWatchedStateTask(mItem).execute(mServer);
     }
 
+    private Bundle bundleTracks() {
+
+        Bundle extras = new Bundle();
+        extras.putParcelable(PlaybackActivity.TRACKS, mTracks);
+        return extras;
+    }
+
     @Override
     public void onActionClicked(Action action) {
 
         if (action.getId() == ACTION_PLAY)
-            mItem.onPlayPressed(this, null, null);
+            mItem.onPlayPressed(this, bundleTracks(), null);
+
         else if (action.getId() == ACTION_VIEWSTATUS)
             toggleWatched();
     }
@@ -318,16 +327,39 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         if (item instanceof PosterCard && !(item instanceof CodecCard)) {
             mContinueTheme = true; // keep playing music through episodes
-            Bundle extras = new Bundle();
+            Bundle extras = mTracks != null ? bundleTracks() : new Bundle();
             extras.putBoolean(ThemeService.THEME_ALREADY_RUN, true);
             ((PosterCard) item).onClicked(this, extras, ((ImageCardView) itemViewHolder.view).getMainImageView());
+        }
+        else if (item instanceof CodecCard) {
+
+            final CodecCard card = (CodecCard) item;
+            final int trackTypeClicked = card.getTrackType();
+            card.onCardClicked(getActivity(), mServer, mTracks, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                    mTracks.setSelectedTrack(trackTypeClicked, which);
+                    ArrayObjectAdapter adapter = (ArrayObjectAdapter) mCodecRow.getAdapter();
+                    int index = adapter.indexOf(card);
+                    if (0 <= index) {
+                        adapter.replace(index, new CodecCard(getActivity(),
+                                                             mTracks.getSelectedTrack(trackTypeClicked),
+                                                             trackTypeClicked,
+                                                             mTracks.getCountForType(trackTypeClicked)));
+
+                        adapter.notifyArrayItemRangeChanged(index, 1);
+                    }
+                    dialog.dismiss();
+                }
+            });
         }
     }
 
     @Override
     public boolean playKeyPressed() {
 
-        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
+        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, bundleTracks(), mCurrentCardTransitionImage);
     }
 
     @Override
@@ -367,15 +399,17 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         @Override
         protected void onPostExecute(PlexLibraryItem item) {
 
-            boolean update =  (mItem == null);
             mItem = item;
-            if (update)
-                setupDetailsOverviewRow();
-            //setupDetailsOverviewRow();
-            ListRow children = item.getChildren(getActivity(), mServer);
+            mTracks = ((PlexVideoItem)mItem).fillTrackSelector(getActivity(),
+                                                        Locale.getDefault().getISO3Language(),
+                                                        MediaCodecCapabilities.getInstance(getActivity()));
+            Activity activity = getActivity();
+            mCodecRow = ((PlexVideoItem) mItem).getCodecsRow(activity, mServer, mTracks);
+            mAdapter.add(mCodecRow);
+            ListRow children = item.getChildren(activity, mServer);
             if (children != null)
                 mAdapter.add(children);
-            ListRow extras = item.getExtras(getActivity(), mServer);
+            ListRow extras = item.getExtras(activity, mServer);
             if (extras != null)
                 mAdapter.add(extras);
 

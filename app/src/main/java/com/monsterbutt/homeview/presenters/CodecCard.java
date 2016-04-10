@@ -1,9 +1,16 @@
 package com.monsterbutt.homeview.presenters;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
+import android.util.TypedValue;
 
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.media.VideoFormat;
@@ -13,14 +20,6 @@ import us.nineworlds.plex.rest.model.impl.Media;
 
 
 public class CodecCard extends PosterCard {
-
-    public enum CodecCardType {
-
-        VideoCodec,
-        VideoFrame,
-        AudioCodec,
-        SubtitleCodec
-    }
 
     private class CodecIconHolder {
 
@@ -42,71 +41,60 @@ public class CodecCard extends PosterCard {
         }
     }
 
-
-    private CodecCardType type;
     private String title;
     private String subtitle;
+    private String decoder;
     private CodecIconHolder iconA;
     private CodecIconHolder iconB;
+    private int trackType;
+    private int totalTracksForType;
 
-    public CodecCard(Context context, CodecCardType type, Media media) {
+    public CodecCard(Context context, Media media) {
         super(context, null);
 
-        this.type = type;
-        switch (type) {
-            case VideoCodec:
+        trackType = 0;
+        totalTracksForType = 0;
+        decoder = "";
 
-                title = "";
-                subtitle = "";
-                iconA = new CodecIconHolder(VideoFormat.VideoCodec, media.getVideoCodec());
-                iconB = new CodecIconHolder(VideoFormat.VideoFrameRate, media.getVideoFrameRate());
-                break;
-
-            case VideoFrame:
-
-                title = "";
-                subtitle = "";
-                iconA = new CodecIconHolder(VideoFormat.VideoResolution, media.getVideoResolution());
-                iconB = new CodecIconHolder(VideoFormat.VideoAspectRatio, media.getAspectRatio());
-                break;
-
-            case AudioCodec:
-
-                title = "";
-                subtitle = "";
-                iconA = new CodecIconHolder(Stream.AudioCodec, media.getAudioCodec());
-                iconB = new CodecIconHolder(Stream.AudioChannels, media.getAudioChannels());
-                break;
-
-            default:
-
-                title = "";
-                subtitle = "";
-                iconA = null;
-                iconB = null;
-                break;
-        }
+        title = "";
+        subtitle = "";
+        iconA = new CodecIconHolder(VideoFormat.VideoFrameRate, media.getVideoFrameRate());
+        iconB = new CodecIconHolder(VideoFormat.VideoAspectRatio, media.getAspectRatio());
     }
 
-    public CodecCard(Context context, CodecCardType type,
-                     us.nineworlds.plex.rest.model.impl.Stream stream) {
+    public CodecCard(Context context, Stream stream, int trackType, int totalTracksForType) {
         super(context, null);
 
-        this.type = type;
-        switch (type) {
+        this.trackType = trackType;
+        this.totalTracksForType = totalTracksForType;
+        this.decoder = stream.getDecodeStatusText(context);
 
-            case AudioCodec:
+        switch (trackType) {
+
+            case Stream.Video_Stream:
+
+                title = "";
+                subtitle = "";
+                iconA = new CodecIconHolder(VideoFormat.VideoCodec, stream.getCodec());
+                iconB = new CodecIconHolder(VideoFormat.VideoResolution, stream.getHeight());
+                break;
+
+            case Stream.Audio_Stream:
 
                 title = stream.getTitle();
                 subtitle = stream.getLanguage();
-                iconA = new CodecIconHolder(Stream.AudioCodec, stream.getCodec());
+                if (TextUtils.isEmpty(title)) {
+                    title = subtitle;
+                    subtitle = "";
+                }
+                iconA = new CodecIconHolder(Stream.AudioCodec, stream.getCodecAndProfile());
                 iconB = new CodecIconHolder(Stream.AudioChannels, stream.getChannels());
                 break;
 
-            case SubtitleCodec:
+            case Stream.Subtitle_Stream:
 
                 title = stream.getLanguage();
-                subtitle = stream.getForced() > 0 ? context.getString(R.string.Forced) : "";
+                subtitle = stream.isForced() ? context.getString(R.string.Forced) : "";
                 iconA = new CodecIconHolder("", stream.getCodec(), context.getDrawable(R.drawable.ic_subtitles_white_48dp));
                 iconB = null;
                 break;
@@ -131,10 +119,17 @@ public class CodecCard extends PosterCard {
         return subtitle;
     }
 
+    public String getDecoder() {
+        return decoder;
+    }
+
     @Override
     public String getImageUrl(PlexServer server) {
+        if (iconA == null)
+            return "";
         return server.makeServerURLForCodec(iconA.type, iconA.id);
     }
+
     public String getImageUrlSecondary(PlexServer server) {
         if (iconB == null)
             return "";
@@ -143,16 +138,15 @@ public class CodecCard extends PosterCard {
 
     @Override
     public Drawable getImage(Context context) {
+        if (iconA == null)
+            return null;
         return iconA.drawable;
     }
+
     public Drawable getImageSecondary() {
         if (iconB == null)
             return null;
         return iconB.drawable;
-    }
-
-    public CodecCardType getType() {
-        return type;
     }
 
     @Override
@@ -163,5 +157,35 @@ public class CodecCard extends PosterCard {
     @Override
     public int getWidth() {
         return R.dimen.codeccard_width;
+    }
+
+    public int getTrackType() {
+        return trackType;
+    }
+
+    public int getTotalTracksForType() {
+        return totalTracksForType;
+    }
+
+    public void onCardClicked(Activity activity, PlexServer server, MediaTrackSelector selector, DialogInterface.OnClickListener listener) {
+
+        if (getTotalTracksForType() > 1) {
+            AlertDialog dialog = new AlertDialog.Builder(activity, R.style.AlertDialogStyle)
+                    .setIcon(R.drawable.launcher)
+                    .setTitle(R.string.track_dialog)
+                    .setAdapter(selector.getTracks(activity, server, getTrackType()), listener)
+                    .create();
+            dialog.show();
+
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj instanceof CodecCard)
+            return ((CodecCard) obj).getTrackType() == getTrackType();
+
+        return false;
     }
 }

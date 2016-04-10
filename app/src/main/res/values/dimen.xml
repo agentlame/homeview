@@ -43,6 +43,7 @@
     <dimen name="progress_height">2dp</dimen>
     <dimen name="flag_text_padding">5dp</dimen>
     <dimen name="caption_text_size">12sp</dimen>
+    <dimen name="flag_text_size">11sp</dimen>
     <dimen name="caption_text_size_secondary">10sp</dimen>
 
     <dimen name="nextup_poster_height">179dp</dimen>
@@ -55,9 +56,9 @@
     <dimen name="nextup_view_textsize_main">12sp</dimen>
     <dimen name="nextup_view_textsize_secondary">10sp</dimen>
 
-    <dimen name="codeccard_height">85dp</dimen>
+    <dimen name="codeccard_height">60dp</dimen>
     <dimen name="codeccard_width">140dp</dimen>
-    <dimen name="codeccard_text_banner_height">60dp</dimen>
+    <dimen name="codeccard_text_banner_height">35dp</dimen>
     <dimen name="codeccard_text_padding">8dp</dimen>
     <dimen name="codeccard_text_padding_small">2dp</dimen>
 
@@ -72,4 +73,11 @@
     <dimen name="about_text">14sp</dimen>
     <dimen name="about_padding">16dp</dimen>
     <dimen name="about_list_padding">48dp</dimen>
+
+    <dimen name="codec_choice_image_minwidth">50dp</dimen>
+    <dimen name="codec_choice_image_maxwidth">60dp</dimen>
+    <dimen name="codec_choice_text_padding">8dp</dimen>
+    <dimen name="codec_choice_image_padding">8dp</dimen>
+
+    <dimen name="resumechoice_row_height">50dp</dimen>
 </resources>

@@ -72,8 +72,8 @@ public class StartPosition {
 
     public enum PlaybackStartType {
 
-        Begining,
         Resume,
+        Begining,
         Ask
     }
 }

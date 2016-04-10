@@ -164,6 +164,7 @@
     <string name="chapters">Chapters</string>
     <string name="time_divider">:</string>
     <string name="Forced">Forced</string>
+    <string name="Default">Default</string>
     <string name="skip_forward_seconds">30</string>
     <string name="skip_back_seconds">30</string>
 
@@ -181,7 +182,15 @@
     <string name="playback_start_dialog_begin">From beginning</string>
     <string name="playback_start_dialog_resume">From last viewed position</string>
 
+    <string name="track_dialog">Select a track for playback</string>
+
     <string name="about_title">About - Licenses"</string>
 
     <string name="preferences_about">About</string>
+
+    <string name="software">Software</string>
+    <string name="passthrough">Passthrough</string>
+    <string name="legacy">Legacy Passthrough</string>
+    <string name="unsupported">Unsupported</string>
+    <string name="subs_off">Off</string>
 </resources>

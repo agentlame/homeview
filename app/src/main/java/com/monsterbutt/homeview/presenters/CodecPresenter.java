@@ -63,10 +63,10 @@ public class CodecPresenter extends Presenter {
         final CodecCardView cardView = (CodecCardView) viewHolder.view;
         Context context = cardView.getContext();
 
-        String text = obj.getTitle();
+        cardView.setDecoderText(obj.getDecoder());
+        cardView.setTitleText(obj.getTitle());
         if (!TextUtils.isEmpty(obj.getContent()))
-            text += String.format(" (%s)", obj.getContent());
-        cardView.setTitleText(text);
+            cardView.setSubtitleText(obj.getContent());
 
         Drawable a = obj.getImage(context);
         if (a != null)
@@ -97,10 +97,15 @@ public class CodecPresenter extends Presenter {
             else
                 cardView.setSecondaryImage(null);
         }
+
+        int trackCount = obj.getTotalTracksForType();
+        if (trackCount > 1)
+            cardView.setFlag(context.getDrawable(R.drawable.right_flag), Integer.toString(trackCount));
     }
 
     @Override
     public void onUnbindViewHolder(ViewHolder viewHolder) {
 
+        ((CodecCardView) viewHolder.view).setMainImage(null);
     }
 }

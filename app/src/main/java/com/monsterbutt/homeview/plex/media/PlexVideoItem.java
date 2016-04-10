@@ -14,6 +14,8 @@ import android.text.TextUtils;
 import android.view.View;
 
 import com.monsterbutt.homeview.data.VideoContract;
+import com.monsterbutt.homeview.player.MediaCodecCapabilities;
+import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.presenters.CodecPresenter;
 import com.monsterbutt.homeview.provider.MediaContentProvider;
@@ -37,13 +39,6 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
 
     public static long NEXTUP_DISABLED = -1;
     private static final long MIN_MINUTES_FOR_NEXTUP = 5 * 1000;
-
-    public final static int ACTION_VIDEO1  = 3;
-    public final static int ACTION_VIDEO2  = 4;
-    public final static int ACTION_VIDEO3  = 5;
-    public final static int ACTION_AUDIO1  = 6;
-    public final static int ACTION_AUDIO2  = 7;
-    public final static int ACTION_SUBS   = 8;
 
     protected PlexVideoItem(Parcel in) {
 
@@ -458,37 +453,29 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         row.add(VideoContract.VideoEntry.COLUMN_EXTRA, key);
     }
 
-    public ListRow getCodecsRow(Context context, PlexServer server) {
+    public MediaTrackSelector fillTrackSelector(Context context, String baseLanguageCode, MediaCodecCapabilities capabilities) {
+
+        Part part = getMedia().get(0).getVideoPart().get(0);
+        if (part.getStreams() != null)
+            return new MediaTrackSelector(context, part.getStreams(), baseLanguageCode, capabilities);
+        return null;
+    }
+
+    private boolean addTrackTypeToCodec(Context context, ArrayObjectAdapter adapter, int trackType, MediaTrackSelector selector) {
+
+        Stream stream = selector.getSelectedTrack(trackType);
+        if (stream != null)
+            adapter.add(new CodecCard(context, stream, trackType, selector.getCountForType(trackType)));
+        return (stream != null);
+    }
+
+    public ListRow getCodecsRow(Context context, PlexServer server, MediaTrackSelector selector) {
 
         ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CodecPresenter(server));
-        Media media = getMedia().get(0);
-
-        adapter.add(new CodecCard(context, CodecCard.CodecCardType.VideoFrame, media));
-        adapter.add(new CodecCard(context, CodecCard.CodecCardType.VideoCodec, media));
-        boolean hasAudio = false;
-        boolean hasSubs = false;
-        Part part = media.getVideoPart().get(0);
-        if (part.getStreams() == null)
-            adapter.add(new CodecCard(context, CodecCard.CodecCardType.AudioCodec, media));
-        else {
-            for (us.nineworlds.plex.rest.model.impl.Stream stream : part.getStreams()) {
-
-                if (stream.getStreamType() == Stream.Audio_Stream) {
-
-                    if (hasAudio)
-                        continue;
-                    hasAudio = true;
-                    adapter.add(new CodecCard(context, CodecCard.CodecCardType.AudioCodec, stream));
-                }
-                else if (stream.getStreamType() == Stream.Subtitle_Stream) {
-
-                    if (hasSubs)
-                        continue;
-                    hasSubs = true;
-                    adapter.add(new CodecCard(context, CodecCard.CodecCardType.SubtitleCodec, stream));
-                }
-            }
-        }
+        adapter.add(new CodecCard(context, getMedia().get(0)));
+        addTrackTypeToCodec(context, adapter, Stream.Video_Stream, selector);
+        addTrackTypeToCodec(context, adapter, Stream.Audio_Stream, selector);
+        addTrackTypeToCodec(context, adapter, Stream.Subtitle_Stream, selector);
 
         return new ListRow(null, adapter);
     }

@@ -3,22 +3,27 @@ package com.monsterbutt.homeview.plex.media;
 import android.app.Fragment;
 import android.content.Context;
 import android.database.MatrixCursor;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 import android.view.View;
 
+import com.google.android.exoplayer.util.MimeTypes;
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.player.MediaCodecCapabilities;
+import com.monsterbutt.homeview.player.MediaTrackSelector;
+import com.monsterbutt.homeview.plex.PlexServer;
 
 import java.util.List;
 
 
 public class Stream extends PlexLibraryItem implements Parcelable {
 
+    public final static int Video_Stream = 1;
     public final static int Audio_Stream = 2;
     public final static int Subtitle_Stream = 3;
-
-    public final static  String SubtitleCodec = "textCodec";
 
     public final static  String AudioCodec = "audioCodec";
     public final static  String AudioChannels = "audioChannels";
@@ -28,15 +33,24 @@ public class Stream extends PlexLibraryItem implements Parcelable {
 
 
     final us.nineworlds.plex.rest.model.impl.Stream mStream;
-    final boolean modeA;
-    public Stream (us.nineworlds.plex.rest.model.impl.Stream stream, boolean modeA) {
+    final private MediaCodecCapabilities.DecodeType mDecodeStatus;
+    private int mTrackTypeIndex;
+    public Stream (us.nineworlds.plex.rest.model.impl.Stream stream, int trackIndex, MediaCodecCapabilities capabilities) {
         mStream = stream;
-        this.modeA = modeA;
+        mTrackTypeIndex = trackIndex;
+        if (mTrackTypeIndex == MediaTrackSelector.SubtitleOffTrackIndex)
+            mDecodeStatus = MediaCodecCapabilities.DecodeType.Hardware;
+        else
+            mDecodeStatus = capabilities.determineDecoderType(  getMimeTypeForTrackType(),
+                                                                getCodec(),
+                                                                getProfile(),
+                                                                stream.getBitDepth());
     }
 
     protected Stream(Parcel in) {
-        mStream = in.readParcelable(us.nineworlds.plex.rest.model.impl.Stream.class.getClassLoader());
-        modeA = in.readByte() != 0;
+        mStream = new us.nineworlds.plex.rest.model.impl.Stream(in);
+        mDecodeStatus = MediaCodecCapabilities.DecodeType.valueOf(in.readString());
+        mTrackTypeIndex = in.readInt();
     }
 
     public static final Creator<Stream> CREATOR = new Creator<Stream>() {
@@ -83,7 +97,6 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     public String getTitle() {
 
         if (Audio_Stream == getStreamType()) {
-            if (modeA)
                 return mStream.getTitle();
         }
         if (Subtitle_Stream == getStreamType())
@@ -131,7 +144,6 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     public String getCardContent(Context context) {
 
         if( Audio_Stream == mStream.getStreamType()) {
-            if (modeA)
                 return mStream.getLanguage();
         }
         else if (Subtitle_Stream == mStream.getStreamType()) {
@@ -222,10 +234,182 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         mStream.writeToParcel(dest, flags);
-        dest.writeInt(modeA ? 1 : 0);
+        dest.writeString(mDecodeStatus.name());
+        dest.writeInt(mTrackTypeIndex);
     }
 
     public static boolean profileIsDtsHdVariant(String profile) {
-        return profile.equals(Profile_DTS_MA) || profile.equals(Profile_DTS_MA);
+        return profile.equals(Profile_DTS_MA) || profile.equals(Profile_DTS_HR);
+    }
+
+    public int getTrackType() {
+        return (int) mStream.getStreamType();
+    }
+
+    public boolean isForced() {
+        return 0 < mStream.getForced();
+    }
+
+    public boolean isDefault() {
+        return 0 < mStream.getDefault();
+    }
+
+    public MediaCodecCapabilities.DecodeType getDecodeStatus() {
+        return mDecodeStatus;
+    }
+
+    public String getCodec() {
+        return mStream.getCodec();
+    }
+
+    public String getCodecAndProfile() {
+
+        String codec = getCodec();
+        String profile = getProfile();
+        if (!TextUtils.isEmpty(profile))
+            codec += "-" + profile;
+        return codec;
+    }
+
+    public String getProfile() { return mStream.getProfile(); }
+
+    public String getHeight() {
+        return mStream.getHeight();
+    }
+
+    public String getLanguage() {
+        return mStream.getLanguage();
+    }
+
+    public String getLanguageCode() {
+        return mStream.getLanguageCode();
+    }
+
+    public String getDecodeStatusText(Context context) {
+
+        switch (getDecodeStatus()) {
+
+            case Software:
+                return context.getString(R.string.software);
+            case LegacyPassthrough:
+                return context.getString(R.string.legacy);
+            case Passthrough:
+                return context.getString(R.string.passthrough);
+            case Unsupported:
+                return context.getString(R.string.unsupported);
+            case Hardware:
+            default:
+                break;
+        }
+
+        return "";
+    }
+
+    public int getTrackTypeIndex() {
+        return mTrackTypeIndex;
+    }
+
+    public String getFrameRate () { return mStream.getFrameRate(); }
+
+    public String getAudioChannelLayout() { return mStream.getAudioChannelLayout(); }
+
+
+    public static class StreamChoice {
+
+        private final Stream stream;
+        private final boolean isCurrent;
+        private final Context context;
+
+        public StreamChoice(Context context, boolean isCurrent, Stream stream) {
+
+            this.context = context;
+            this.isCurrent = isCurrent;
+            this.stream = stream;
+        }
+
+        public Drawable getDrawable() {
+
+            switch(stream.getTrackType()) {
+                case Subtitle_Stream:
+                    return context.getDrawable(R.drawable.ic_subtitles_white_48dp);
+                case Video_Stream:
+                    return context.getDrawable(R.drawable.ic_video_label_white_48dp);
+                case Audio_Stream:
+                    return context.getDrawable(R.drawable.ic_surround_sound_white_48dp);
+                default:
+                    return null;
+            }
+        }
+
+        public String getCodecImage(PlexServer server) {
+
+            String codecType;
+            switch(stream.getTrackType()) {
+                case Video_Stream:
+                    codecType = "videoCodec";
+                    break;
+                case Audio_Stream:
+                    codecType = "audioCodec";
+                    break;
+                default:
+                    return "";
+            }
+            return server.makeServerURLForCodec(codecType, stream.getCodecAndProfile());
+        }
+
+        public boolean isCurrentSelection() { return isCurrent; }
+
+        public String getDecoderStatus() { return stream.getDecodeStatusText(context); }
+
+        @Override
+        public String toString() {
+
+            String desc;
+            switch (stream.getTrackType()) {
+
+                case Video_Stream:
+                    return String.format("%s (%s)", stream.getCodecAndProfile(), stream.getFrameRate());
+
+                case Audio_Stream:
+                    String lang = stream.getLanguage();
+                    String title = stream.getTitle();
+                    desc = String.format("%s, %s, %s", lang, stream.getCodecAndProfile(), stream.getAudioChannelLayout());
+                    if (TextUtils.isEmpty(title)) {
+                        title = lang;
+                        desc = String.format("%s, %s", stream.getCodecAndProfile(), stream.getAudioChannelLayout());
+                    }
+                    return String.format("%s (%s)", title, desc);
+
+                case Subtitle_Stream:
+                    desc = stream.getCodec();
+                    if (stream.isForced())
+                        desc += " , " + context.getString(R.string.Forced);
+                    if (stream.isDefault())
+                        desc += ", "  + context.getString(R.string.Default);
+                    if (!TextUtils.isEmpty(desc))
+                        return String.format("%s (%s)", stream.getLanguage(), desc);
+                    return stream.getLanguage();
+
+                default:
+                    return String.format("%s (%s)", stream.getLanguage(), stream.getCodecAndProfile());
+
+            }
+        }
+    }
+
+    private String getMimeTypeForTrackType() {
+
+        switch (getTrackType()) {
+
+            case Stream.Video_Stream:
+                return MimeTypes.BASE_TYPE_VIDEO;
+            case Stream.Audio_Stream:
+                return MimeTypes.BASE_TYPE_AUDIO;
+            case Stream.Subtitle_Stream:
+                return MimeTypes.BASE_TYPE_TEXT;
+            default:
+                return "";
+        }
+
     }
 }
