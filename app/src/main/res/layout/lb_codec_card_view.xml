@@ -71,7 +71,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:paddingEnd="@dimen/codeccard_text_padding_small"
-                    android:paddingStart="@dimen/codeccard_text_padding_small" />
+                    android:paddingStart="@dimen/codeccard_text_padding_small"
+                    android:maxLines="1"
+                    android:ellipsize="marquee" />
 
                 <TextView
                     android:id="@+id/sub_text"

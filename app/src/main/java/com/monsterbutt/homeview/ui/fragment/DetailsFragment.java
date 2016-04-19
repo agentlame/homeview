@@ -294,7 +294,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     private void setupDetailsOverviewRowPresenter() {
         // Set detail background and style.
-        mDetailPresenter = new DetailsDescriptionPresenter(getActivity());
+        mDetailPresenter = new DetailsDescriptionPresenter(getActivity(), mServer);
         DetailPresenter detailsPresenter =
                 new DetailPresenter(mDetailPresenter,
                                     new MovieDetailsOverviewLogoPresenter(!(mItem instanceof Episode)));
@@ -400,12 +400,17 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         protected void onPostExecute(PlexLibraryItem item) {
 
             mItem = item;
-            mTracks = ((PlexVideoItem)mItem).fillTrackSelector(getActivity(),
-                                                        Locale.getDefault().getISO3Language(),
-                                                        MediaCodecCapabilities.getInstance(getActivity()));
             Activity activity = getActivity();
-            mCodecRow = ((PlexVideoItem) mItem).getCodecsRow(activity, mServer, mTracks);
-            mAdapter.add(mCodecRow);
+            if (item instanceof PlexVideoItem) {
+                mTracks = ((PlexVideoItem) mItem).fillTrackSelector(getActivity(),
+                                                                   Locale.getDefault().getISO3Language(),
+                                                                    MediaCodecCapabilities.getInstance(getActivity()));
+
+                mCodecRow = ((PlexVideoItem) mItem).getCodecsRow(activity, mServer, mTracks);
+                mAdapter.add(mCodecRow);
+            }
+            else
+                mTracks = null;
             ListRow children = item.getChildren(activity, mServer);
             if (children != null)
                 mAdapter.add(children);

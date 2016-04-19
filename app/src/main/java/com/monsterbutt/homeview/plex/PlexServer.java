@@ -452,12 +452,20 @@ public class PlexServer {
         SettingsManager mgr = SettingsManager.getInstance(context);
         if (mgr.getBoolean("preferences_server_smb")) {
 
+            String smbDomain = mgr.getString("preferences_server_smb_domain");
             String smbRoot = mgr.getString("preferences_server_smb_root");
             String smbUser = mgr.getString("preferences_server_smb_user");
             String smbPass = mgr.getString("preferences_server_smb_pass");
-            String ret = String.format("//%s/", mConfiguration.getHost());
-            if (!TextUtils.isEmpty(smbUser) && !TextUtils.isEmpty(smbPass))
-                    String.format("//%s:%s@%s/", smbUser, smbPass, mConfiguration.getHost());
+            String ret = String.format("smb://%s/", mConfiguration.getHost());
+            if (!TextUtils.isEmpty(smbDomain) && !TextUtils.isEmpty(smbUser) && !TextUtils.isEmpty(smbPass))
+                ret = String.format("smb://%s;%s:%s@%s/", smbDomain, smbUser, smbPass, mConfiguration.getHost());
+            else if (!TextUtils.isEmpty(smbUser) && !TextUtils.isEmpty(smbPass))
+                ret = String.format("smb://%s:%s@%s/", smbUser, smbPass, mConfiguration.getHost());
+            else if (!TextUtils.isEmpty(smbDomain) && !TextUtils.isEmpty(smbUser))
+                ret = String.format("smb://%s;%s@%s/", smbDomain, smbUser, mConfiguration.getHost());
+            else if (!TextUtils.isEmpty(smbUser))
+                ret = String.format("smb://%s@%s/", smbUser, mConfiguration.getHost());
+
             if (!TextUtils.isEmpty(smbRoot)) {
 
                 while(smbRoot.startsWith("/"))

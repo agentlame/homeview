@@ -25,9 +25,14 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
         private final TextView mBody;
         private final TextView mYear;
         private final TextView mDuration;
-        private final TextView mStudio;
+        private final TextView mGenre;
+        private final ImageView mStudio;
+        private final ImageView mRating;
         private final ProgressBar mProgress;
         private final ImageView mFlagView;
+
+        private boolean mHasStudio = false;
+        private boolean mHasRating = false;
 
         public ViewHolder(final View view) {
             super(view);
@@ -37,7 +42,9 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
             mContent = (TextView) view.findViewById(R.id.lb_details_description_content);
             mYear = (TextView) view.findViewById(R.id.lb_details_description_year);
             mDuration = (TextView) view.findViewById(R.id.lb_details_description_duration);
-            mStudio = (TextView) view.findViewById(R.id.lb_details_description_studio);
+            mGenre = (TextView) view.findViewById(R.id.lb_details_description_genre);
+            mStudio = (ImageView) view.findViewById(R.id.lb_details_description_studio);
+            mRating = (ImageView) view.findViewById(R.id.lb_details_description_rating);
             mProgress = (ProgressBar) view.findViewById(R.id.progress);
             mFlagView = (ImageView) view.findViewById(R.id.unwatched);
         }
@@ -66,8 +73,19 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
             return mDuration;
         }
 
-        public TextView getStudio() {
+        public TextView getGenre() {
+            return mGenre;
+        }
+
+        public void hasStudio(boolean hasStudio) { mHasStudio = hasStudio; }
+        public void hasRating(boolean hasRating) { mHasRating = hasRating; }
+
+        public ImageView getStudio() {
             return mStudio;
+        }
+
+        public ImageView getRating() {
+            return mRating;
         }
 
         public ProgressBar getProgress() {
@@ -91,12 +109,19 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
         onBindDescription(vh, item);
 
         setTextViewVisibility(vh.mTitle);
-        setTextViewVisibility(vh.mSubtitle);
+        setTextViewVisibility(vh.mYear);
         setTextViewVisibility(vh.mBody);
         setTextViewVisibility(vh.mContent);
-        setTextViewVisibility(vh.mYear);
         setTextViewVisibility(vh.mDuration);
         setTextViewVisibility(vh.mSubtitle);
+        setTextViewVisibility(vh.mGenre);
+        setImageViewVisibility(vh.mStudio, vh.mHasStudio);
+        setImageViewVisibility(vh.mRating, vh.mHasRating);
+    }
+
+    private void setImageViewVisibility(ImageView view, boolean viewHasDrawable) {
+
+        view.setVisibility(viewHasDrawable ? View.VISIBLE : View.GONE);
     }
 
     private void setTextViewVisibility(TextView view) {

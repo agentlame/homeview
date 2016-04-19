@@ -100,9 +100,13 @@ public abstract class PlexLibraryItem {
         return "";
     }
 
-    public String getDetailStudio(Context context) {
+    public String getDetailStudioPath(PlexServer server) {
         return "";
     }
+
+    public String getDetailRatingPath(PlexServer server) { return ""; }
+
+    public String getDetailGenre(Context context) { return ""; }
 
     public abstract WatchedState getWatchedState();
 

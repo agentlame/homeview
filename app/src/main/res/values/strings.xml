@@ -113,6 +113,10 @@
     <string name="preferences_server_smb_pass">SMB password</string>
     <string name="preferences_server_smb_pass_summary">Password</string>
     <string name="preferences_server_smb_pass_dialog">Enter password for SMB login</string>
+    <string name="preferences_server_smb_domain">SMB Domain</string>
+    <string name="preferences_server_smb_domain_summary">Domain for SMB login</string>
+    <string name="preferences_server_smb_domain_dialog">Enter a domain for SMB Login</string>
+    <string name="preferences_server_smb_domain_default">WORKGROUP</string>
     <string name="preferences_navigation">App Navigation</string>
     <string name="preferences_navigation_thememusic">Play Theme Music</string>
     <string name="preferences_navigation_thememusic_summary">Play theme music during season/episode selection?</string>

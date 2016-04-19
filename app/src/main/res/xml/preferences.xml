@@ -15,14 +15,13 @@
 
         </Preference>
 
-
         <CheckBoxPreference
             android:key="preferences_server_smb"
             android:drawable="@drawable/ic_folder_shared_white_48dp"
             android:title="@string/preferences_server_smb"
             android:summary="@string/preferences_server_smb_summary"
-            android:enabled="false"
-            android:defaultValue="false" />
+            android:defaultValue="false"
+            android:enabled="false" />
 
         <EditTextPreference
             android:key="preferences_server_smb_root"
@@ -31,8 +30,8 @@
             android:title="@string/preferences_server_smb_root"
             android:summary="@string/preferences_server_smb_root_summary"
             android:dialogTitle="@string/preferences_server_smb_root_dialog"
-            android:enabled="false"
-            android:defaultValue=""/>
+            android:defaultValue=""
+            android:enabled="false" />
 
         <EditTextPreference
             android:key="preferences_server_smb_user"
@@ -41,8 +40,8 @@
             android:title="@string/preferences_server_smb_user"
             android:summary="@string/preferences_server_smb_user_summary"
             android:dialogTitle="@string/preferences_server_smb_user_dialog"
-            android:enabled="false"
-            android:defaultValue=""/>
+            android:defaultValue=""
+            android:enabled="false" />
 
         <EditTextPreference
             android:key="preferences_server_smb_pass"
@@ -51,8 +50,18 @@
             android:title="@string/preferences_server_smb_pass"
             android:summary="@string/preferences_server_smb_pass_summary"
             android:dialogTitle="@string/preferences_server_smb_pass_dialog"
-            android:enabled="false"
-            android:defaultValue=""/>
+            android:defaultValue=""
+            android:enabled="false" />
+
+        <EditTextPreference
+            android:key="preferences_server_smb_domain"
+            android:drawable="@drawable/ic_account_balance_white_48dp"
+            android:dependency="preferences_server_smb"
+            android:title="@string/preferences_server_smb_domain"
+            android:summary="@string/preferences_server_smb_domain_summary"
+            android:dialogTitle="@string/preferences_server_smb_domain_dialog"
+            android:defaultValue="@string/preferences_server_smb_domain_default"
+            android:enabled="false" /> />
 
     </PreferenceCategory>
 

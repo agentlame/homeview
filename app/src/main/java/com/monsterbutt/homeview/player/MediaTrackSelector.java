@@ -88,8 +88,11 @@ public class MediaTrackSelector implements Parcelable {
         List<Stream> subs = tracks.get(Stream.Subtitle_Stream);
         if (subs.size() == 1)
             subs.clear();
-        else
+        else {
             selectedSubtitleTrack = selectStreamForType(Stream.Subtitle_Stream);
+            if (0 == (Forced & getTrackChoice(selectedSubtitleTrack)))
+                setSelectedTrack(Stream.Subtitle_Stream, 0);
+        }
     }
 
     protected MediaTrackSelector(Parcel in) {

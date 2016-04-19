@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import us.nineworlds.plex.rest.model.impl.Directory;
+import us.nineworlds.plex.rest.model.impl.Genre;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 import us.nineworlds.plex.rest.model.impl.Video;
 
@@ -452,10 +453,36 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
         dest.writeString(mCurrFilter);
     }
 
+    @Override
     public String getDetailTitle(Context context) { return getCardTitle(context); }
+
+    @Override
     public String getDetailSubtitle(Context context) { return ""; }
+
+    @Override
     public String getDetailContent(Context context) { return ""; }
+
+    @Override
     public String getDetailYear(Context context) { return getYear(); }
+
+    @Override
     public String getDetailDuration(Context context) { return ""; }
-    public String getDetailStudio(Context context) { return getStudio(); }
+
+    @Override
+    public String getDetailStudioPath(PlexServer server) { return server.makeServerURLForCodec("studio", getStudio()); }
+
+    @Override
+    public String getDetailRatingPath(PlexServer server) { return server.makeServerURLForCodec("contentRating", mDirectory.getContentRating()); }
+
+    @Override
+    public String getDetailGenre(Context context) {
+
+        String ret = "";
+        for (Genre genre : mDirectory.getGenres()) {
+            if (!TextUtils.isEmpty(ret))
+                ret += ", ";
+            ret += genre.getTag();
+        }
+        return ret;
+    }
 }

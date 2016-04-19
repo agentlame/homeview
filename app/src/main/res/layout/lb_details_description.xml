@@ -30,6 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
+                android:paddingStart="@dimen/detail_side_padding"
                 tools:text="Year"
                 style="?attr/detailsDescriptionTitleStyle"
                 />
@@ -59,16 +60,42 @@
             android:paddingTop="6dp"
             android:paddingBottom="6dp"/>
 
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/detail_icons_height"
+            android:paddingTop="@dimen/detail_icons_height_padding"
+            android:paddingBottom="@dimen/detail_icons_height_padding">
+
+            <ImageView
+                android:id="@+id/lb_details_description_studio"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitStart"
+                tools:src="@drawable/ic_subtitles_white_48dp" />
+
+            <ImageView
+                android:id="@+id/lb_details_description_rating"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitEnd"
+                tools:src="@drawable/ic_subtitles_white_48dp" />
+
+
+        </FrameLayout>
+
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/detail_text_padding"
+            android:paddingBottom="@dimen/detail_text_padding" >
 
             <TextView
-                android:id="@+id/lb_details_description_studio"
+                android:id="@+id/lb_details_description_genre"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                tools:text="Studio"
+                tools:text="Genres, go, here"
                 style="?attr/detailsDescriptionSubtitleStyle"
                 />
 
@@ -78,7 +105,7 @@
                 android:layout_height="wrap_content"
                 android:maxLines="3"
                 android:layout_alignParentStart="true"
-                android:layout_toStartOf="@id/lb_details_description_studio"
+                android:layout_toStartOf="@id/lb_details_description_genre"
                 tools:text="Subtitle goes here"
                 style="?attr/detailsDescriptionSubtitleStyle"
                 />
@@ -88,13 +115,15 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="@dimen/caption_text_size">
+            android:paddingTop="@dimen/detail_text_padding"
+            android:paddingBottom="@dimen/detail_text_padding" >
 
             <TextView
                 android:id="@+id/lb_details_description_duration"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
+                android:paddingStart="@dimen/detail_side_padding"
                 tools:text="Duration"
                 style="?attr/detailsDescriptionSubtitleStyle"
                 />

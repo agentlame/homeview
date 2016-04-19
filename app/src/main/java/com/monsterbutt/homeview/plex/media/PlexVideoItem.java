@@ -557,10 +557,19 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return ret;
     }
 
+    @Override
     public String getDetailTitle(Context context) { return getTitle(); }
+
+    @Override
     public String getDetailSubtitle(Context context) { return ""; }
+
+    @Override
     public String getDetailContent(Context context) { return ""; }
+
+    @Override
     public String getDetailYear(Context context) { return getYear(); }
+
+    @Override
     public String getDetailDuration(Context context) {
         long mins = getDurationInMin();
         long hr = mins / 60;
@@ -569,7 +578,26 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
             ret = String.format("%d %s %s", hr, context.getString(R.string.hours_abbrev), ret);
         return ret;
     }
-    public String getDetailStudio(Context context) { return getStudio(); }
+
+    @Override
+    public String getDetailStudioPath(PlexServer server) { return server.makeServerURLForCodec("studio", getStudio()); }
+
+    @Override
+    public String getDetailRatingPath(PlexServer server) { return server.makeServerURLForCodec("contentRating", mVideo.getContentRating()); }
+
+    @Override
+    public String getDetailGenre(Context context) {
+
+        String ret = "";
+        if (mVideo != null && mVideo.getGenres() != null) {
+            for (Genre genre : mVideo.getGenres()) {
+                if (!TextUtils.isEmpty(ret))
+                    ret += ", ";
+                ret += genre.getTag();
+            }
+        }
+        return ret;
+    }
 
     @Override
     public List<Hub> getRelated() {

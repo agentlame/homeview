@@ -15,22 +15,36 @@
 package com.monsterbutt.homeview.presenters;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import com.bumptech.glide.Glide;
+import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.ui.android.AbstractDetailsDescriptionPresenter;
 
 public class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPresenter {
 
+    private PlexServer server;
     private Context context;
     private ImageView mHACK;
     private ProgressBar mHACK2;
-    public DetailsDescriptionPresenter(Context context) {
+    public DetailsDescriptionPresenter(Context context, PlexServer server) {
         this.context = context;
+        this.server = server;
     }
 
+    private boolean setImage(ImageView image, String path) {
+
+        boolean ret = !TextUtils.isEmpty(path);
+        if (ret)
+            Glide.with(context).load(path).into(image);
+        else
+            image.setImageDrawable(null);
+        return ret;
+    }
     @Override
     protected void onBindDescription(ViewHolder viewHolder, Object item) {
 
@@ -41,8 +55,10 @@ public class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPrese
             viewHolder.getSubtitle().setText(video.getDetailSubtitle(context));
             viewHolder.getBody().setText(video.getSummary());
             viewHolder.getYear().setText(video.getDetailYear(context));
+            viewHolder.getGenre().setText(video.getDetailGenre(context));
             viewHolder.getDuration().setText(video.getDetailDuration(context));
-            viewHolder.getStudio().setText(video.getDetailStudio(context));
+            viewHolder.hasStudio(setImage(viewHolder.getStudio(), video.getDetailStudioPath(server)));
+            viewHolder.hasRating(setImage(viewHolder.getRating(), video.getDetailRatingPath(server)));
             viewHolder.getContent().setText(video.getDetailContent(context));
             mHACK = viewHolder.getWatched();
             mHACK2 = viewHolder.getProgress();

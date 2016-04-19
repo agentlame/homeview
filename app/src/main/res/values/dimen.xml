@@ -56,6 +56,11 @@
     <dimen name="nextup_view_textsize_main">12sp</dimen>
     <dimen name="nextup_view_textsize_secondary">10sp</dimen>
 
+    <dimen name="detail_side_padding">20dp</dimen>
+    <dimen name="detail_text_padding">4dp</dimen>
+    <dimen name="detail_icons_height">40dp</dimen>
+    <dimen name="detail_icons_height_padding">5dp</dimen>
+
     <dimen name="codeccard_height">60dp</dimen>
     <dimen name="codeccard_width">140dp</dimen>
     <dimen name="codeccard_text_banner_height">35dp</dimen>
