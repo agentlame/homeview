@@ -1,4 +1,4 @@
 [submodule "ExoPlayer"]
 	path = ExoPlayer
-	url = https://github.com/drhill/ExoPlayer.git
+	url = https://github.com/drhill/ExoPlayer
 	branch = dev
