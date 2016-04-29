@@ -361,7 +361,8 @@ public class PlaybackFragment
 
     private boolean selectedHasMissingData() {
 
-        return mSelectedVideo.getMedia().get(0).getVideoPart().get(0).getStreams() == null;
+        return mSelectedVideo.getMedia().get(0).getVideoPart().get(0).getStreams() == null
+            || !mSelectedVideo.hasChapters(); // force chapter check in here, even if they don't exist
     }
 
     private void setupVideoForPlayback() {
@@ -664,7 +665,9 @@ public class PlaybackFragment
                 // Set the queue index to the selected video.
                 if ( mSelectedVideo == null || v.shouldPlaybackFirst()) {
 
-                    setSelectedVideo(v);
+                    if (mSelectedVideo == null)
+
+                        setSelectedVideo(v);
                     mQueueIndex = mQueue.size();
                 }
 

@@ -421,7 +421,10 @@ public class VideoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventL
     }
 
     public long getDuration() {
-        return player.getDuration();
+        long duration = player.getDuration();
+        if (duration <= 0 && mPreparedVideo != null)
+            duration = mPreparedVideo.getDurationMs();
+        return duration;
     }
 
     public int getBufferedPercentage() {
