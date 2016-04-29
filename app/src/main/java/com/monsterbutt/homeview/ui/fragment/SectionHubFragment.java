@@ -48,7 +48,6 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
 
         Activity activity = getActivity();
         mServer = PlexServerManager.getInstance(activity.getApplicationContext()).getSelectedServer();
-        mBackgroundHandler = new MediaCardBackgroundHandler(activity);
         setOnItemViewClickedListener(this);
         setOnItemViewSelectedListener(this);
         ((HomeViewActivity)activity).setPlayKeyListener(this);
@@ -63,6 +62,8 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
     public void onResume() {
 
         super.onResume();
+
+        mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
         if (!TextUtils.isEmpty(mBackgroundURL))
             mBackgroundHandler.updateBackground(mBackgroundURL, false);
     }

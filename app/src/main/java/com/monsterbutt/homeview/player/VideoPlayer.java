@@ -45,6 +45,9 @@ import com.google.android.exoplayer.upstream.BandwidthMeter;
 import com.google.android.exoplayer.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer.util.DebugTextViewHelper;
 import com.google.android.exoplayer.util.PlayerControl;
+import com.monsterbutt.homeview.player.ffmpeg.FfmpegDecoderException;
+import com.monsterbutt.homeview.player.ffmpeg.FfmpegTrackRenderer;
+import com.monsterbutt.homeview.player.renderers.FfmpegAudioTrackRenderer;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 
 import java.io.IOException;
@@ -64,6 +67,7 @@ public class VideoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventL
         HlsSampleSource.EventListener, DefaultBandwidthMeter.EventListener,
         MediaCodecVideoTrackRenderer.EventListener, MediaCodecAudioTrackRenderer.EventListener,
         StreamingDrmSessionManager.EventListener, DashChunkSource.EventListener, TextRenderer,
+        FfmpegAudioTrackRenderer.EventListener,
         MetadataRenderer<Map<String, Object>>, DebugTextViewHelper.Provider {
 
     /**
@@ -175,11 +179,12 @@ public class VideoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventL
     public static final int TRACK_DISABLED = ExoPlayer.TRACK_DISABLED;
     public static final int TRACK_DEFAULT = ExoPlayer.TRACK_DEFAULT;
 
-    public static final int RENDERER_COUNT = 4;
+    public static final int RENDERER_COUNT = 5;
     public static final int TYPE_VIDEO = 0;
     public static final int TYPE_AUDIO = 1;
     public static final int TYPE_TEXT = 2;
     public static final int TYPE_METADATA = 3;
+    public static final int TYPE_AUDIO_FFMPEG = 4;
 
     private static final int RENDERER_BUILDING_STATE_IDLE = 1;
     private static final int RENDERER_BUILDING_STATE_BUILDING = 2;
@@ -342,7 +347,9 @@ public class VideoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventL
         this.codecCounters = videoRenderer instanceof MediaCodecTrackRenderer
                 ? ((MediaCodecTrackRenderer) videoRenderer).codecCounters
                 : renderers[TYPE_AUDIO] instanceof MediaCodecTrackRenderer
-                ? ((MediaCodecTrackRenderer) renderers[TYPE_AUDIO]).codecCounters : null;
+                ? ((MediaCodecTrackRenderer) renderers[TYPE_AUDIO]).codecCounters
+                : renderers[TYPE_AUDIO_FFMPEG] instanceof FfmpegTrackRenderer
+                ? ((FfmpegTrackRenderer) renderers[TYPE_AUDIO_FFMPEG]).codecCounters : null;
         this.bandwidthMeter = bandwidthMeter;
         pushSurface(false);
         player.prepare(renderers);
@@ -437,7 +444,7 @@ public class VideoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventL
         return player.getPlaybackLooper();
     }
 
-    /* package */ Handler getMainHandler() {
+    public Handler getMainHandler() {
         return mainHandler;
     }
 
@@ -486,7 +493,7 @@ public class VideoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventL
         if (sourceId == TYPE_VIDEO) {
             videoFormat = format;
             infoListener.onVideoFormatEnabled(format, trigger, mediaTimeMs);
-        } else if (sourceId == TYPE_AUDIO) {
+        } else if (sourceId == TYPE_AUDIO || sourceId == TYPE_AUDIO_FFMPEG) {
             infoListener.onAudioFormatEnabled(format, trigger, mediaTimeMs);
         }
     }
@@ -538,6 +545,11 @@ public class VideoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventL
         if (internalErrorListener != null) {
             internalErrorListener.onCryptoError(e);
         }
+    }
+
+    @Override
+    public void onDecoderError(FfmpegDecoderException e) {
+
     }
 
     @Override

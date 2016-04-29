@@ -115,7 +115,6 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         MainActivity act = (MainActivity) getActivity();
         mMgr = PlexServerManager.getInstance(act.getApplicationContext());
-        mBackgroundHandler = new MediaCardBackgroundHandler(act);
 
         setHeadersState(HEADERS_ENABLED);
         setHeadersTransitionOnBackEnabled(true);
@@ -160,6 +159,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         super.onResume();
 
         ThemeService.stopTheme(getActivity());
+        mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
 
         if (!TextUtils.isEmpty(mBackgroundURL))
             mBackgroundHandler.updateBackground(mBackgroundURL, false);

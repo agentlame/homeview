@@ -123,13 +123,8 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
         mServer = PlexServerManager.getInstance(act.getApplicationContext()).getSelectedServer();
         mUseScene = act.getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false);
         mThemeAlreadyRun = act.getIntent().getBooleanExtra(ThemeService.THEME_ALREADY_RUN, false);
-        mBackgroundHandler = new MediaCardBackgroundHandler(act);
 
         mBackgroundURL = act.getIntent().getStringExtra(ContainerActivity.BACKGROUND);
-        if (!TextUtils.isEmpty(mBackgroundURL)) {
-            mBackgroundURL = mServer.makeServerURL(mBackgroundURL);
-            mBackgroundHandler.updateBackground(mBackgroundURL, false);
-        }
         VerticalGridPresenter gridPresenter = new VerticalGridPresenter();
         String colCount = mUseScene ? act.getString(R.string.gridview_scene_columns)
                                     : act.getString(R.string.gridview_poster_columns);
@@ -148,8 +143,10 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
     public void onResume() {
         super.onResume();
         mContinueTheme = false;
+
+        mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
         if (!TextUtils.isEmpty(mBackgroundURL))
-            mBackgroundHandler.updateBackground(mBackgroundURL, false);
+            mBackgroundHandler.updateBackground(mServer.makeServerURL(mBackgroundURL), false);
     }
 
     @Override

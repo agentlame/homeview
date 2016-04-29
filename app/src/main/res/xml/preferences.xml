@@ -159,7 +159,8 @@
             android:entries="@array/preferences_device_speakers_entries_text"
             android:entryValues="@array/preferences_device_speakers_entries"
             android:dialogTitle="@string/preferences_device_speakers_dialog"
-            android:defaultValue="@string/preferences_device_speakers_entries_default" />
+            android:defaultValue="@string/preferences_device_speakers_entries_default"
+            android:enabled="false" />
 
     </PreferenceCategory>
 

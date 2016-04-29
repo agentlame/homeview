@@ -8,3 +8,7 @@
 /captures
 signing.properties
 **/build
+app/src/main/jniLibs
+app/src/main/include
+app/src/main/libs
+app/src/main/obj

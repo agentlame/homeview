@@ -89,6 +89,7 @@ public class MediaTrackSelector implements Parcelable {
         if (subs.size() == 1)
             subs.clear();
         else {
+
             selectedSubtitleTrack = selectStreamForType(Stream.Subtitle_Stream);
             if (0 == (Forced & getTrackChoice(selectedSubtitleTrack)))
                 setSelectedTrack(Stream.Subtitle_Stream, 0);
@@ -169,7 +170,7 @@ public class MediaTrackSelector implements Parcelable {
         }
     }
 
-    public int getAdjustedIndexForSelectedTrack(int type) {
+    private int getAdjustedIndexForSelectedTrack(int type) {
 
         switch(type) {
             case Stream.Video_Stream:
@@ -177,10 +178,18 @@ public class MediaTrackSelector implements Parcelable {
             case Stream.Audio_Stream:
                 return getAdjustedIndexForSelectedTrack(tracks.get(type), selectedAudioTrack);
             case Stream.Subtitle_Stream:
-                return selectedSubtitleTrack.getTrackTypeIndex();
+                return selectedSubtitleTrack != null ? selectedSubtitleTrack.getTrackTypeIndex() : TrackTypeOff;
             default:
-                return -1;
+                return TrackTypeOff;
         }
+    }
+
+    public int getSelectedTrackIndex(int type) {
+
+        Stream selected = getSelectedTrack(type);
+        if (selected != null)
+            return selected.getTrackTypeIndex();
+        return TrackTypeOff;
     }
 
     private int getAdjustedIndexForSelectedTrack(List<Stream> streams, Stream selected) {
@@ -199,7 +208,48 @@ public class MediaTrackSelector implements Parcelable {
         return index >= 0 ? index - adjustment : index;
     }
 
-    public boolean setSelectedTrack(int type, int index) {
+    public void setSelectedTrack(VideoPlayer player, int type, int index) {
+
+        setSelectedTrack(type, index);
+        if (player != null) {
+
+            switch(type) {
+
+                case Stream.Subtitle_Stream:
+
+                    index = getAdjustedIndexForSelectedTrack(Stream.Subtitle_Stream);
+                    player.setSelectedTrack(VideoPlayer.TYPE_TEXT, index);
+                    break;
+
+                case Stream.Audio_Stream:
+
+                    index = getAdjustedIndexForSelectedTrack(Stream.Audio_Stream);
+                    int BUILTIN_INDEX = index;
+                    int FFMPEG_INDEX = TrackTypeOff;
+                    switch(selectedAudioTrack.getDecodeStatus()) {
+
+                        case Hardware:
+                        case Passthrough:
+                            break;
+
+                        case Software:
+                        case LegacyPassthrough:
+                        case Unsupported:
+                        default:
+
+                            FFMPEG_INDEX = index;
+                            BUILTIN_INDEX = TrackTypeOff;
+                            break;
+                    }
+
+                    player.setSelectedTrack(VideoPlayer.TYPE_AUDIO, BUILTIN_INDEX);
+                    player.setSelectedTrack(VideoPlayer.TYPE_AUDIO_FFMPEG, FFMPEG_INDEX);
+                    break;
+            }
+        }
+    }
+
+    private boolean setSelectedTrack(int type, int index) {
 
         Stream stream = null;
         List<Stream> streams = tracks.get(type);
@@ -265,9 +315,9 @@ public class MediaTrackSelector implements Parcelable {
         dest.writeTypedList(tracks.get(Stream.Video_Stream));
         dest.writeTypedList(tracks.get(Stream.Audio_Stream));
         dest.writeTypedList(tracks.get(Stream.Subtitle_Stream));
-        dest.writeInt(selectedVideoTrack != null ? selectedVideoTrack.getTrackTypeIndex() : -1);
-        dest.writeInt(selectedAudioTrack != null ? selectedAudioTrack.getTrackTypeIndex() : -1);
-        dest.writeInt(selectedSubtitleTrack != null ? selectedSubtitleTrack.getTrackTypeIndex() : -1);
+        dest.writeInt(selectedVideoTrack != null ? selectedVideoTrack.getTrackTypeIndex() : TrackTypeOff);
+        dest.writeInt(selectedAudioTrack != null ? selectedAudioTrack.getTrackTypeIndex() : TrackTypeOff);
+        dest.writeInt(selectedSubtitleTrack != null ? selectedSubtitleTrack.getTrackTypeIndex() : TrackTypeOff);
     }
 
     public StreamChoiceArrayAdapter getTracks(Context context, PlexServer server, int trackType) {
@@ -329,5 +379,9 @@ public class MediaTrackSelector implements Parcelable {
         }
     }
 
-    public boolean didManuallySelectSubs() { return didSelectSubs; }
+    public boolean areSubtitlesEnabled() {
+
+        return selectedSubtitleTrack.getTrackTypeIndex() != MediaTrackSelector.TrackTypeOff
+                && didSelectSubs;
+    }
 }

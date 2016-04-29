@@ -76,7 +76,6 @@ import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.plex.media.Chapter;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
-import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.tasks.GetVideoQueueTask;
 import com.monsterbutt.homeview.plex.tasks.GetVideoTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTask;
@@ -146,8 +145,6 @@ public class PlaybackFragment
     private PlexServer mServer;
 
     private ImageView mSubtitlesImage = null;
-
-    private boolean mSubsEnabled = false;
 
     @Override
     public void onAttach(Context context) {
@@ -410,24 +407,25 @@ public class PlaybackFragment
         }
     }
 
-    private void preparePlayer(boolean playWhenReady, PlexVideoItem video) {
+    private void preparePlayer(boolean playWhenReady) {
 
         if (mPlayer == null) {
+
             mPlayer = new VideoPlayer(getRendererBuilder());
             mPlayer.setCaptionListener(this);
             mPlayer.addListener(this);
             mPlayer.seekTo(mStartPosition.getStartPosition());
-            mPlayer.prepare(video);
-            if (mCacheSurface != null) {
-
+            mPlayer.prepare(mSelectedVideo);
+            if (mCacheSurface != null)
                 mPlayer.setSurface(mCacheSurface);
-                mCacheSurface = null;
-            }
-        } else {
+            mCacheSurface = null;
+        }
+        else {
+
             mPlayer.stop();
             mPlayer.seekTo(mStartPosition.getStartPosition());
             mPlayer.setRendererBuilder(getRendererBuilder());
-            mPlayer.prepare(video);
+            mPlayer.prepare(mSelectedVideo);
         }
 
         if (mStartPosition.getStartType() == StartPosition.PlaybackStartType.Ask) {
@@ -514,8 +512,10 @@ public class PlaybackFragment
             case ExoPlayer.STATE_PREPARING:
                 mIsMetadataSet = false;
 
-                resetCurrentAudioTrack();
-                resetCurrentSubtitleTrack();
+                mSelectedVideoTracks.setSelectedTrack(mPlayer, VideoPlayer.TYPE_AUDIO,
+                                                        mSelectedVideoTracks.getSelectedTrackIndex(VideoPlayer.TYPE_AUDIO));
+                mSelectedVideoTracks.setSelectedTrack(mPlayer, VideoPlayer.TYPE_TEXT,
+                        mSelectedVideoTracks.getSelectedTrackIndex(VideoPlayer.TYPE_TEXT));
                 break;
             case ExoPlayer.STATE_READY:
 
@@ -530,36 +530,6 @@ public class PlaybackFragment
                 // Do nothing.
                 break;
         }
-    }
-
-    private boolean resetCurrentSubtitleTrack() {
-
-        if (mPlayer != null) {
-
-            Stream subs = mSelectedVideoTracks.getSelectedTrack(Stream.Subtitle_Stream);
-            if (subs != null) {
-
-                mSubsEnabled = subs.getTrackTypeIndex() != MediaTrackSelector.TrackTypeOff
-                            && mSelectedVideoTracks.didManuallySelectSubs();
-
-                final int index = mSelectedVideoTracks.getAdjustedIndexForSelectedTrack(Stream.Subtitle_Stream);
-                mPlayer.setSelectedTrack(VideoPlayer.TYPE_TEXT, index);
-                return index != MediaTrackSelector.TrackTypeOff;
-            }
-
-        }
-        return false;
-    }
-
-    private boolean resetCurrentAudioTrack() {
-
-        if (mPlayer != null) {
-
-            final int index = mSelectedVideoTracks.getAdjustedIndexForSelectedTrack(Stream.Audio_Stream);
-            mPlayer.setSelectedTrack(VideoPlayer.TYPE_AUDIO, index);
-            return index != MediaTrackSelector.TrackTypeOff;
-        }
-        return false;
     }
 
     @Override
@@ -653,7 +623,7 @@ public class PlaybackFragment
             }
         }
         setupVideoForPlayback();
-        preparePlayer(true, mSelectedVideo);
+        preparePlayer(true);
         setPlaybackState(PlaybackState.STATE_PAUSED);
         playPause(extras.getBoolean(AUTO_PLAY));
     }
@@ -738,7 +708,7 @@ public class PlaybackFragment
             if (video != null) {
 
                 if (selectedHasMissingData())
-                    new GetFullInfo().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mSelectedVideo.getKey());
+                    new GetFullInfo().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, video.getKey());
                 else
                     playVideo(video, mAutoPlayExtras);
             }
@@ -766,7 +736,7 @@ public class PlaybackFragment
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
-                    mSelectedVideoTracks.setSelectedTrack(trackTypeClicked, which);
+                    mSelectedVideoTracks.setSelectedTrack(mPlayer, trackTypeClicked, which);
                     ArrayObjectAdapter adapter = (ArrayObjectAdapter) mCodecRow.getAdapter();
                     int index = adapter.indexOf(card);
                     if (0 <= index) {
@@ -778,19 +748,6 @@ public class PlaybackFragment
                         adapter.notifyArrayItemRangeChanged(index, 1);
                     }
                     dialog.dismiss();
-                    switch(trackTypeClicked) {
-
-                        case Stream.Audio_Stream:
-                            resetCurrentAudioTrack();
-                            break;
-
-                        case Stream.Subtitle_Stream:
-                            resetCurrentSubtitleTrack();
-                            break;
-
-                        default:
-                            break;
-                    }
                 }
             });
         }
@@ -872,7 +829,7 @@ public class PlaybackFragment
                 // or if cue is not PGS (we only handle that currently)
                 // or subs are turned off but we are checking for forced subs and it isn't forced
                 if (cue == null || !(cue instanceof PgsCue) ||
-                        (!mSubsEnabled && !((PgsCue)cue).isForcedSubtitle())) {
+                        (!mSelectedVideoTracks.areSubtitlesEnabled() && !((PgsCue)cue).isForcedSubtitle())) {
 
                     mSubtitlesImage.setImageBitmap(null);
                     mSubtitlesImage.setVisibility(View.INVISIBLE);
@@ -908,7 +865,7 @@ public class PlaybackFragment
         // This method should play any media item regardless of the Queue.
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
 
-            new GetVideoTask(PlaybackFragment.this, mServer).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mediaId);
+            new GetVideoTask(PlaybackFragment.this, mServer).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "/library/metadata/" + mediaId);
         }
 
         @Override
@@ -966,9 +923,6 @@ public class PlaybackFragment
                     return;
                 }
             }
-
-            // Update the media to skip to the previous video.
-            setPlaybackState(PlaybackState.STATE_SKIPPING_TO_PREVIOUS);
 
             Bundle bundle = new Bundle();
             bundle.putBoolean(AUTO_PLAY, true);

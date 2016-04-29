@@ -172,7 +172,8 @@ public class MediaCodecCapabilities {
 
         DecodeType ret = !TextUtils.isEmpty(profile)
                         ?   determineAudioDecoderType(mimeTypeProfile, bitDepth)
-                        :   DecodeType.Unsupported;
+                        :   DecodeType.Software
+                ;
         if (ret != DecodeType.Passthrough && ret != DecodeType.Hardware) {
 
             // this can be changed when we can decode HD formats in software
@@ -185,7 +186,7 @@ public class MediaCodecCapabilities {
 
     private DecodeType determineAudioDecoderType(String mimeType, long bitDepth) {
 
-        DecodeType ret = DecodeType.Unsupported;
+        DecodeType ret = DecodeType.Software;
         if (determineAudioPassthrough(mimeType, bitDepth))
             ret = DecodeType.Passthrough;
         else {
@@ -218,6 +219,8 @@ public class MediaCodecCapabilities {
             String alt = codecTranslations.get(mimeType);
             if (!TextUtils.isEmpty(alt))
                 ret = subtitleDecoderCodecs.get(alt);
+            if (ret == null)
+                ret = DecodeType.Unsupported;
         }
         return ret;
     }

@@ -5,7 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.android.tools.build:gradle:2.0.0'
         classpath 'com.novoda:bintray-release:0.2.7'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -21,3 +21,73 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+def architectures = [ arm:"armeabi-v7a", x86:"x86" ]
+
+def buildFFmpeg(archAbbrev, arch) {
+
+    exec {
+
+        println "Setting directory : " + "$projectDir/FFmpeg_Android"
+        workingDir = "$projectDir/FFmpeg_Android"
+
+        Properties properties = new Properties()
+        properties.load(project.file('local.properties').newDataInputStream())
+        def ndkDir = properties.getProperty('ndk.dir')
+        commandLine './createlibs', archAbbrev, ndkDir, Runtime.runtime.availableProcessors()
+    }
+    copyFFmpegArch(archAbbrev, arch)
+}
+
+def copyFFmpegLib(archAbbrev, arch) {
+
+    copy {
+        from "FFmpeg_Android/android/${archAbbrev}/lib/"
+        into "app/src/main/libs/${arch}"
+        include '*.a'
+        exclude { details ->
+            details.file.name.endsWith('.a') &&
+                    details.file.text.contains('pkgconfig')
+        }
+    }
+}
+
+def copyFFmpegHeaders(archAbbrev, arch) {
+
+    copy {
+        from "FFmpeg_Android/android/${archAbbrev}/include/"
+        into "app/src/main/include/${arch}"
+    }
+}
+
+def copyFFmpegArch(archAbbrev, arch) {
+
+    copyFFmpegHeaders(archAbbrev, arch)
+    copyFFmpegLib(archAbbrev, arch)
+}
+
+
+task updateFFmpegSubmodule << {
+
+    println "Updating submodule FFmpeg_Android"
+    exec {
+        commandLine "git", "submodule", "update", "--init", "--recursive", "FFmpeg_Android"
+    }
+}
+
+task copyFFmpeg << {
+
+    architectures.each {
+        key,value -> copyFFmpegArch(key,value)
+    }
+}
+
+task buildFFmpeg <<  {
+
+    updateFFmpegSubmodule
+
+    architectures.each {
+        key,value -> buildFFmpeg(key,value)
+    }
+}
+buildFFmpeg.dependsOn updateFFmpegSubmodule

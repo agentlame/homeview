@@ -32,7 +32,6 @@ import android.support.v17.leanback.widget.FullWidthDetailsOverviewSharedElement
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
-import android.support.v17.leanback.widget.ObjectAdapter;
 import android.support.v17.leanback.widget.OnActionClickedListener;
 import android.support.v17.leanback.widget.OnItemViewClickedListener;
 import android.support.v17.leanback.widget.OnItemViewSelectedListener;
@@ -113,7 +112,6 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         Activity activity = getActivity();
         mServer = PlexServerManager.getInstance(activity.getApplicationContext()).getSelectedServer();
-        mBackgroundHandler = new MediaCardBackgroundHandler(activity);
 
         mItem = activity.getIntent().getParcelableExtra(DetailsActivity.ITEM);
         mBackgroundURL = activity.getIntent().getStringExtra(DetailsActivity.BACKGROUND);
@@ -122,20 +120,20 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         setOnItemViewSelectedListener(this);
         setupDetailsOverviewRowPresenter();
 
-        if (!TextUtils.isEmpty(mBackgroundURL)) {
-            mBackgroundURL = mServer.makeServerURL(mBackgroundURL);
-            mBackgroundHandler.updateBackground(mBackgroundURL, false);
-        }
         if (mItem != null)
             setupDetailsOverviewRow();
     }
 
     @Override
     public void onResume() {
+
         super.onResume();
+
         mContinueTheme = false;
+
+        mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
         if (!TextUtils.isEmpty(mBackgroundURL))
-            mBackgroundHandler.updateBackground(mBackgroundURL, false);
+            mBackgroundHandler.updateBackground(mServer.makeServerURL(mBackgroundURL), false);
     }
 
     @Override
@@ -165,8 +163,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     private void setupDetailsOverviewRow() {
 
         if (TextUtils.isEmpty(mBackgroundURL)) {
-            mBackgroundURL = mServer.makeServerURL(mItem.getBackgroundImageURL());
-            mBackgroundHandler.updateBackground(mBackgroundURL, true);
+            mBackgroundHandler.updateBackground(mServer.makeServerURL(mItem.getBackgroundImageURL()), true);
         }
         boolean usePoster = !(mItem instanceof Episode);
         final DetailsOverviewRow row = new DetailsOverviewRow(mItem);
@@ -339,7 +336,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
-                    mTracks.setSelectedTrack(trackTypeClicked, which);
+                    mTracks.setSelectedTrack(null, trackTypeClicked, which);
                     ArrayObjectAdapter adapter = (ArrayObjectAdapter) mCodecRow.getAdapter();
                     int index = adapter.indexOf(card);
                     if (0 <= index) {

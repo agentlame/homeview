@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import com.bumptech.glide.Glide;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.ui.android.CodecCardView;
 
 
@@ -99,6 +100,12 @@ public class CodecPresenter extends Presenter {
         }
 
         int trackCount = obj.getTotalTracksForType();
+        if (obj.getTrackType() == Stream.Subtitle_Stream && 1 < trackCount) {
+
+            --trackCount;
+            if (trackCount == 1)
+                cardView.setFlag(context.getDrawable(R.drawable.right_flag), null);
+        }
         if (trackCount > 1)
             cardView.setFlag(context.getDrawable(R.drawable.right_flag), Integer.toString(trackCount));
     }
