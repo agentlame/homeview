@@ -631,7 +631,7 @@ public class PlaybackFragment
     private void setSelectedVideo(PlexVideoItem video) {
 
         mSelectedVideo = video;
-        if (mSelectedVideoTracks == null) {
+        if (mSelectedVideo != null && mSelectedVideoTracks == null) {
             mSelectedVideoTracks = mSelectedVideo.fillTrackSelector(getActivity(),
                                                             Locale.getDefault().getISO3Language(),
                                                             MediaCodecCapabilities.getInstance(getActivity()));
