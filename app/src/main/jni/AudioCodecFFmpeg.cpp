@@ -210,7 +210,7 @@ AVCodecID AudioCodecFFmpeg::getAVCodecID(const char* codec, int bitdepth)
                 break;
         }
     }
-    if (0 == strcmp(codec, "audio//mpeg"))
+    if (0 == strcmp(codec, "audio/mpeg"))
         return AV_CODEC_ID_MP3;
     if (0 == strcmp(codec, "audio/ac3"))
         return AV_CODEC_ID_AC3;
