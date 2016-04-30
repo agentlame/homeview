@@ -80,6 +80,7 @@ import com.monsterbutt.homeview.plex.tasks.GetVideoQueueTask;
 import com.monsterbutt.homeview.plex.tasks.GetVideoTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTaskCaller;
+import com.monsterbutt.homeview.plex.tasks.VideoProgressTask;
 import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.settings.SettingsManager;
@@ -124,6 +125,8 @@ public class PlaybackFragment
     private int mQueueIndex = -1;
     private PlexVideoItem mSelectedVideo = null; // Video is the currently playing Video and its metadata.
     private MediaTrackSelector mSelectedVideoTracks = null;
+    private VideoProgressTask mProgressTask = null;
+    private long              mProgressTaskLastUpdate = 0;
     private ArrayObjectAdapter mRowsAdapter;
     private List<MediaSession.QueueItem> mQueue;
     private MediaSession mSession; // MediaSession is used to hold the state of our media playback.
@@ -632,6 +635,8 @@ public class PlaybackFragment
     private void setSelectedVideo(PlexVideoItem video) {
 
         mSelectedVideo = video;
+        if (mSelectedVideo != null)
+            mProgressTask = VideoProgressTask.getTask(mServer, mSelectedVideo);
         if (mSelectedVideo != null && mSelectedVideoTracks == null) {
             mSelectedVideoTracks = mSelectedVideo.fillTrackSelector(getActivity(),
                                                             Locale.getDefault().getISO3Language(),
@@ -774,6 +779,19 @@ public class PlaybackFragment
                 mNextUpThreshold = -1;
             }
         }
+
+        if (getPlaybackState() == PlaybackState.STATE_PLAYING) {
+
+            if (mProgressTask != null) {
+
+                if (Math.abs(timeInMs - mProgressTaskLastUpdate) > VideoProgressTask.PreferedSpanThresholdMs) {
+
+                    mProgressTask.setProgress(timeInMs);
+                    mProgressTaskLastUpdate = timeInMs;
+                }
+            }
+        }
+
     }
 
     @Override
@@ -953,8 +971,9 @@ public class PlaybackFragment
                 // Fast forward 10 seconds.
                 int prevState = getPlaybackState();
                 setPlaybackState(PlaybackState.STATE_FAST_FORWARDING);
-                setPosition(mPlayer.getCurrentPosition() +
-                        (Long.valueOf(getActivity().getString(R.string.skip_forward_seconds)) * 1000));
+                long loc =  mPlayer.getCurrentPosition() +(Long.valueOf(getActivity().getString(R.string.skip_forward_seconds)) * 1000);
+
+                setPosition(loc);
                 setPlaybackState(prevState);
             }
         }

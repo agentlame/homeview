@@ -22,6 +22,8 @@ public class ThemeService extends Service implements MediaPlayer.OnPreparedListe
     
     public static final String THEME_ALREADY_RUN = "theme_run_already";
 
+    private static final float VOLUME = 0.40f;
+
     MediaPlayer mMediaPlayer = null;
 
     public static boolean  startTheme(Activity activity, String themeURL) {
@@ -66,6 +68,7 @@ public class ThemeService extends Service implements MediaPlayer.OnPreparedListe
                 mMediaPlayer.setOnPreparedListener(this);
                 mMediaPlayer.setOnErrorListener(this);
                 mMediaPlayer.setOnCompletionListener(this);
+                mMediaPlayer.setVolume(VOLUME, VOLUME);
                 mMediaPlayer.prepareAsync();
             } catch (IOException e) {
                 e.printStackTrace();

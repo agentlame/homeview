@@ -23,7 +23,7 @@ public class ToggleWatchedStateTask extends AsyncTask<PlexServer, Void, Void> {
 
         PlexServer server = params != null && params.length > 0 && params[0] != null ? params[0] : null;
         if (server != null)
-            server.toggleWatchedStated(key, ratingKey, isWatched);
+            server.toggleWatchedState(key, ratingKey, isWatched);
         return null;
     }
 }

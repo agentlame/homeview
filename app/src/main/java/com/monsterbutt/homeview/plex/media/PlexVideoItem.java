@@ -109,7 +109,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     public boolean shouldPlaybackFirst() { return mShouldPlayFirst; }
-    public void setmShouldPlayFirst(boolean value) { mShouldPlayFirst = value; }
+    public void setShouldPlayFirst(boolean value) { mShouldPlayFirst = value; }
 
     @Override
     public String getKey() {

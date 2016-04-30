@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.monsterbutt.homeview.plex.media.Movie;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
-import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.plex.media.Show;
@@ -38,7 +37,7 @@ public class PlexServer {
 
     public enum SearchType {SEARCH_EPISODE,
                             SEARCH_SERIES,
-                            SEARCH_MOVIES} ;
+                            SEARCH_MOVIES}
 
     private  String mServerName;
     private Configuration mConfiguration = new Configuration();
@@ -484,20 +483,50 @@ public class PlexServer {
         return makeServerURL(video.getPathKey());
     }
 
-    public void toggleWatchedStated(String key, String ratingKey, boolean isWatched) {
+    public boolean setUnwatched(String key, String ratingKey) {
 
         if (mFactory != null) {
 
-            try
-            {
-                if (isWatched)
-                    mFactory.setUnWatched(key, ratingKey);
-                else
-                    mFactory.setWatched(key, ratingKey);
-            }
-            catch (Exception e) {
+            Log.d("PlexServer", "Setting UnWatched for : " + ratingKey);
+            try {
+                return mFactory.setUnWatched(key, ratingKey);
+            } catch (Exception e) {
                 Log.e(getClass().getName(), e.toString());
             }
         }
+        return false;
+    }
+
+    public boolean setWatched(String key, String ratingKey) {
+
+        if (mFactory != null) {
+            Log.d("PlexServer", "Setting Watched for : " + ratingKey);
+            try {
+                return mFactory.setWatched(key, ratingKey);
+            } catch (Exception e) {
+                Log.e(getClass().getName(), e.toString());
+            }
+        }
+        return false;
+    }
+
+    public boolean toggleWatchedState(String key, String ratingKey, boolean isWatched) {
+
+        if (isWatched)
+            return setWatched(key, ratingKey);
+        return setUnwatched(key, ratingKey);
+    }
+
+    public boolean setProgress(String key, String ratingKey, long progress) {
+
+        if (mFactory != null) {
+
+            try {
+                return mFactory.setProgress(key, ratingKey, Long.toString(progress));
+            } catch (Exception e) {
+                Log.e(getClass().getName(), e.toString());
+            }
+        }
+        return false;
     }
 }

@@ -1,6 +1,5 @@
 package com.monsterbutt.homeview.plex.tasks;
 
-import android.content.Context;
 import android.text.TextUtils;
 
 import com.monsterbutt.homeview.plex.PlexServer;
@@ -36,7 +35,7 @@ public class GetVideoQueueTask extends PlexServerTask {
 
         PlexServer server = getServer();
         String metadataKey = (String) params[0];
-        if (!metadataKey.isEmpty() && server != null) {
+        if (!TextUtils.isEmpty(metadataKey) && server != null) {
 
             final long BAD_RATING_KEY = 0;
             long keyCheck = BAD_RATING_KEY;
@@ -118,8 +117,10 @@ public class GetVideoQueueTask extends PlexServerTask {
                     if (isFirst)
                         keyCheck = vid.getRatingKey();
                     PlexVideoItem item = PlexVideoItem.getItem(vid);
-                    item.setmShouldPlayFirst(isFirst);
-                    mList.add(item);
+                    if (item != null) {
+                        item.setShouldPlayFirst(isFirst);
+                        mList.add(item);
+                    }
                 }
             }
         }

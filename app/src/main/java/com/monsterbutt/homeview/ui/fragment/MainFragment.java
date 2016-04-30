@@ -353,35 +353,40 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         List<MediaRowCreator.MediaRow> newRows = MediaRowCreator.buildRowList(sections, hubs);
         List<RowData> currentRows = new ArrayList<>();
         currentRows.addAll(mRows.values());
-        Collections.sort(currentRows);
-        // remove old rows that aren't there anymore
-        for (RowData row : currentRows) {
-            // we are reversing through the list
-            boolean found = false;
-            for (MediaRowCreator.MediaRow newRow : newRows) {
+        if (null != currentRows) {
 
-                if (newRow.key.equals(row.id)) {
+            Collections.sort(currentRows);
+            // remove old rows that aren't there anymore
+            for (RowData row : currentRows) {
+                // we are reversing through the list
+                boolean found = false;
+                for (MediaRowCreator.MediaRow newRow : newRows) {
 
-                    found = true;
-                    break;
+                    if (newRow.key.equals(row.id)) {
+
+                        found = true;
+                        break;
+                    }
                 }
-            }
 
-            if (!found && !row.id.equals(SETTINGS_ROW_KEY)) {
-                mRows.put(row.id, null);
-                mRowsAdapter.removeItems(row.currentIndex, 1);
+                if (!found && !row.id.equals(SETTINGS_ROW_KEY)) {
+                    mRows.put(row.id, null);
+                    mRowsAdapter.removeItems(row.currentIndex, 1);
+                }
             }
         }
 
         HashMap < String, Integer > landscape = makeOrderHashFromStringDelim(rowLandscape, delim);
         int rows = 0;
-        for (MediaRowCreator.MediaRow row : newRows) {
+        if (newRows != null) {
+            for (MediaRowCreator.MediaRow row : newRows) {
 
-            boolean useLandscape = landscape.containsKey(row.key);
-            if (mRows.get(row.title) != null)
-                updateMainRow(row, useLandscape, rows++);
-            else
-                addMainRow(row, useLandscape, rows++);
+                boolean useLandscape = landscape.containsKey(row.key);
+                if (mRows.get(row.title) != null)
+                    updateMainRow(row, useLandscape, rows++);
+                else
+                    addMainRow(row, useLandscape, rows++);
+            }
         }
         return rows;
     }
