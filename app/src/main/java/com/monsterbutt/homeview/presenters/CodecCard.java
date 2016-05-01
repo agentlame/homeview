@@ -4,10 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
-import android.util.TypedValue;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.MediaTrackSelector;
@@ -94,8 +92,8 @@ public class CodecCard extends PosterCard {
             case Stream.Subtitle_Stream:
 
                 title = stream.getLanguage();
-                subtitle = stream.isForced() ? context.getString(R.string.Forced) : "";
-                iconA = new CodecIconHolder("", stream.getCodec(), context.getDrawable(R.drawable.ic_subtitles_white_48dp));
+                subtitle = stream.isForced() ? context != null ? context.getString(R.string.Forced) : "Forced" : "";
+                iconA = new CodecIconHolder("", stream.getCodec(), context != null ? context.getDrawable(R.drawable.ic_subtitles_white_48dp) : null);
                 iconB = null;
                 break;
 
@@ -182,10 +180,6 @@ public class CodecCard extends PosterCard {
 
     @Override
     public boolean equals(Object obj) {
-
-        if (obj instanceof CodecCard)
-            return ((CodecCard) obj).getTrackType() == getTrackType();
-
-        return false;
+        return (obj instanceof CodecCard) && ((CodecCard) obj).getTrackType() == getTrackType();
     }
 }

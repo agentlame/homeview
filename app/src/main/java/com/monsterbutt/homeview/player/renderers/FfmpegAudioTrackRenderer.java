@@ -99,9 +99,9 @@ public class FfmpegAudioTrackRenderer extends FfmpegTrackRenderer implements Med
     @Override
     protected void configureCodec(FfmpegDecoder codec, MediaFormat format) {
 
-        boolean use32BitEncoding = format.channelCount == 2 && audioCapabilities.supportsEncoding(AudioFormat.ENCODING_PCM_FLOAT);
+        boolean use32BitEncoding = false; /*format.channelCount == 2 && audioCapabilities.supportsEncoding(AudioFormat.ENCODING_PCM_FLOAT);
         if (use32BitEncoding)
-            audioTrack.setFallbackEncoding(AudioFormat.ENCODING_PCM_FLOAT);
+            audioTrack.setFallbackEncoding(AudioFormat.ENCODING_PCM_FLOAT);*/
         onOutputFormatChanged(format.getFrameworkMediaFormatV16());
         codec.configure(format, use32BitEncoding);
     }

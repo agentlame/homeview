@@ -163,13 +163,13 @@ public abstract class PlexLibraryItem {
 
     public ListRow getExtras(Context context, PlexServer server) {
 
+        String title = context != null ? context.getString(R.string.extras_row_header) : "Extras";
         ListRow row = null;
         List<PlexLibraryItem> extras = getExtraItems();
         if (extras != null && !extras.isEmpty()) {
             // setup bottom row for seasons, episodes, or chapters
             ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(server));
-            row = new ListRow(new HeaderItem(0, context.getString(R.string.extras_row_header)),
-                    adapter);
+            row = new ListRow(new HeaderItem(0, title), adapter);
             for (PlexLibraryItem extra : extras)
                 adapter.add(new SceneCard(context, extra));
         }

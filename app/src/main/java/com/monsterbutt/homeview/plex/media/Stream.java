@@ -296,7 +296,7 @@ public class Stream extends PlexLibraryItem implements Parcelable {
             case LegacyPassthrough:
                 return context.getString(R.string.legacy);
             case Passthrough:
-                return context.getString(R.string.passthrough);
+                return context != null ? context.getString(R.string.passthrough) : "Passthrough";
             case Unsupported:
                 return context.getString(R.string.unsupported);
             case Hardware:

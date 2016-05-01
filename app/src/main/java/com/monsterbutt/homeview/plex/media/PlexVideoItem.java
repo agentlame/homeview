@@ -294,7 +294,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
 
     @Override
     public String getHeaderForChildren(Context context) {
-        return context.getString(R.string.chapters);
+        return context != null ? context.getString(R.string.chapters) : "Chapters";
     }
 
     @Override

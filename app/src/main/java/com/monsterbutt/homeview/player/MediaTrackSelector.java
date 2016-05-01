@@ -50,7 +50,8 @@ public class MediaTrackSelector implements Parcelable {
         int subIndex = 0;
         int otherIndex = 0;
 
-        fillOffSubtitleStream(context.getString(R.string.subs_off), capabilities);
+        fillOffSubtitleStream(context != null ? context.getString(R.string.subs_off) : "Off",
+                capabilities);
         for(us.nineworlds.plex.rest.model.impl.Stream stream : streams) {
 
             final int streamType = (int) stream.getStreamType();

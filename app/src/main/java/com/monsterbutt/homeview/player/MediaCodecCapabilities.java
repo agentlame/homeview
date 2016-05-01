@@ -124,6 +124,10 @@ public class MediaCodecCapabilities {
                 return AudioFormat.ENCODING_DTS;
             case MimeTypes.AUDIO_DTS_HD:
                 return AudioFormat.ENCODING_DTS_HD;
+            case MimeTypes.AUDIO_TRUEHD:
+                /*
+                return C.ENCODING_TRUEHD;*/
+                return NO_ENCODING;
             case MimeTypes.AUDIO_RAW:
                 if (bitDepth == 16)
                     return AudioFormat.ENCODING_PCM_16BIT;
@@ -178,8 +182,7 @@ public class MediaCodecCapabilities {
 
             // this can be changed when we can decode HD formats in software
             // we need to do legacy passthrough
-            DecodeType retBase = determineAudioDecoderType(mimeType, bitDepth);
-            ret = retBase;
+            ret = determineAudioDecoderType(mimeType, bitDepth);
         }
         return ret;
     }
@@ -196,8 +199,10 @@ public class MediaCodecCapabilities {
                 ret = DecodeType.Passthrough;
             else if (audioDecoderCodecs.get(mimeType) != null)
                 ret = DecodeType.Hardware;
-            else if (!TextUtils.isEmpty(alt) && audioDecoderCodecs.get(alt) != null)
-                ret = DecodeType.Hardware;
+            else if (!TextUtils.isEmpty(alt) && audioDecoderCodecs.get(alt) != null) {
+                if (!alt.equals(MimeTypes.AUDIO_RAW) || bitDepth == 16 )
+                    ret = DecodeType.Hardware;
+            }
         }
         return ret;
     }
