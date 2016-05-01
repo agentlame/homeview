@@ -196,6 +196,8 @@ public class MediaTrackSelector implements Parcelable {
     private int getAdjustedIndexForSelectedTrack(List<Stream> streams, Stream selected) {
 
         int adjustment = 0;
+        if (streams == null)
+            return TrackTypeOff;
         for (Stream stream : streams) {
 
             if (stream.equals(selected))
@@ -227,20 +229,22 @@ public class MediaTrackSelector implements Parcelable {
                     index = getAdjustedIndexForSelectedTrack(Stream.Audio_Stream);
                     int BUILTIN_INDEX = index;
                     int FFMPEG_INDEX = TrackTypeOff;
-                    switch(selectedAudioTrack.getDecodeStatus()) {
+                    if (selectedAudioTrack != null) {
+                        switch (selectedAudioTrack.getDecodeStatus()) {
 
-                        case Hardware:
-                        case Passthrough:
-                            break;
+                            case Hardware:
+                            case Passthrough:
+                                break;
 
-                        case Software:
-                        case LegacyPassthrough:
-                        case Unsupported:
-                        default:
+                            case Software:
+                            case LegacyPassthrough:
+                            case Unsupported:
+                            default:
 
-                            FFMPEG_INDEX = index;
-                            BUILTIN_INDEX = TrackTypeOff;
-                            break;
+                                FFMPEG_INDEX = index;
+                                BUILTIN_INDEX = TrackTypeOff;
+                                break;
+                        }
                     }
 
                     player.setSelectedTrack(VideoPlayer.TYPE_AUDIO, BUILTIN_INDEX);

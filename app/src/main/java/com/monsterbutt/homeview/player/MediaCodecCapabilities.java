@@ -200,10 +200,8 @@ public class MediaCodecCapabilities {
                 ret = DecodeType.Passthrough;
             else if (audioDecoderCodecs.get(mimeType) != null)
                 ret = DecodeType.Hardware;
-            else if (!TextUtils.isEmpty(alt) && audioDecoderCodecs.get(alt) != null) {
-                if (!alt.equals(MimeTypes.AUDIO_RAW) || bitDepth == 16 )
+            else if (!TextUtils.isEmpty(alt) && audioDecoderCodecs.get(alt) != null)
                     ret = DecodeType.Hardware;
-            }
         }
         return ret;
     }
