@@ -3,8 +3,10 @@ package com.monsterbutt.homeview.plex.media;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.TextUtils;
 
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.Utils;
 
 import java.util.List;
 
@@ -82,7 +84,24 @@ public class Movie extends PlexVideoItem implements Parcelable {
         return getCardImageURL();
     }
 
+    @Override
+    public String getWideCardImageURL() {
+
+        String ret = mVideo.getBackgroundImageKey();
+        if (TextUtils.isEmpty(ret))
+            ret = getCardImageURL();
+        return ret;
+    }
 
     @Override
-    public String getDetailContent(Context context) { return getTagline(); }
+    public String getDetailSubtitle(Context context) { return getTagline(); }
+
+    @Override
+    public String getDetailContent(Context context) {
+
+        String date = Utils.convertDateToText(context, mVideo.getOriginallyAvailableDate());
+        if (TextUtils.isEmpty(date))
+            date = getYear();
+        return date;
+    }
 }

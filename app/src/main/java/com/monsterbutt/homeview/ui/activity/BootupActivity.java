@@ -18,10 +18,8 @@ public class BootupActivity extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        Log.d(TAG, "BootupActivity initiated");
-        if (intent.getAction().endsWith(Intent.ACTION_BOOT_COMPLETED)) {
+        if (intent.getAction().endsWith(Intent.ACTION_BOOT_COMPLETED))
             scheduleRecommendationUpdate(context);
-        }
     }
 
     private void scheduleRecommendationUpdate(Context context) {

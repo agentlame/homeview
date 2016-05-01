@@ -23,7 +23,6 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
         private final TextView mSubtitle;
         private final TextView mContent;
         private final TextView mBody;
-        private final TextView mYear;
         private final TextView mDuration;
         private final TextView mGenre;
         private final ImageView mStudio;
@@ -40,7 +39,6 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
             mSubtitle = (TextView) view.findViewById(R.id.lb_details_description_subtitle);
             mBody = (TextView) view.findViewById(R.id.lb_details_description_body);
             mContent = (TextView) view.findViewById(R.id.lb_details_description_content);
-            mYear = (TextView) view.findViewById(R.id.lb_details_description_year);
             mDuration = (TextView) view.findViewById(R.id.lb_details_description_duration);
             mGenre = (TextView) view.findViewById(R.id.lb_details_description_genre);
             mStudio = (ImageView) view.findViewById(R.id.lb_details_description_studio);
@@ -63,10 +61,6 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
 
         public TextView getContent() {
             return mContent;
-        }
-
-        public TextView getYear() {
-            return mYear;
         }
 
         public TextView getDuration() {
@@ -109,7 +103,6 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
         onBindDescription(vh, item);
 
         setTextViewVisibility(vh.mTitle);
-        setTextViewVisibility(vh.mYear);
         setTextViewVisibility(vh.mBody);
         setTextViewVisibility(vh.mContent);
         setTextViewVisibility(vh.mDuration);

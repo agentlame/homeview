@@ -356,7 +356,10 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     @Override
     public boolean playKeyPressed() {
 
-        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, bundleTracks(), mCurrentCardTransitionImage);
+        if (mCurrentCard == null)
+            return mItem.onPlayPressed(this, bundleTracks(), null);
+
+        return mCurrentCard.onPlayPressed(this, bundleTracks(), mCurrentCardTransitionImage);
     }
 
     @Override
@@ -365,6 +368,10 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         if (item instanceof CardObject && !(item instanceof CodecCard)) {
             mCurrentCard = (CardObject) item;
             mCurrentCardTransitionImage = ((ImageCardView) itemViewHolder.view).getMainImageView();
+        }
+        else {
+            mCurrentCard = null;
+            mCurrentCardTransitionImage = null;
         }
     }
 

@@ -38,6 +38,8 @@ public class UpdateRecommendationsService extends IntentService {
 
     private static final String TAG = "RecommendationsService";
 
+    public static final String EXCLUDE_VIDEO = "excludeVideo";
+
     public UpdateRecommendationsService() {
         super(TAG);
     }
@@ -75,6 +77,8 @@ public class UpdateRecommendationsService extends IntentService {
         if (container == null || container.getHubs() == null)
             return;
 
+        long excludeKey = intent.getLongExtra(EXCLUDE_VIDEO, 0);
+
         int MAX_RECOMMENDATIONS = Integer.valueOf(getString(R.string.recommendations_max));
         int BASE_PRIORITY = Integer.valueOf(getString(R.string.recommendations_priority_base));
         int priority_span = Integer.valueOf(getString(R.string.recommendations_priority_span));
@@ -92,11 +96,8 @@ public class UpdateRecommendationsService extends IntentService {
             for (Video video : hub.getVideos()) {
 
                 PlexVideoItem item = PlexVideoItem.getItem(video);
-                if (item == null)
-                    continue;
-                if (item.getWatchedState() == PlexLibraryItem.WatchedState.Watched)
-                    continue;
-                if (checkedAlready.containsKey(item.getKey()))
+                if (item == null || item.getWatchedState() == PlexLibraryItem.WatchedState.Watched
+                 || checkedAlready.containsKey(item.getKey()) || excludeKey == item.getRatingKey())
                     continue;
 
                 GroupedObject go = new GroupedObject(group, item, sortOrder);
@@ -155,15 +156,15 @@ public class UpdateRecommendationsService extends IntentService {
                         .get();
                 builder.setGroup(go.group);
                 Notification notification = builder
-                        .setBackground(BackgroundContentProvider.CONTENT_URI
-                                + item.getBackgroundImageURL())
-                        .setLargeIcon(poster)
-                        .setPriority(priority)
-                        .setProgress(item.getViewedProgress())
-                        .setTitle(item.getCardTitle(context))
-                        .setDescription(String.format("%s (%s)", item.getCardContent(context), go.group))
-                        .setIntent(buildPendingIntent(item))
-                        .build();
+                    .setBackground(BackgroundContentProvider.CONTENT_URI + item.getBackgroundImageURL())
+                    .setLargeIcon(poster)
+                    .setPriority(priority)
+                    .setProgress(item.getViewedProgress())
+                    .setTitle(item.getCardTitle(context))
+                    .setDescription(item.getCardContent(context))
+                    .setGroup(go.group)
+                    .setIntent(buildPendingIntent(item))
+                    .build();
                 mgr.notify((int) item.getRatingKey(), notification);
                 priority -= priority_span;
             }

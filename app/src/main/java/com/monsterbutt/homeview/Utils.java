@@ -18,6 +18,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Point;
+import android.text.TextUtils;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -101,5 +102,55 @@ public class Utils {
         long mins = secs / SecondsInMinutes;
         long hours = mins / MinutesInHours;
         return String.format("%02d%s%02d%s%02d", hours, div, mins % MinutesInHours, div, secs % SecondsInMinutes);
+    }
+
+    public static String convertDateToText(Context context, String date) {
+
+        if (TextUtils.isEmpty(date) || context == null)
+            return "";
+        date = date.replace(" ", "");
+        String[] tokens = date.split("-");
+        if (tokens.length == 1)
+            return tokens[0];
+        String month = getMonth(context, Integer.valueOf(tokens[1]));
+        if (tokens.length == 2)
+            return String.format("%s %s", month, tokens[0]);
+        return String.format("%s %s, %s", month, tokens[2], tokens[0]);
+    }
+
+    public static String getMonth(Context context, int month) {
+
+        if (context == null)
+            return "";
+
+        switch(month) {
+
+            case 1:
+                return context.getString(R.string.january);
+            case 2:
+                return context.getString(R.string.february);
+            case 3:
+                return context.getString(R.string.march);
+            case 4:
+                return context.getString(R.string.april);
+            case 5:
+                return context.getString(R.string.may);
+            case 6:
+                return context.getString(R.string.june);
+            case 7:
+                return context.getString(R.string.july);
+            case 8:
+                return context.getString(R.string.august);
+            case 9:
+                return context.getString(R.string.september);
+            case 10:
+                return context.getString(R.string.october);
+            case 11:
+                return context.getString(R.string.november);
+            case 12:
+                return context.getString(R.string.december);
+            default:
+                return "";
+        }
     }
 }

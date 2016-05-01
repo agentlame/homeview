@@ -108,12 +108,16 @@ public class ImageCardView extends BaseCardView {
         if (hasTitle) {
             mTitleView = (TextView) inflater.inflate(android.support.v17.leanback.R.layout.lb_image_card_view_themed_title,
                     mInfoArea, false);
+            mTitleView.setMaxLines(2);
+            mTitleView.setMinLines(1);
             mInfoArea.addView(mTitleView);
         }
 
         if (hasContent) {
             mContentView = (TextView) inflater.inflate(android.support.v17.leanback.R.layout.lb_image_card_view_themed_content,
                     mInfoArea, false);
+
+            mContentView.setMinLines(0);
             mInfoArea.addView(mContentView);
         }
 
@@ -336,6 +340,7 @@ public class ImageCardView extends BaseCardView {
             return;
         }
         mTitleView.setText(text);
+        setTextMaxLines();
     }
 
     /**
@@ -357,6 +362,7 @@ public class ImageCardView extends BaseCardView {
             return;
         }
         mContentView.setText(text);
+        setTextMaxLines();
     }
 
     /**
@@ -407,6 +413,20 @@ public class ImageCardView extends BaseCardView {
     @Override
     public boolean hasOverlappingRendering() {
         return false;
+    }
+
+
+    private void setTextMaxLines() {
+        if (TextUtils.isEmpty(getTitleText())) {
+            mContentView.setMaxLines(2);
+        } else {
+            mContentView.setMaxLines(1);
+        }
+        /*if (TextUtils.isEmpty(getContentText())) {
+            mTitleView.setMaxLines(2);
+        } else {
+            mTitleView.setMaxLines(1);
+        }*/
     }
 
     @Override

@@ -54,7 +54,6 @@ public class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPrese
             viewHolder.getTitle().setText(video.getDetailTitle(context));
             viewHolder.getSubtitle().setText(video.getDetailSubtitle(context));
             viewHolder.getBody().setText(video.getSummary());
-            viewHolder.getYear().setText(video.getDetailYear(context));
             viewHolder.getGenre().setText(video.getDetailGenre(context));
             viewHolder.getDuration().setText(video.getDetailDuration(context));
             viewHolder.hasStudio(setImage(viewHolder.getStudio(), video.getDetailStudioPath(server)));

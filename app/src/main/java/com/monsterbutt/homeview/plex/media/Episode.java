@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.Utils;
 import com.monsterbutt.homeview.plex.PlexServer;
 
 import us.nineworlds.plex.rest.model.impl.Video;
@@ -96,17 +97,19 @@ public class Episode extends PlexVideoItem implements Parcelable {
 
     @Override
     public String getCardTitle(Context context) {
-        return getShowName();
+        return getTitle();
     }
 
     @Override
     public String getCardContent(Context context) {
-        return String.format("%s %s %s %s %s",
+        return String.format("%s%s %s%s %s %s %s",
                 context.getString(R.string.season_abbrev),
                 getSeasonNum(),
-                context.getString(R.string.mid_dot),
                 context.getString(R.string.episodes_abbrev),
-                getEpisodeNum());
+                getEpisodeNum(),
+                context.getString(R.string.mid_dot),
+                Long.toString(getDurationInMin()),
+                context.getString(R.string.minutes_abbrev));
     }
 
     @Override
@@ -150,11 +153,11 @@ public class Episode extends PlexVideoItem implements Parcelable {
 
     @Override
     public String getWideCardContent(Context context) {
-        return String.format("%s %s %s %d %s",
+        return String.format("%s %s %s %s %s",
                 context.getString(R.string.Episode),
                 getEpisodeNum(),
                 context.getString(R.string.mid_dot),
-                getDurationInMin(),
+                Long.toString(getDurationInMin()),
                 context.getString(R.string.minutes_abbrev));
     }
 
@@ -166,8 +169,20 @@ public class Episode extends PlexVideoItem implements Parcelable {
     public String getDetailSubtitle(Context context) { return getShowName(); }
 
     @Override
-    public String getDetailContent(Context context) { return getCardContent(context
-    ); }
+    public String getDetailContent(Context context) {
+
+        String date = Utils.convertDateToText(context, mVideo.getOriginallyAvailableDate());
+        if (TextUtils.isEmpty(date))
+            date = getYear();
+        return String.format("%s %s %s %s %s %s %s",
+                context.getString(R.string.Season),
+                getSeasonNum(),
+                context.getString(R.string.mid_dot),
+                context.getString(R.string.Episode),
+                getEpisodeNum(),
+                context.getString(R.string.mid_dot),
+                date);
+    }
 
     public void setSeasonNum(long parentIndex) {
         mVideo.setSeason(Long.toString(parentIndex));

@@ -66,8 +66,8 @@
     <string name="mid_dot">\u00B7</string>
     <string name="hours_abbrev">hr</string>
     <string name="minutes_abbrev">min</string>
-    <string name="season_abbrev">Season</string>
-    <string name="episodes_abbrev">Ep</string>
+    <string name="season_abbrev">S </string>
+    <string name="episodes_abbrev">Ep </string>
 
     <string name="gridview_poster_columns">6</string>
     <string name="gridview_scene_columns">4</string>
@@ -197,4 +197,18 @@
     <string name="legacy">Legacy Passthrough</string>
     <string name="unsupported">Unsupported</string>
     <string name="subs_off">Off</string>
+
+    <string name="january">January</string>
+    <string name="february">February</string>
+    <string name="march">March</string>
+    <string name="april">April</string>
+    <string name="may">May</string>
+    <string name="june">June</string>
+    <string name="july">July</string>
+    <string name="august">August</string>
+    <string name="september">September</string>
+    <string name="october">October</string>
+    <string name="november">November</string>
+    <string name="december">December</string>
+
 </resources>

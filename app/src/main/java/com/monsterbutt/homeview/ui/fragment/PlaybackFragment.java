@@ -83,6 +83,7 @@ import com.monsterbutt.homeview.plex.tasks.PlexServerTaskCaller;
 import com.monsterbutt.homeview.plex.tasks.VideoProgressTask;
 import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
+import com.monsterbutt.homeview.services.UpdateRecommendationsService;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.android.NextUpView;
@@ -164,6 +165,7 @@ public class PlaybackFragment
         super.onStop();
         mSession.release();
         releasePlayer();
+        updateRecommendations(0);
     }
 
     @Override
@@ -526,6 +528,7 @@ public class PlaybackFragment
                 // Duration is set here.
                 if (!mIsMetadataSet) {
 
+                    updateRecommendations(mSelectedVideo.getRatingKey());
                     updateMetadata();
                     mIsMetadataSet = true;
                 }
@@ -1096,5 +1099,14 @@ public class PlaybackFragment
             desc.setText(item.text);
             return rowView;
         }
+    }
+
+    private void updateRecommendations(long excludeRatingKey) {
+
+        Activity activity = getActivity();
+        Intent intent = new Intent(activity.getApplicationContext(), UpdateRecommendationsService.class);
+        if (0 < excludeRatingKey)
+            intent.putExtra(UpdateRecommendationsService.EXCLUDE_VIDEO, excludeRatingKey);
+        activity.startService(intent);
     }
 }
