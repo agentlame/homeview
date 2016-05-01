@@ -53,6 +53,7 @@ import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
@@ -541,6 +542,8 @@ public class PlaybackFragment
 
     @Override
     public void onError(Exception e) {
+
+        Toast.makeText(getActivity(), "An error has occured", Toast.LENGTH_LONG).show();
         Log.e(TAG, "An error occurred: " + e);
     }
 
