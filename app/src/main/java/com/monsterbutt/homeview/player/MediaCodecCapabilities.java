@@ -49,6 +49,7 @@ public class MediaCodecCapabilities {
         codecTranslations.put("video/h263",     MimeTypes.VIDEO_MPEG2);
         codecTranslations.put("video/mpeg2v",   MimeTypes.VIDEO_MPEG2);
         codecTranslations.put("video/mpeg2video",MimeTypes.VIDEO_MPEG2);
+        codecTranslations.put("video/mpeg4"     ,MimeTypes.VIDEO_MP4V);
         codecTranslations.put("video/h264",     MimeTypes.VIDEO_H264);
         codecTranslations.put("video/h265",     MimeTypes.VIDEO_H265);
         codecTranslations.put("video/vc1",      MimeTypes.VIDEO_VC1);

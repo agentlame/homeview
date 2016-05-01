@@ -154,8 +154,8 @@ public class Media implements Parcelable {
 
 	public String getVideoFrameRate() { return videoFrameRate; }
 
-	public String getWidth() { return width; }
-	public String getHeight() { return height; }
+	public String getWidth() { return width != null ? width : "0"; }
+	public String getHeight() { return height != null ? height : "0"; }
 
 	@Override
 	public int describeContents() {
