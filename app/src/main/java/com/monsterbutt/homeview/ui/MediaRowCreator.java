@@ -1,15 +1,13 @@
 package com.monsterbutt.homeview.ui;
 
 import android.content.Context;
-import android.support.v17.leanback.widget.ArrayObjectAdapter;
+import android.support.annotation.NonNull;
+import android.support.v17.leanback.widget.ListRow;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
-import com.monsterbutt.homeview.presenters.CardPresenter;
-import com.monsterbutt.homeview.presenters.PosterCard;
-import com.monsterbutt.homeview.presenters.SceneCard;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,6 +20,29 @@ import us.nineworlds.plex.rest.model.impl.Video;
 
 
 public class MediaRowCreator {
+
+    public static class RowData implements Comparable<RowData> {
+
+        public final String id;
+        public final ListRow data;
+        public int currentIndex;
+
+        public RowData(String id, int index, ListRow data) {
+            this.id = id;
+            currentIndex = index;
+            this.data = data;
+        }
+
+        @Override
+        public int compareTo(@NonNull RowData row) {
+
+            // reverse order
+            if (this.currentIndex < row.currentIndex)
+                return 1;
+            return -1;
+        }
+    }
+
 
     public static class MediaRow {
 
@@ -55,8 +76,29 @@ public class MediaRowCreator {
         return rows;
     }
 
-    public static  ArrayObjectAdapter fillAdapterForRow(Context context, PlexServer server, MediaRow row, boolean useLandscape) {
-        ArrayObjectAdapter gridRowAdapter = new ArrayObjectAdapter(new CardPresenter(server));
+    public static  PlexItemRow fillAdapterForWatchedRow(Context context, PlexServer server, MediaRow row,
+                                                        String title, int hash, boolean useLandscape) {
+        return MediaRowCreator.fillAdapterForRow(context, server, row, title, hash, useLandscape, true);
+    }
+
+    public static  PlexItemRow fillAdapterForWatchedRow(Context context, PlexServer server, MediaRow row, boolean useLandscape) {
+        return MediaRowCreator.fillAdapterForRow(context, server, row, row.title, row.title.hashCode(), useLandscape, true);
+    }
+
+    public static  PlexItemRow fillAdapterForRow(Context context, PlexServer server, MediaRow row, boolean useLandscape) {
+        return MediaRowCreator.fillAdapterForRow(context, server, row, row.title, row.title.hashCode(), useLandscape, false);
+    }
+
+    public static  PlexItemRow fillAdapterForRow(Context context, PlexServer server, MediaRow row,
+                                                 String title, int hash, boolean useLandscape) {
+        return MediaRowCreator.fillAdapterForRow(context, server, row, title, hash, useLandscape, false);
+    }
+
+    private static  PlexItemRow fillAdapterForRow(Context context, PlexServer server, MediaRow row,
+                                                 String title, int hash, boolean useLandscape, boolean watched) {
+
+        PlexItemRow gridRow = watched ? PlexItemRow.getWatchedStateRow(server, title, hash)
+                                      : PlexItemRow.getRow(server, title, hash);
 
         Iterator<Directory> itDirs = row.directories != null ? row.directories.iterator() : null;
         Directory currDir = null;
@@ -94,8 +136,8 @@ public class MediaRowCreator {
             }
 
             if (item != null)
-                gridRowAdapter.add(useLandscape ? new SceneCard(context, item) : new PosterCard(context, item));
+                gridRow.addItem(context, item, useLandscape);
         }
-        return gridRowAdapter;
+        return gridRow;
     }
 }

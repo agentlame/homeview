@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v17.leanback.app.VerticalGridFragment;
-import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.OnItemViewClickedListener;
 import android.support.v17.leanback.widget.OnItemViewSelectedListener;
 import android.support.v17.leanback.widget.Presenter;
@@ -21,6 +20,7 @@ import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.services.ThemeService;
+import com.monsterbutt.homeview.ui.PlexItemGrid;
 import com.monsterbutt.homeview.ui.activity.FilterChoiceActivity;
 import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
@@ -33,11 +33,10 @@ import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
-import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.PosterCard;
-import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.ui.activity.ContainerActivity;
+import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -48,7 +47,9 @@ import us.nineworlds.plex.rest.model.impl.MediaContainer;
 import us.nineworlds.plex.rest.model.impl.Video;
 
 
-public class ContainerGridFragment extends VerticalGridFragment implements OnItemViewClickedListener, OnItemViewSelectedListener, HomeViewActivity.OnPlayKeyListener {
+public class ContainerGridFragment extends VerticalGridFragment
+        implements OnItemViewClickedListener, OnItemViewSelectedListener,
+        HomeViewActivity.OnPlayKeyListener, WatchedStatusHandler.WatchStatusListener {
 
     private static final int RESULT_FILTER = 1;
 
@@ -60,14 +61,39 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
     private boolean mContinueTheme = false;
     private String mBackgroundURL = "";
 
+    private PlexItemGrid mGrid = null;
+
     private final SectionFilter mAllFilter = new SectionFilter("All", PlexContainerItem.ALL);
 
     private ArrayList<SectionFilter> mFilters = new ArrayList<>();
     private SectionFilter mCurrentFilter = null;
 
+    private WatchedStatusHandler mWatchedState = null;
 
     private View mCurrentCardTransitionImage = null;
     private CardObject mCurrentCard = null;
+
+    @Override
+    public WatchedStatusHandler.UpdateStatusList getItemsToCheck() {
+
+        WatchedStatusHandler.UpdateStatusList list = null;
+        if (mCurrentCard != null) {
+
+            list = new WatchedStatusHandler.UpdateStatusList();
+            list.add(mCurrentCard.getUpdateStatus());
+        }
+        return list;
+    }
+
+    @Override
+    public void updatedItemsCallback(WatchedStatusHandler.UpdateStatusList items) {
+
+        if (items != null && !items.isEmpty()) {
+
+            for (WatchedStatusHandler.UpdateStatus update : items)
+                mGrid.updateItem(update);
+        }
+    }
 
     public static class SectionFilter implements Parcelable {
 
@@ -122,6 +148,8 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
         Activity act = getActivity();
         mServer = PlexServerManager.getInstance(act.getApplicationContext()).getSelectedServer();
         mUseScene = act.getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false);
+        if (!mUseScene)
+            mWatchedState = new WatchedStatusHandler(mServer, this);
         mThemeAlreadyRun = act.getIntent().getBooleanExtra(ThemeService.THEME_ALREADY_RUN, false);
 
         mBackgroundURL = act.getIntent().getStringExtra(ContainerActivity.BACKGROUND);
@@ -144,6 +172,10 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
         super.onResume();
         mContinueTheme = false;
 
+        if (mGrid != null)
+            mGrid.resume();
+        if (mWatchedState != null)
+            mWatchedState.resume();
         mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
         if (!TextUtils.isEmpty(mBackgroundURL))
             mBackgroundHandler.updateBackground(mServer.makeServerURL(mBackgroundURL), false);
@@ -153,6 +185,11 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
     public void onPause() {
 
         super.onPause();
+
+        if (mGrid != null)
+            mGrid.pause();
+        if (mWatchedState != null)
+            mWatchedState.pause();
 
         mBackgroundHandler.cancel();
         if (mContinueTheme || !mThemeAlreadyRun ||
@@ -197,7 +234,8 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
         }
 
         List<ContainerActivity.QuickJumpRow> quickjumpList = new ArrayList<>();
-        ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(mServer));
+        mGrid = mUseScene ? PlexItemGrid.getWatchedStateGrid(mServer)
+                          : PlexItemGrid.getGrid(mServer);
         if (container != null) {
 
           //  setTitle(container.getTitle1());
@@ -258,7 +296,7 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
                         lastQuickRow = new ContainerActivity.QuickJumpRow(titleLetter, index);
                         quickjumpList.add(lastQuickRow);
                     }
-                    adapter.add(mUseScene ? new SceneCard(getActivity(), item) : new PosterCard(getActivity(), item));
+                    mGrid.addItem(getActivity(), item, mUseScene);
                     ++index;
                 }
             }
@@ -266,7 +304,7 @@ public class ContainerGridFragment extends VerticalGridFragment implements OnIte
 
         if (!mUseScene)
             ((ContainerActivity) getActivity()).setQuickJumpList(quickjumpList);
-        setAdapter(adapter);
+        setAdapter(mGrid.getAdapter());
         setSelectedPosition(0);
         startEntranceTransition();
     }

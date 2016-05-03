@@ -3,12 +3,10 @@ package com.monsterbutt.homeview;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.util.TypedValue;
 
 import java.io.IOException;
 
@@ -79,10 +77,6 @@ public class RecommendationBuilder {
 
     public Notification build() throws IOException {
 
-        TypedValue typedValue = new TypedValue();
-        Resources.Theme theme = mContext.getTheme();
-        theme.resolveAttribute(R.attr.brand_color, typedValue, true);
-
         Bundle extra = new Bundle();
         extra.putString(Notification.EXTRA_BACKGROUND_IMAGE_URI, Uri.parse(mBackgroundImage).toString());
 
@@ -93,7 +87,7 @@ public class RecommendationBuilder {
                 .setPriority(mPriority)
                 .setLocalOnly(true)
                 .setOngoing(true)
-                .setColor(typedValue.data)
+                .setColor(mContext.getColor(R.color.BlueGrey_Primary))
                 .setCategory(Notification.CATEGORY_RECOMMENDATION)
                 .setLargeIcon(mLargeIcon)
                 .setSmallIcon(mSmallIcon)

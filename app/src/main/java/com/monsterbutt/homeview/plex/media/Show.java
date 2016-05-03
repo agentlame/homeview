@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.text.TextUtils;
 import android.view.View;
 
 import com.monsterbutt.homeview.settings.SettingsManager;
@@ -25,14 +26,35 @@ public class Show extends PlexContainerItem implements Parcelable {
 
     Show(Directory dir) {
         super(dir);
+        removeAllSeasonFromLeafCount();
     }
 
     Show(MediaContainer mc) {
         super(mc);
+        removeAllSeasonFromLeafCount();
     }
 
     protected Show(Parcel in) {
         super(in);
+    }
+
+    private void removeAllSeasonFromLeafCount() {
+
+        if (mDirectories != null && !mDirectories.isEmpty()) {
+
+            int viewedLeafCount = 0;
+            int leafCount = 0;
+            for (PlexLibraryItem dir : mDirectories) {
+
+                if (!dir.getTitle().equals(ALL_EPISODE)) {
+                    leafCount += Integer.valueOf(((PlexContainerItem) dir).getLeafCount());
+                    viewedLeafCount += Integer.valueOf(((PlexContainerItem)dir).getViewedLeafCount());
+                }
+            }
+
+            mDirectory.setLeafCount(Integer.toString(leafCount));
+            mDirectory.setViewedLeafCount(Integer.toString(viewedLeafCount));
+        }
     }
 
     @Override
@@ -102,30 +124,35 @@ public class Show extends PlexContainerItem implements Parcelable {
         return true;
     }
 
-    private PlexContainerItem getAllEpisodes() {
-
-        PlexContainerItem ret = null;
-        for (PlexLibraryItem dir : mDirectories) {
-            if (dir.getTitle().equals(ALL_EPISODE))
-                ret = (PlexContainerItem) dir;
-        }
-        return ret;
-    }
-
     public int getEpisodeCount() {
 
-        PlexContainerItem all = getAllEpisodes();
-        if (all != null)
-            return Integer.valueOf(all.getLeafCount());
-        return 0;
+        if (mDirectory != null && !TextUtils.isEmpty(mDirectory.getLeafCount()))
+            return Integer.valueOf(mDirectory.getLeafCount());
+
+        int count = 0;
+        if (mDirectories != null) {
+            for (PlexLibraryItem dir : mDirectories) {
+                if (!dir.getTitle().equals(ALL_EPISODE))
+                    count += Integer.valueOf(((PlexContainerItem) dir).getLeafCount());
+            }
+        }
+        return count;
     }
 
     public int getUnwatchedEpisodeCount() {
 
-        PlexContainerItem all = getAllEpisodes();
-        if (all != null)
-            return getEpisodeCount() - Integer.valueOf(all.getViewedLeafCount());
-        return super.getUnwatchedCount();
+        if (mDirectory != null && !TextUtils.isEmpty(mDirectory.getViewedLeafCount()) &&
+            !TextUtils.isEmpty(mDirectory.getLeafCount()))
+            return Integer.valueOf(mDirectory.getLeafCount()) - Integer.valueOf(mDirectory.getViewedLeafCount());
+
+        int count = 0;
+        if (mDirectories != null) {
+            for (PlexLibraryItem dir : mDirectories) {
+                if (!dir.getTitle().equals(ALL_EPISODE))
+                    count += dir.getUnwatchedCount();
+            }
+        }
+        return count;
     }
 
     @Override
@@ -147,7 +174,7 @@ public class Show extends PlexContainerItem implements Parcelable {
         int count = getEpisodeCount();
         if (count == 0)
             return "";
-        return String.format("%d %s", count, context.getString(R.string.episodes));
+        return String.format("%s %s", Integer.toString(count), context.getString(R.string.episodes));
     }
 
     @Override
@@ -156,7 +183,7 @@ public class Show extends PlexContainerItem implements Parcelable {
         int count = getUnwatchedEpisodeCount();
         if (count == 0)
             return "";
-        return String.format("%d %s %s", count, context.getString(R.string.unwatched),
+        return String.format("%s %s %s", Integer.toString(count), context.getString(R.string.unwatched),
                                                 context.getString(R.string.episodes));
     }
 }

@@ -513,8 +513,8 @@ public class PlexServer {
     public boolean toggleWatchedState(String key, String ratingKey, boolean isWatched) {
 
         if (isWatched)
-            return setWatched(key, ratingKey);
-        return setUnwatched(key, ratingKey);
+            return setUnwatched(key, ratingKey);
+        return setWatched(key, ratingKey);
     }
 
     public boolean setProgress(String key, String ratingKey, long progress) {

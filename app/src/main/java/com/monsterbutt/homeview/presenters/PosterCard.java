@@ -10,11 +10,12 @@ import android.view.View;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
+import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 
 public class PosterCard extends CardObject {
 
-    protected final PlexLibraryItem item;
+    protected PlexLibraryItem item;
 
     public PosterCard(Context context, PlexLibraryItem obj) {
         super(context);
@@ -25,6 +26,20 @@ public class PosterCard extends CardObject {
 
     @Override
     public String getKey() { return item.getKey(); }
+
+    @Override
+    public String getRatingsKey() {
+        if (item.getRatingKey() == 0)
+            return getKey();
+        return Long.toString(item.getRatingKey()); }
+
+    @Override
+    public WatchedStatusHandler.UpdateStatus getUpdateStatus() {
+
+        return new WatchedStatusHandler.UpdateStatus(Long.toString(item.getRatingKey()),
+                                                     item.getViewedOffset(),
+                                                     item.getWatchedState());
+    }
 
     @Override
     public String getTitle() {
@@ -81,6 +96,8 @@ public class PosterCard extends CardObject {
     public int getViewedProgress() {
         return item.getViewedProgress();
     }
+
+    public long getViewedOffset() { return item.getViewedOffset(); }
 
     @Override
     public boolean useItemBackgroundArt() { return item.useItemBackgroundArt(); }

@@ -50,7 +50,7 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
 
     @Override
     public String getKey() {
-        return key;
+        return key + "/" + Long.toString(mChapter.getindex());
     }
 
     @Override
@@ -184,7 +184,7 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
     public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
         Intent intent = new Intent(fragment.getActivity(), PlaybackActivity.class);
-        intent.putExtra(PlaybackActivity.KEY, getKey());
+        intent.putExtra(PlaybackActivity.KEY, key);
         intent.putExtra(PlaybackActivity.START_OFFSET, mChapter.getStartTimeOffset());
         intent.putExtra(PlaybackActivity.VIDEO, mVideo);
         if (extras != null)

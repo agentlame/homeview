@@ -101,7 +101,7 @@ public class Movie extends PlexVideoItem implements Parcelable {
 
         String date = Utils.convertDateToText(context, mVideo.getOriginallyAvailableDate());
         if (TextUtils.isEmpty(date))
-            date = getYear();
+            date = TextUtils.isEmpty(getYear()) ? "" : getYear();
         return date;
     }
 }

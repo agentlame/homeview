@@ -15,6 +15,8 @@ import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.settings.SettingsManager;
+import com.monsterbutt.homeview.ui.PlexItemRow;
+import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.List;
 
@@ -108,11 +110,14 @@ public abstract class PlexLibraryItem {
 
     public String getDetailGenre(Context context) { return ""; }
 
-    public abstract WatchedState getWatchedState();
+    public WatchedState getWatchedState() { return WatchedState.Watched; };
 
-    public abstract int getUnwatchedCount();
+    public int getUnwatchedCount() { return 0; };
 
-    public abstract int getViewedProgress();
+    public int getViewedProgress() { return 0; };
+    public long getViewedOffset() { return 0; };
+
+    public void setStatus(WatchedStatusHandler.UpdateStatus status) {}
 
     public String getThemeKey(PlexServer server) {
         return "";
@@ -121,6 +126,7 @@ public abstract class PlexLibraryItem {
     public abstract boolean useItemBackgroundArt();
 
     public abstract String getHeaderForChildren(Context context);
+    public boolean shouldChildRowWatchState() { return false; }
 
     public abstract List<PlexLibraryItem> getChildrenItems();
 
@@ -135,27 +141,24 @@ public abstract class PlexLibraryItem {
 
     public abstract void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride, boolean isStartOverride);
 
-    public ListRow getChildren(Context context, PlexServer server) {
+    public PlexItemRow getChildren(Context context, PlexServer server) {
 
         boolean skipAllSeason = (this instanceof Show) &&
                 !SettingsManager.getInstance(context).getBoolean("preferences_navigation_showallseason");
 
-        ListRow row = null;
+        PlexItemRow row = null;
         List<PlexLibraryItem> children = getChildrenItems();
         if (children != null && !children.isEmpty()) {
             // setup bottom row for seasons, episodes, or chapters
-            ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(server));
-            row = new ListRow(new HeaderItem(0, getHeaderForChildren(context)),
-                    adapter);
-
+            if (shouldChildRowWatchState())
+                row = PlexItemRow.getWatchedStateRow(server, getHeaderForChildren(context));
+            else
+                row = PlexItemRow.getRow(server, getHeaderForChildren(context));
             for (PlexLibraryItem child : children) {
 
                 if (skipAllSeason && child.getKey().endsWith(Season.ALL_SEASONS))
                     continue;
-
-                adapter.add((this instanceof Season || this instanceof Episode || this instanceof Movie)
-                        ? new SceneCard(context, child)
-                        : new PosterCard(context, child));
+                row.addItem(context, child, this instanceof Season || this instanceof Episode || this instanceof Movie);
             }
         }
         return row;

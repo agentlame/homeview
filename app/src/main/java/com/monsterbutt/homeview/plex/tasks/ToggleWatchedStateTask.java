@@ -4,6 +4,7 @@ import android.os.AsyncTask;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
+import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 public class ToggleWatchedStateTask extends AsyncTask<PlexServer, Void, Void> {
 

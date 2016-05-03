@@ -57,6 +57,7 @@ import com.monsterbutt.homeview.presenters.DetailsDescriptionPresenter;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.services.ThemeService;
+import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.android.ImageCardView;
 import com.monsterbutt.homeview.ui.handler.MediaCardBackgroundHandler;
@@ -71,6 +72,7 @@ import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.ui.activity.DetailsActivity;
+import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,13 +86,21 @@ import us.nineworlds.plex.rest.model.impl.Video;
  * LeanbackDetailsFragment extends DetailsFragment, a Wrapper fragment for leanback details screens.
  * It shows a detailed view of video and its meta plus related videos.
  */
-public class DetailsFragment extends android.support.v17.leanback.app.DetailsFragment implements OnItemViewClickedListener, OnActionClickedListener, HomeViewActivity.OnPlayKeyListener, OnItemViewSelectedListener {
+public class DetailsFragment extends android.support.v17.leanback.app.DetailsFragment
+        implements OnItemViewClickedListener, OnActionClickedListener,
+        HomeViewActivity.OnPlayKeyListener, OnItemViewSelectedListener,
+        WatchedStatusHandler.WatchStatusListener {
 
     private View mCurrentCardTransitionImage = null;
     private CardObject mCurrentCard = null;
     private DetailsDescriptionPresenter mDetailPresenter;
     private boolean mContinueTheme = false;
     private boolean mThemeAlreadyRun = false;
+
+    private PlexItemRow mChildRow = null;
+
+
+    private WatchedStatusHandler mWatchedHandler = null;
 
     final static int ACTION_PLAY        = 1;
     final static int ACTION_VIEWSTATUS  = 2;
@@ -112,7 +122,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         Activity activity = getActivity();
         mServer = PlexServerManager.getInstance(activity.getApplicationContext()).getSelectedServer();
-
+        mWatchedHandler = new WatchedStatusHandler(mServer, this);
         mItem = activity.getIntent().getParcelableExtra(DetailsActivity.ITEM);
         mBackgroundURL = activity.getIntent().getStringExtra(DetailsActivity.BACKGROUND);
         mThemeAlreadyRun = activity.getIntent().getBooleanExtra(ThemeService.THEME_ALREADY_RUN, false);
@@ -131,6 +141,9 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         mContinueTheme = false;
 
+        mWatchedHandler.resume();
+        if (mChildRow != null)
+            mChildRow.resume();
         mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
         if (!TextUtils.isEmpty(mBackgroundURL))
             mBackgroundHandler.updateBackground(mServer.makeServerURL(mBackgroundURL), false);
@@ -141,6 +154,9 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         super.onPause();
 
+        mWatchedHandler.pause();
+        if (mChildRow != null)
+            mChildRow.pause();
         mBackgroundHandler.cancel();
         if (mContinueTheme || !mThemeAlreadyRun ||
                 (getActivity() != null && getActivity().isFinishing() &&
@@ -205,10 +221,12 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     private void toggleWatched() {
 
         boolean isWatched = !(mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched);
-        mDetailPresenter.setWatchedState(isWatched);
-        setActions((SparseArrayObjectAdapter) ((DetailsOverviewRow) mAdapter.get(0)).getActionsAdapter(),
-                isWatched);
         new ToggleWatchedStateTask(mItem).execute(mServer);
+
+        DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
+        setActions((SparseArrayObjectAdapter) row.getActionsAdapter(), isWatched);
+        row.setItem(null);
+        row.setItem(mItem);
     }
 
     private Bundle bundleTracks() {
@@ -226,6 +244,34 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         else if (action.getId() == ACTION_VIEWSTATUS)
             toggleWatched();
+    }
+
+    @Override
+    public WatchedStatusHandler.UpdateStatusList getItemsToCheck() {
+
+        WatchedStatusHandler.UpdateStatusList list = null;
+        if (mItem != null) {
+
+            list = new WatchedStatusHandler.UpdateStatusList();
+            list.add(new WatchedStatusHandler.UpdateStatus(Long.toString(mItem.getRatingKey()),
+                mItem.getViewedOffset(), mItem.getWatchedState()));
+        }
+        return list;
+    }
+
+    @Override
+    public void updatedItemsCallback(WatchedStatusHandler.UpdateStatusList items) {
+
+        if (mItem != null && items != null && !items.isEmpty()) {
+
+            mItem.setStatus(items.get(0));
+
+            boolean isWatched = !(mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched);
+            DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
+            setActions((SparseArrayObjectAdapter) row.getActionsAdapter(), isWatched);
+            row.setItem(null);
+            row.setItem(mItem);
+        }
     }
 
     static class MovieDetailsOverviewLogoPresenter extends DetailsOverviewLogoPresenter {
@@ -379,7 +425,6 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         private final PlexServer server;
 
-
         public LoadMetadataTask(PlexServer server) {
             this.server = server;
         }
@@ -404,6 +449,9 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         protected void onPostExecute(PlexLibraryItem item) {
 
             mItem = item;
+            DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
+            row.setItem(null);
+            row.setItem(mItem);
             Activity activity = getActivity();
             if (item instanceof PlexVideoItem) {
                 mTracks = ((PlexVideoItem) mItem).fillTrackSelector(getActivity(),
@@ -415,9 +463,9 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
             }
             else
                 mTracks = null;
-            ListRow children = item.getChildren(activity, mServer);
-            if (children != null)
-                mAdapter.add(children);
+            mChildRow = item.getChildren(activity, mServer);
+            if (mChildRow != null)
+                mAdapter.add(mChildRow);
             ListRow extras = item.getExtras(activity, mServer);
             if (extras != null)
                 mAdapter.add(extras);

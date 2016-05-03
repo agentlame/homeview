@@ -102,14 +102,25 @@ public class Episode extends PlexVideoItem implements Parcelable {
 
     @Override
     public String getCardContent(Context context) {
-        return String.format("%s%s %s%s %s %s %s",
+
+        long duration = getDurationInMin();
+        if (duration > 0) {
+            return String.format("%s%s %s %s%s %s %s %s",
+                    context.getString(R.string.season_abbrev),
+                    getSeasonNum(),
+                    context.getString(R.string.mid_dot),
+                    context.getString(R.string.episodes_abbrev),
+                    getEpisodeNum(),
+                    context.getString(R.string.mid_dot),
+                    Long.toString(duration),
+                    context.getString(R.string.minutes_abbrev));
+        }
+        return String.format("%s%s %s %s%s",
                 context.getString(R.string.season_abbrev),
                 getSeasonNum(),
-                context.getString(R.string.episodes_abbrev),
-                getEpisodeNum(),
                 context.getString(R.string.mid_dot),
-                Long.toString(getDurationInMin()),
-                context.getString(R.string.minutes_abbrev));
+                context.getString(R.string.episodes_abbrev),
+                getEpisodeNum());
     }
 
     @Override
@@ -173,7 +184,14 @@ public class Episode extends PlexVideoItem implements Parcelable {
 
         String date = Utils.convertDateToText(context, mVideo.getOriginallyAvailableDate());
         if (TextUtils.isEmpty(date))
-            date = getYear();
+            date = TextUtils.isEmpty(getYear()) ? "" : getYear();
+        if (TextUtils.isEmpty(date))
+            return String.format("%s %s %s %s %s",
+                    context.getString(R.string.Season),
+                    getSeasonNum(),
+                    context.getString(R.string.mid_dot),
+                    context.getString(R.string.Episode),
+                    getEpisodeNum());
         return String.format("%s %s %s %s %s %s %s",
                 context.getString(R.string.Season),
                 getSeasonNum(),

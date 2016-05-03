@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.support.v17.leanback.widget.Presenter;
+import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.ViewGroup;
 
@@ -106,13 +107,16 @@ public class CardPresenter extends Presenter {
                 unwatched = Integer.toString(unwatchedCount);
             cardView.setFlag(context.getDrawable(R.drawable.right_flag), unwatched);
         }
+        else
+            cardView.setFlag(null, "");
 
-        if (obj.getViewedProgress() > 0)
-            cardView.setProgress(obj.getViewedProgress());
+        cardView.setProgress(obj.getViewedProgress() < 100 ? obj.getViewedProgress() : 0);
 
         Drawable drawable = obj.getImage(context);
         if (drawable != null)
             cardView.setMainImage(drawable, true);
+        else if (TextUtils.isEmpty(imageURL))
+            cardView.setMainImage(context.getDrawable(R.drawable.default_background));
         else {
 
             cardView.setTarget(new SimpleTarget<GlideDrawable>(width, height) {

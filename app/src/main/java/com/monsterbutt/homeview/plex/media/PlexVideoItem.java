@@ -25,6 +25,7 @@ import com.monsterbutt.homeview.ui.activity.DetailsActivity;
 import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +45,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
 
         mVideo = new Video(in);
         mShouldPlayFirst = in.readInt() == 1;
-        setWatchedState();
+        mWatchedState = PlexVideoItem.getWatchedState(mVideo);
     }
 
     @Override
@@ -77,7 +78,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     protected PlexVideoItem(Video video) {
 
         mVideo = video;
-        setWatchedState();
+        mWatchedState = PlexVideoItem.getWatchedState(mVideo);
     }
 
     @Override
@@ -91,21 +92,23 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         mVideo.setViewOffset(0);
     }
 
-    private void setWatchedState() {
+    public static WatchedState getWatchedState(Video video) {
 
-        int viewCount = mVideo.getViewCount();
+        WatchedState state;
+        int viewCount = video.getViewCount();
         if (viewCount > 0) {
 
-            mWatchedState = (mVideo.getViewOffset() > 0) ?
+            state = (video.getViewOffset() > 0) ?
                     WatchedState.WatchedAndPartial :
                     WatchedState.Watched;
         }
         else {
 
-            mWatchedState = (mVideo.getViewOffset() > 0) ?
+            state = (video.getViewOffset() > 0) ?
                     WatchedState.PartialWatched :
                     WatchedState.Unwatched;
         }
+        return state;
     }
 
     public boolean shouldPlaybackFirst() { return mShouldPlayFirst; }
@@ -249,10 +252,6 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return mWatchedState;
     }
 
-    public void setWatchedState(WatchedState state) {
-        mWatchedState = state;
-    }
-
     public long getDurationInMin() {
        return mVideo.getDuration() / MillisecondInMinutes;
     }
@@ -271,16 +270,18 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return mVideo.getGrandparentArtKey();
     }
 
+    @Override
     public long getViewedOffset() {
         return mVideo.getViewOffset();
     }
-    public void setViewedOffset(long offset) {
-        mVideo.setViewOffset(0);
-    }
 
     @Override
-    public int getUnwatchedCount() {
-        return 0;
+    public void setStatus(WatchedStatusHandler.UpdateStatus status) {
+
+        if (mVideo == null)
+            return;
+        mVideo.setViewOffset(status.viewedOffset);
+        mWatchedState = status.state;
     }
 
     @Override

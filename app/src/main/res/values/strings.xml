@@ -82,8 +82,8 @@
     <string name="extras_row_header">Extras</string>
 
     <string name="action_play">Play</string>
-    <string name="action_watched">Watched</string>
-    <string name="action_unwatched">Unwatched</string>
+    <string name="action_watched">Mark as Unwatched</string>
+    <string name="action_unwatched">Mark as Watched</string>
 
     <string name="recommendations_max">8</string>
     <string name="recommendations_priority_base">50</string>

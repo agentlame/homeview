@@ -18,7 +18,6 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 
 import com.bumptech.glide.Glide;
 import com.monsterbutt.homeview.plex.PlexServer;
@@ -29,8 +28,6 @@ public class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPrese
 
     private PlexServer server;
     private Context context;
-    private ImageView mHACK;
-    private ProgressBar mHACK2;
     public DetailsDescriptionPresenter(Context context, PlexServer server) {
         this.context = context;
         this.server = server;
@@ -59,15 +56,10 @@ public class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPrese
             viewHolder.hasStudio(setImage(viewHolder.getStudio(), video.getDetailStudioPath(server)));
             viewHolder.hasRating(setImage(viewHolder.getRating(), video.getDetailRatingPath(server)));
             viewHolder.getContent().setText(video.getDetailContent(context));
-            mHACK = viewHolder.getWatched();
-            mHACK2 = viewHolder.getProgress();
-            setWatchedState(video.getWatchedState() == PlexLibraryItem.WatchedState.Watched);
-            mHACK2.setProgress(video.getViewedProgress());
+            boolean watched = video.getWatchedState() == PlexLibraryItem.WatchedState.Watched;
+            viewHolder.getWatched().setVisibility(watched ? View.INVISIBLE : View.VISIBLE);
+            int progress = watched ? 0 : video.getViewedProgress();
+            viewHolder.getProgress().setProgress(progress);
         }
-    }
-
-    public void setWatchedState(boolean watched) {
-        mHACK.setVisibility(watched ? View.GONE : View.VISIBLE);
-        mHACK2.setProgress(0);
     }
 }

@@ -5,8 +5,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v17.leanback.app.BrowseFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
-import android.support.v17.leanback.widget.HeaderItem;
-import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
 import android.support.v17.leanback.widget.OnItemViewClickedListener;
 import android.support.v17.leanback.widget.OnItemViewSelectedListener;
@@ -21,12 +19,17 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.ui.MediaRowCreator;
+import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
 import com.monsterbutt.homeview.ui.android.ImageCardView;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.handler.MediaCardBackgroundHandler;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
@@ -39,6 +42,9 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
     private View mCurrentCardTransitionImage = null;
     private CardObject mCurrentCard = null;
     private String mBackgroundURL = "";
+
+    private Map<String, MediaRowCreator.RowData> mRows = new HashMap<>();
+    private ArrayObjectAdapter mRowsAdapter;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -55,7 +61,9 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
         TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
         text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
         setTitle(activity.getIntent().getStringExtra(SectionHubActivity.TITLE));
-        new LoadMetadataTask().execute(activity.getIntent().getStringExtra(SectionHubActivity.SECTIONID));
+
+        mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
+        setAdapter(mRowsAdapter);
     }
 
     @Override
@@ -63,15 +71,23 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
 
         super.onResume();
 
+        for (MediaRowCreator.RowData row : mRows.values())
+            ((PlexItemRow)row.data).resume();
+
         mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
         if (!TextUtils.isEmpty(mBackgroundURL))
             mBackgroundHandler.updateBackground(mBackgroundURL, false);
+
+        new LoadMetadataTask().execute(getActivity().getIntent().getStringExtra(SectionHubActivity.SECTIONID));
     }
 
     @Override
     public void onPause() {
 
         super.onPause();
+
+        for (MediaRowCreator.RowData row : mRows.values())
+            ((PlexItemRow)row.data).pause();
         mBackgroundHandler.cancel();
     }
 
@@ -111,16 +127,48 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
         @Override
         protected void onPostExecute(MediaContainer item) {
 
-            ArrayObjectAdapter rowAdapter = new ArrayObjectAdapter(new ListRowPresenter());
-            setAdapter(rowAdapter);
             if (item != null && item.getHubs() != null) {
 
-                List<MediaRowCreator.MediaRow> rows = MediaRowCreator.buildRowList(null, item);
-                for (MediaRowCreator.MediaRow row : rows) {
+                List<MediaRowCreator.MediaRow> newRows = MediaRowCreator.buildRowList(null, item);
 
-                    ArrayObjectAdapter adapter = MediaRowCreator.fillAdapterForRow(getActivity(),
-                            mServer, row, false);
-                    rowAdapter.add(new ListRow(new HeaderItem(row.title),adapter));
+                List<MediaRowCreator.RowData> currentRows = new ArrayList<>();
+                currentRows.addAll(mRows.values());
+                Collections.sort(currentRows);
+                // remove old rows that aren't there anymore
+                for (MediaRowCreator.RowData row : currentRows) {
+                    // we are reversing through the list
+                    boolean found = false;
+                    for (MediaRowCreator.MediaRow newRow : newRows) {
+
+                        if (newRow.key.equals(row.id)) {
+
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        mRows.remove(row.id);
+                        mRowsAdapter.removeItems(row.currentIndex, 1);
+                    }
+                }
+
+                int index = 0;
+                for (MediaRowCreator.MediaRow row : newRows) {
+
+                    PlexItemRow rowUpdate = MediaRowCreator.fillAdapterForWatchedRow(getActivity(), mServer, row, false);
+                    if (mRows.containsKey(row.title)) {
+
+                        MediaRowCreator.RowData current = mRows.get(row.title);
+                        ((PlexItemRow)current.data).updateRow(rowUpdate);
+                        current.currentIndex = index;
+                    }
+                    else {
+
+                        mRows.put(row.title, new MediaRowCreator.RowData(row.title ,index, rowUpdate));
+                        mRowsAdapter.add(index, rowUpdate);
+                    }
+                    ++index;
                 }
             }
         }

@@ -26,7 +26,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.BrowseFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.HeaderItem;
@@ -47,6 +46,7 @@ import com.monsterbutt.homeview.presenters.SettingPresenter;
 import com.monsterbutt.homeview.services.ThemeService;
 import com.monsterbutt.homeview.settings.SettingLaunch;
 import com.monsterbutt.homeview.ui.MediaRowCreator;
+import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.activity.SearchActivity;
 import com.monsterbutt.homeview.ui.activity.SettingsActivity;
 import com.monsterbutt.homeview.ui.android.ImageCardView;
@@ -83,29 +83,8 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
     protected PlexServerManager mMgr = null;
     protected MediaCardBackgroundHandler mBackgroundHandler;
 
-    Map<String, RowData> mRows = new HashMap<>();
 
-    private class RowData implements Comparable<RowData> {
-
-        public final String id;
-        public final ArrayObjectAdapter data;
-        public int currentIndex;
-
-        public RowData(String id, int index, ArrayObjectAdapter data) {
-            this.id = id;
-            currentIndex = index;
-            this.data = data;
-        }
-
-        @Override
-        public int compareTo(@NonNull RowData row) {
-
-            // reverse order
-            if (this.currentIndex < row.currentIndex)
-                return 1;
-            return -1;
-        }
-    }
+    private Map<String, MediaRowCreator.RowData> mRows = new HashMap<>();
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -151,6 +130,12 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         super.onPause();
         mBackgroundHandler.cancel();
+
+        for (MediaRowCreator.RowData row : mRows.values()) {
+
+            if (row.data instanceof PlexItemRow)
+                ((PlexItemRow)row.data).pause();
+        }
     }
 
     @Override
@@ -160,6 +145,12 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         ThemeService.stopTheme(getActivity());
         mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
+
+        for (MediaRowCreator.RowData row : mRows.values()) {
+
+            if (row.data instanceof PlexItemRow)
+                ((PlexItemRow)row.data).resume();
+        }
 
         if (!TextUtils.isEmpty(mBackgroundURL))
             mBackgroundHandler.updateBackground(mBackgroundURL, false);
@@ -261,8 +252,8 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
     private void addSettingsRow(boolean serverOnly, int index) {
 
-        RowData oldRow = mRows.get(SETTINGS_ROW_KEY);
-        if (oldRow != null && oldRow.data.size() == 2) {
+        MediaRowCreator.RowData oldRow = mRows.get(SETTINGS_ROW_KEY);
+        if (oldRow != null && oldRow.data.getAdapter().size() == 2) {
 
             oldRow.currentIndex = index;
             return;
@@ -271,14 +262,15 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         Context context = getActivity();
         ArrayObjectAdapter gridRowAdapter = new ArrayObjectAdapter(new SettingPresenter());
         if (oldRow != null)
-            gridRowAdapter = oldRow.data;
+            gridRowAdapter = (ArrayObjectAdapter) oldRow.data.getAdapter();
         else {
 
-            mRows.put(SETTINGS_ROW_KEY, new RowData(SETTINGS_ROW_KEY, index, gridRowAdapter));
-            mRowsAdapter.add(new ListRow(SETTINGS_ROW_KEY.hashCode(),
-                                            new HeaderItem(SETTINGS_ROW_KEY.hashCode(),
-                                                            getString(R.string.settings)),
-                                                            gridRowAdapter));
+            ListRow row = new ListRow(SETTINGS_ROW_KEY.hashCode(),
+                    new HeaderItem(SETTINGS_ROW_KEY.hashCode(),
+                            getString(R.string.settings)),
+                    gridRowAdapter);
+            mRows.put(SETTINGS_ROW_KEY, new MediaRowCreator.RowData(SETTINGS_ROW_KEY, index, row));
+            mRowsAdapter.add(row);
             gridRowAdapter.add(new SettingCard(context,
                     new SettingLaunch(context.getString(R.string.settings_server),
                             mMgr.getSelectedServer().getServerName(),
@@ -304,75 +296,55 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
     private void updateMainRow(MediaRowCreator.MediaRow row, boolean useLandscape, int index) {
 
-        RowData existing = mRows.get(row.key);
+        MediaRowCreator.RowData existing = mRows.get(row.key);
         if (existing == null)
             return;
         existing.currentIndex = index;
-        ArrayObjectAdapter gridRowAdapter = MediaRowCreator.fillAdapterForRow(getActivity(),
-                mMgr.getSelectedServer(), row, useLandscape);
-        for(int currIndex = existing.data.size(); 0 != currIndex--; /**/) {
-
-            CardObject item = (CardObject) existing.data.get(currIndex);
-            if (-1 == gridRowAdapter.indexOf(item))
-                existing.data.remove(item);
-        }
-
-        for (int newIndex = 0; newIndex < gridRowAdapter.size(); ++newIndex) {
-
-            CardObject item = (CardObject) gridRowAdapter.get(newIndex);
-            int currIndex = existing.data.indexOf(item);
-            if (-1 == currIndex)
-                existing.data.add(newIndex, item);
-            else
-                existing.data.replace(currIndex, item);
-        }
-
+        if (existing.data instanceof PlexItemRow)
+            ((PlexItemRow)existing.data).updateRow(MediaRowCreator.fillAdapterForRow(getActivity(), mMgr.getSelectedServer(), row, useLandscape));
     }
 
     private void addMainRow(MediaRowCreator.MediaRow row, boolean useLandscape, int index) {
 
-        ArrayObjectAdapter gridRowAdapter = MediaRowCreator.fillAdapterForRow(getActivity(),
-                                                    mMgr.getSelectedServer(), row, useLandscape);
         String header = row.title;
+        int hash = header.hashCode();
+        for (String sub : getString(R.string.main_rows_header_strip).split(";"))
+            header = header.replace(sub, "").trim();
+        PlexItemRow updateRow = index != 0 ?
+                MediaRowCreator.fillAdapterForWatchedRow(getActivity(), mMgr.getSelectedServer(), row, header, hash, useLandscape)
+                : MediaRowCreator.fillAdapterForRow(getActivity(), mMgr.getSelectedServer(), row, header, hash, useLandscape);
         if (index != mRows.size()) {
-            for(RowData oldRow : mRows.values()) {
+            for(MediaRowCreator.RowData oldRow : mRows.values()) {
                 if (oldRow.currentIndex >= index)
                     ++oldRow.currentIndex;
             }
         }
-        mRows.put(header, new RowData(row.key, index, gridRowAdapter));
-        int hash = header.hashCode();
-        for (String sub : getString(R.string.main_rows_header_strip).split(";"))
-            header = header.replace(sub, "").trim();
-
-        mRowsAdapter.add(index, new ListRow(hash, new HeaderItem(hash, header), gridRowAdapter));
+        mRows.put(row.key, new MediaRowCreator.RowData(row.key, index, updateRow));
+        mRowsAdapter.add(index, updateRow);
     }
 
     private int setRowsFromLibrary(MediaContainer sections, MediaContainer hubs, String rowLandscape, String delim) {
 
         List<MediaRowCreator.MediaRow> newRows = MediaRowCreator.buildRowList(sections, hubs);
-        List<RowData> currentRows = new ArrayList<>();
+        List<MediaRowCreator.RowData> currentRows = new ArrayList<>();
         currentRows.addAll(mRows.values());
-        if (null != currentRows) {
+        Collections.sort(currentRows);
+        // remove old rows that aren't there anymore
+        for (MediaRowCreator.RowData row : currentRows) {
+            // we are reversing through the list
+            boolean found = false;
+            for (MediaRowCreator.MediaRow newRow : newRows) {
 
-            Collections.sort(currentRows);
-            // remove old rows that aren't there anymore
-            for (RowData row : currentRows) {
-                // we are reversing through the list
-                boolean found = false;
-                for (MediaRowCreator.MediaRow newRow : newRows) {
+                if (newRow.key.equals(row.id)) {
 
-                    if (newRow.key.equals(row.id)) {
-
-                        found = true;
-                        break;
-                    }
+                    found = true;
+                    break;
                 }
+            }
 
-                if (!found && !row.id.equals(SETTINGS_ROW_KEY)) {
-                    mRows.put(row.id, null);
-                    mRowsAdapter.removeItems(row.currentIndex, 1);
-                }
+            if (!found && !row.id.equals(SETTINGS_ROW_KEY)) {
+                mRows.remove(row.id);
+                mRowsAdapter.removeItems(row.currentIndex, 1);
             }
         }
 
@@ -382,7 +354,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
             for (MediaRowCreator.MediaRow row : newRows) {
 
                 boolean useLandscape = landscape.containsKey(row.key);
-                if (mRows.get(row.title) != null)
+                if (mRows.get(row.key) != null)
                     updateMainRow(row, useLandscape, rows++);
                 else
                     addMainRow(row, useLandscape, rows++);

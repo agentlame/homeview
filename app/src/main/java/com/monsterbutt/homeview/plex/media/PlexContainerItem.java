@@ -17,6 +17,7 @@ import com.monsterbutt.homeview.provider.MediaContentProvider;
 import com.monsterbutt.homeview.provider.SearchImagesProvider;
 import com.monsterbutt.homeview.ui.activity.ContainerActivity;
 import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -301,33 +302,64 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
     @Override
     public WatchedState getWatchedState() {
 
-        if (null == mDirectory || null == mDirectory.getLeafCount() || null == mDirectory.getViewedLeafCount())
+        return PlexContainerItem.getWatchedState(mDirectory);
+    }
+
+    public static WatchedState getWatchedState(Directory directory) {
+
+        if (null == directory || null == directory.getLeafCount() || null == directory.getViewedLeafCount())
             return WatchedState.Watched;
 
-        int unwatched = getUnwatchedCount();
+        int unwatched = getUnwatchedCount(directory);
         if (unwatched == 0)
             return WatchedState.Watched;
 
-        int watched = getWatchedCount();
+        int watched = getWatchedCount(directory);
         if (watched == 0)
             return WatchedState.Unwatched;
         return WatchedState.PartialWatched;
     }
 
-    public int getWatchedCount() {
+    @Override
+    public long getViewedOffset() {
 
         if (null == mDirectory || null == mDirectory.getLeafCount() || null == mDirectory.getViewedLeafCount())
             return 0;
-        return Integer.valueOf(mDirectory.getViewedLeafCount());
+        return Long.valueOf(mDirectory.getViewedLeafCount());
+    }
+
+    public int getWatchedCount() {
+
+        return PlexContainerItem.getWatchedCount(mDirectory);
+    }
+
+    public static int getWatchedCount(Directory directory) {
+
+        if (null == directory || null == directory.getLeafCount() || null == directory.getViewedLeafCount())
+            return 0;
+        return Integer.valueOf(directory.getViewedLeafCount());
+    }
+
+    @Override
+    public void setStatus(WatchedStatusHandler.UpdateStatus status) {
+
+        if (null == mDirectory || null == mDirectory.getLeafCount() || null == mDirectory.getViewedLeafCount())
+            return;
+        mDirectory.setViewedLeafCount(Long.toString(status.viewedOffset));
     }
 
     @Override
     public int getUnwatchedCount() {
 
-        if (null == mDirectory || null == mDirectory.getLeafCount() || null == mDirectory.getViewedLeafCount())
+        return PlexContainerItem.getUnwatchedCount(mDirectory);
+    }
+
+    public static int getUnwatchedCount(Directory directory) {
+
+        if (null == directory || null == directory.getLeafCount() || null == directory.getViewedLeafCount())
             return 0;
 
-        return  Integer.valueOf(mDirectory.getLeafCount()) - Integer.valueOf(mDirectory.getViewedLeafCount());
+        return  Integer.valueOf(directory.getLeafCount()) - Integer.valueOf(directory.getViewedLeafCount());
     }
 
     @Override
@@ -349,6 +381,11 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
 
     @Override
     public String getHeaderForChildren(Context context) { return ""; }
+
+    @Override
+    public boolean shouldChildRowWatchState() {
+        return mVideos.isEmpty();
+    }
 
     @Override
     public List<PlexLibraryItem> getChildrenItems() {
@@ -478,10 +515,12 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
     public String getDetailGenre(Context context) {
 
         String ret = "";
-        for (Genre genre : mDirectory.getGenres()) {
-            if (!TextUtils.isEmpty(ret))
-                ret += ", ";
-            ret += genre.getTag();
+        if (mDirectory.getGenres() != null) {
+            for (Genre genre : mDirectory.getGenres()) {
+                if (!TextUtils.isEmpty(ret))
+                    ret += ", ";
+                ret += genre.getTag();
+            }
         }
         return ret;
     }

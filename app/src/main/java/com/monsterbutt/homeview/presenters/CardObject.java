@@ -9,6 +9,7 @@ import android.view.View;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
+import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 
 public abstract class CardObject {
@@ -23,6 +24,7 @@ public abstract class CardObject {
     }
 
     public abstract String getKey();
+    public          String getRatingsKey() { return getKey(); }
     public abstract String getTitle();
     public abstract String getContent();
 
@@ -37,6 +39,11 @@ public abstract class CardObject {
 
     public String getBackgroundImageUrl() {
         return "";
+    }
+
+    public WatchedStatusHandler.UpdateStatus getUpdateStatus() {
+
+        return new WatchedStatusHandler.UpdateStatus("", 0, getWatchedState());
     }
 
     public PlexLibraryItem.WatchedState getWatchedState() {
