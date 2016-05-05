@@ -31,6 +31,7 @@ import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.ClassPresenterSelector;
@@ -116,6 +117,7 @@ public class PlaybackFragment
         PlaybackControlHelper.ProgressUpdateCallback, HomeViewActivity.OnBackPressedListener,
         SurfaceHolder.Callback, VideoPlayer.CaptionListener {
 
+    private static final int CHOOSER_TIMEOUT = 10000;
     private static final String TAG = "PlaybackOverlayFragment";
     private static final boolean DEBUG = BuildConfig.DEBUG;
     private static final int BACKGROUND_TYPE = PlaybackFragment.BG_LIGHT;
@@ -453,7 +455,7 @@ public class PlaybackFragment
 
         if (mStartPosition.getStartType() == StartPosition.PlaybackStartType.Ask) {
 
-            new AlertDialog.Builder(getActivity(), R.style.AlertDialogStyle)
+            final AlertDialog alert = new AlertDialog.Builder(getActivity(), R.style.AlertDialogStyle)
                 .setIcon(R.drawable.launcher)
                 .setTitle(R.string.playback_start_dialog)
                 .setAdapter(getResumeChoiceAdapter(), new DialogInterface.OnClickListener() {
@@ -490,8 +492,25 @@ public class PlaybackFragment
                         dialog.dismiss();
                     }
                 })
-                    .create()
-                .show();
+                .create();
+            // Hide after some seconds
+            final Handler handler  = new Handler();
+            final Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (alert.isShowing()) {
+                        alert.dismiss();
+                    }
+                }
+            };
+            alert.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    handler.removeCallbacks(runnable);
+            }});
+            alert.show();
+
+            handler.postDelayed(runnable, CHOOSER_TIMEOUT);
         }
         mPlayer.setPlayWhenReady(playWhenReady);
     }
@@ -804,16 +823,19 @@ public class PlaybackFragment
 
         if (getPlaybackState() == PlaybackState.STATE_PLAYING) {
 
-            if (mProgressTask != null) {
-
-                if (Math.abs(timeInMs - mProgressTaskLastUpdate) > VideoProgressTask.PreferedSpanThresholdMs) {
-
-                    mProgressTask.setProgress(timeInMs);
-                    mProgressTaskLastUpdate = timeInMs;
-                }
-            }
+            if (Math.abs(timeInMs - mProgressTaskLastUpdate) > VideoProgressTask.PreferedSpanThresholdMs)
+                updateProgressTask(timeInMs);
         }
 
+    }
+
+    private void updateProgressTask(long timeInMs) {
+
+        if (mProgressTask != null) {
+
+            mProgressTask.setProgress(timeInMs);
+            mProgressTaskLastUpdate = timeInMs;
+        }
     }
 
     @Override
