@@ -20,7 +20,6 @@ public class MediaCodecCapabilities {
     public enum DecodeType {
         Hardware,
         Passthrough,
-        LegacyPassthrough,
         Software,
         Unsupported
     }
@@ -61,6 +60,7 @@ public class MediaCodecCapabilities {
         codecTranslations.put("audio/dca-ma",   MimeTypes.AUDIO_DTS_HD);
 
         codecTranslations.put("text/pgs",       MimeTypes.APPLICATION_PGS);
+        codecTranslations.put("text/srt",       MimeTypes.APPLICATION_SUBRIP);
     }
 
     private MediaCodecCapabilities(Context context) {
@@ -101,6 +101,8 @@ public class MediaCodecCapabilities {
 
         // use hardware for subs to keep the label from displaying, it's really software
         subtitleDecoderCodecs.put(MimeTypes.APPLICATION_PGS, DecodeType.Hardware);
+        subtitleDecoderCodecs.put(MimeTypes.APPLICATION_SUBRIP, DecodeType.Hardware);
+        subtitleDecoderCodecs.put(MimeTypes.APPLICATION_TTML, DecodeType.Hardware);
     }
 
     private void fillCodec(Map<String, List<MediaCodecInfo>> map, String mimeType, MediaCodecInfo codec) {
@@ -182,7 +184,6 @@ public class MediaCodecCapabilities {
         if (ret != DecodeType.Passthrough && ret != DecodeType.Hardware) {
 
             // this can be changed when we can decode HD formats in software
-            // we need to do legacy passthrough
             ret = determineAudioDecoderType(mimeType, bitDepth);
         }
         return ret;

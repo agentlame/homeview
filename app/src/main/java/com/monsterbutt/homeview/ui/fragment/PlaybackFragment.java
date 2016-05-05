@@ -22,6 +22,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
@@ -43,6 +44,7 @@ import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -77,6 +79,7 @@ import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.plex.media.Chapter;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
+import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.tasks.GetVideoQueueTask;
 import com.monsterbutt.homeview.plex.tasks.GetVideoTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTask;
@@ -150,6 +153,7 @@ public class PlaybackFragment
     private PlexServer mServer;
 
     private ImageView mSubtitlesImage = null;
+    private TextView mSubtitlesText =null;
 
     @Override
     public void onAttach(Context context) {
@@ -210,6 +214,18 @@ public class PlaybackFragment
         surfaceView.getHolder().addCallback(this);
 
         mSubtitlesImage = (ImageView) act.findViewById(R.id.imageSubtitles);
+        mSubtitlesText = (TextView) act.findViewById(R.id.textSubtitles);
+
+        Display display = act.getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+        int subtextX = (int) ((double)width * 0.20);
+        int subtextY = (int) ((double)height * 0.80);
+        mSubtitlesText.setX(subtextX);
+        mSubtitlesText.setWidth(width - (2* subtextX));
+        mSubtitlesText.setY(subtextY);
 
         mQueue = new ArrayList<>();
 
@@ -519,10 +535,10 @@ public class PlaybackFragment
             case ExoPlayer.STATE_PREPARING:
                 mIsMetadataSet = false;
 
-                mSelectedVideoTracks.setSelectedTrack(mPlayer, VideoPlayer.TYPE_AUDIO,
-                                                        mSelectedVideoTracks.getSelectedTrackIndex(VideoPlayer.TYPE_AUDIO));
-                mSelectedVideoTracks.setSelectedTrack(mPlayer, VideoPlayer.TYPE_TEXT,
-                        mSelectedVideoTracks.getSelectedTrackIndex(VideoPlayer.TYPE_TEXT));
+                mSelectedVideoTracks.setSelectedTrack(mPlayer, Stream.Audio_Stream,
+                        mSelectedVideoTracks.getSelectedTrackDisplayIndex(Stream.Audio_Stream));
+                mSelectedVideoTracks.setSelectedTrack(mPlayer, Stream.Subtitle_Stream,
+                        mSelectedVideoTracks.getSelectedTrackDisplayIndex(Stream.Subtitle_Stream));
                 break;
             case ExoPlayer.STATE_READY:
 
@@ -757,7 +773,7 @@ public class PlaybackFragment
                         adapter.replace(index, new CodecCard(getActivity(),
                                 mSelectedVideoTracks.getSelectedTrack(trackTypeClicked),
                                 trackTypeClicked,
-                                mSelectedVideoTracks.getCountForType(trackTypeClicked)));
+                                mSelectedVideoTracks.getCount(trackTypeClicked)));
 
                         adapter.notifyArrayItemRangeChanged(index, 1);
                     }
@@ -855,11 +871,18 @@ public class PlaybackFragment
                 // if no cue... duh
                 // or if cue is not PGS (we only handle that currently)
                 // or subs are turned off but we are checking for forced subs and it isn't forced
-                if (cue == null || !(cue instanceof PgsCue) ||
-                        (!mSelectedVideoTracks.areSubtitlesEnabled() && !((PgsCue)cue).isForcedSubtitle())) {
+                if (cue == null || (!mSelectedVideoTracks.areSubtitlesEnabled() &&
+                        (cue instanceof PgsCue && !((PgsCue)cue).isForcedSubtitle()))) {
 
+                    mSubtitlesText.setText("");
+                    mSubtitlesText.setVisibility(View.INVISIBLE);
                     mSubtitlesImage.setImageBitmap(null);
                     mSubtitlesImage.setVisibility(View.INVISIBLE);
+                }
+                else if (!(cue instanceof PgsCue)) {
+
+                    mSubtitlesText.setText(cue.text);
+                    mSubtitlesText.setVisibility(View.VISIBLE);
                 }
                 // pgs sub and subs are on or it is forced
                 else {

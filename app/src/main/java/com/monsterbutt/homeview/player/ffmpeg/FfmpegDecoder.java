@@ -40,7 +40,7 @@ public class FfmpegDecoder extends SimpleDecoder<FfmpegInputBuffer, FfmpegOutput
     }
 
     @Override
-    protected FfmpegDecoderException decode(FfmpegInputBuffer inputBuffer, FfmpegOutputBuffer outputBuffer) {
+    protected FfmpegDecoderException decode(FfmpegInputBuffer inputBuffer, FfmpegOutputBuffer outputBuffer, boolean reset) {
 
         SampleHolder sampleHolder = inputBuffer.sampleHolder;
         outputBuffer.timestampUs = sampleHolder.timeUs;

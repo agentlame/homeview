@@ -466,7 +466,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
 
         Stream stream = selector.getSelectedTrack(trackType);
         if (stream != null)
-            adapter.add(new CodecCard(context, stream, trackType, selector.getCountForType(trackType)));
+            adapter.add(new CodecCard(context, stream, trackType, selector.getCount(trackType)));
         return (stream != null);
     }
 

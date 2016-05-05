@@ -194,7 +194,6 @@
 
     <string name="software">Software</string>
     <string name="passthrough">Passthrough</string>
-    <string name="legacy">Legacy Passthrough</string>
     <string name="unsupported">Unsupported</string>
     <string name="subs_off">Off</string>
 

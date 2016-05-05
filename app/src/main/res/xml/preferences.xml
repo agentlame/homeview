@@ -142,7 +142,7 @@
             android:drawable="@drawable/ic_slow_motion_video_white_48dp"
             android:title="@string/preferences_device_refreshrate"
             android:summary="@string/preferences_device_refreshrate_summary"
-            android:defaultValue="true" />
+            android:defaultValue="false" />
 
         <CheckBoxPreference
             android:key="preferences_device_passthrough"

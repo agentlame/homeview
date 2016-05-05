@@ -26,6 +26,8 @@ import com.google.android.exoplayer.TrackRenderer;
 import com.google.android.exoplayer.extractor.Extractor;
 import com.google.android.exoplayer.extractor.ExtractorSampleSource;
 import com.google.android.exoplayer.text.TextTrackRenderer;
+import com.google.android.exoplayer.text.subrip.SubripParser;
+import com.google.android.exoplayer.text.ttml.TtmlParser;
 import com.google.android.exoplayer.upstream.Allocator;
 import com.google.android.exoplayer.upstream.DataSource;
 import com.google.android.exoplayer.upstream.DefaultAllocator;
@@ -77,7 +79,7 @@ public class ExtractorRendererBuilder implements VideoPlayer.RendererBuilder, Fr
         DeviceAudioTrackRenderer audioRenderer = DeviceAudioTrackRenderer.getRenderer(activity, player, sampleSource);
         FfmpegTrackRenderer ffmpegAudioRenderer = FfmpegAudioTrackRenderer.getRenderer(activity, player, sampleSource);
         TrackRenderer textRenderer = new TextTrackRenderer(sampleSource, player,
-                player.getMainHandler().getLooper(), new PgsParser());
+                player.getMainHandler().getLooper(), new PgsParser(), new SubripParser(), new TtmlParser());
 
         // Invoke the callback.
         TrackRenderer[] renderers = new TrackRenderer[VideoPlayer.RENDERER_COUNT];

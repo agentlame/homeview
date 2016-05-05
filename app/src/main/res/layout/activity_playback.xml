@@ -34,6 +34,19 @@
         android:layout_height="0dp"
         android:layout_width="0dp" />
 
+    <TextView
+        android:id="@+id/textSubtitles"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="@dimen/subtitle_text_size"
+        android:shadowColor="@color/black"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="5" />
+
     <fragment
         android:id="@+id/playback_controls_fragment"
         android:name="com.monsterbutt.homeview.ui.fragment.PlaybackFragment"

@@ -93,7 +93,6 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     private View mCurrentCardTransitionImage = null;
     private CardObject mCurrentCard = null;
-    private DetailsDescriptionPresenter mDetailPresenter;
     private boolean mContinueTheme = false;
     private boolean mThemeAlreadyRun = false;
 
@@ -336,10 +335,10 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     }
 
     private void setupDetailsOverviewRowPresenter() {
+
         // Set detail background and style.
-        mDetailPresenter = new DetailsDescriptionPresenter(getActivity(), mServer);
         DetailPresenter detailsPresenter =
-                new DetailPresenter(mDetailPresenter,
+                new DetailPresenter(new DetailsDescriptionPresenter(getActivity(), mServer),
                                     new MovieDetailsOverviewLogoPresenter(!(mItem instanceof Episode)));
 
         TypedValue typedValue = new TypedValue();
@@ -389,7 +388,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                         adapter.replace(index, new CodecCard(getActivity(),
                                                              mTracks.getSelectedTrack(trackTypeClicked),
                                                              trackTypeClicked,
-                                                             mTracks.getCountForType(trackTypeClicked)));
+                                                             mTracks.getCount(trackTypeClicked)));
 
                         adapter.notifyArrayItemRangeChanged(index, 1);
                     }

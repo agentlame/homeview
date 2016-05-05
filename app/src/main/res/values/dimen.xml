@@ -79,6 +79,8 @@
     <dimen name="about_padding">16dp</dimen>
     <dimen name="about_list_padding">48dp</dimen>
 
+    <dimen name="subtitle_text_size">24sp</dimen>
+
     <dimen name="codec_choice_image_minwidth">50dp</dimen>
     <dimen name="codec_choice_image_maxwidth">60dp</dimen>
     <dimen name="codec_choice_text_padding">8dp</dimen>

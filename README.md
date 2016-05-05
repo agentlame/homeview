@@ -9,9 +9,9 @@ This is an AndroidTV 6.0 app designed to leverage an existing Plex server.  It i
 4.  Video formats are limited to what the hardware supports.  This means no VC1 for the Nexus Player and a software decoder in the future may not even make that usable as Ffmpeg's decoding is single threaded.
 5.  TrueHD passthrough is not currently supported.
 6.  Any decoded audio (or 24bit PCM) is down res'd to 16 bit as Android's 32bit float is only two channels.
-7.  SRT subtitles are not currently supported.  PGS is supported.
+7.  VOBSUB and external SRT subtitles are not supported.
 8.  "Extras" listed from the server for an item are displayed in the UI but they are not usable/playable.  Cause has not been investigated.
-9.  Audio passthrough and auto refresh rate switching are enabled by default and are used when available.
+9.  Audio passthrough is enabled by default and used when available.   Auto refresh rate switching is disabled by default.
 
 ##Requirements
 1. Android Studio

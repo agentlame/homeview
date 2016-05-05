@@ -18,26 +18,13 @@ import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Stream;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MediaTrackSelector implements Parcelable {
 
-    Map<Integer, List<Stream>> tracks = new HashMap<>();
-
-    private Stream selectedVideoTrack = null;
-    private Stream selectedAudioTrack = null;
-    private Stream selectedSubtitleTrack = null;
+    private MediaTracks mTracks = null;
     private boolean didSelectSubs = false;
     private final String baseLangCode;
-
-    private final static int None = 0;
-    private final static int First = None;
-    private final static int Language = 1;
-    private final static int Default = 2;
-    private final static int Forced = 4;
 
     public final static int TrackTypeOff = -1;
 
@@ -45,199 +32,55 @@ public class MediaTrackSelector implements Parcelable {
                               String baseLangCode, MediaCodecCapabilities capabilities) {
 
         this.baseLangCode = TextUtils.isEmpty(baseLangCode) ? "" : baseLangCode;
-        int videoIndex = 0;
-        int audioIndex = 0;
-        int subIndex = 0;
-        int otherIndex = 0;
 
-        fillOffSubtitleStream(context != null ? context.getString(R.string.subs_off) : "Off",
-                capabilities);
-        for(us.nineworlds.plex.rest.model.impl.Stream stream : streams) {
-
-            final int streamType = (int) stream.getStreamType();
-            int trackIndex;
-            switch(streamType) {
-
-                case Stream.Video_Stream:
-                    trackIndex = videoIndex++;
-                    break;
-
-                case Stream.Audio_Stream:
-                    trackIndex = audioIndex++;
-                    break;
-
-                case Stream.Subtitle_Stream:
-                    trackIndex = subIndex++;
-                    break;
-
-                default:
-                    trackIndex = otherIndex++;
-                    break;
-            }
-
-            List<Stream> type = tracks.get(streamType);
-            if (type == null) {
-                type = new ArrayList<>();
-                tracks.put(streamType, type);
-            }
-            type.add(new Stream(stream, trackIndex, capabilities));
-        }
-
-        selectedVideoTrack = selectStreamForType(Stream.Video_Stream);
-        selectedAudioTrack = selectStreamForType(Stream.Audio_Stream);
-
-        List<Stream> subs = tracks.get(Stream.Subtitle_Stream);
-        if (subs.size() == 1)
-            subs.clear();
-        else {
-
-            selectedSubtitleTrack = selectStreamForType(Stream.Subtitle_Stream);
-            if (0 == (Forced & getTrackChoice(selectedSubtitleTrack)))
-                setSelectedTrack(Stream.Subtitle_Stream, 0);
-        }
+        mTracks = new MediaTracks(this.baseLangCode);
+        for(us.nineworlds.plex.rest.model.impl.Stream stream : streams)
+            mTracks.add(context, capabilities, stream);
+        mTracks.setInitialSelectedTracks();
     }
 
     protected MediaTrackSelector(Parcel in) {
 
         baseLangCode = in.readString();
         didSelectSubs = in.readInt() == 1;
-        List<Stream> list = in.createTypedArrayList(Stream.CREATOR);
-        tracks.put(Stream.Video_Stream, list);
-        list = in.createTypedArrayList(Stream.CREATOR);
-        tracks.put(Stream.Audio_Stream, list);
-        list = in.createTypedArrayList(Stream.CREATOR);
-        tracks.put(Stream.Subtitle_Stream, list);
-        setSelectedTrack(Stream.Video_Stream, in.readInt());
-        setSelectedTrack(Stream.Audio_Stream, in.readInt());
-        setSelectedTrack(Stream.Subtitle_Stream, 1 + in.readInt());
+        mTracks = new MediaTracks(in);
     }
 
-    private void fillOffSubtitleStream(String title, MediaCodecCapabilities capabilities) {
+    public int getSelectedTrackDisplayIndex(int streamType) {
 
-        List<Stream> list = tracks.get(Stream.Subtitle_Stream);
-        if (list == null) {
-            list = new ArrayList<>();
-            tracks.put(Stream.Subtitle_Stream, list);
-        }
-
-        us.nineworlds.plex.rest.model.impl.Stream off = new us.nineworlds.plex.rest.model.impl.Stream();
-        off.setStreamType(Stream.Subtitle_Stream);
-        off.setLanguage(title);
-        off.setLanguageCode(baseLangCode);
-        list.add(new Stream(off, TrackTypeOff, capabilities));
+        return mTracks.getSelectedTrackDisplayIndex(streamType);
     }
 
-    private Stream selectStreamForType(int type) {
+    public Stream getSelectedTrack(int streamType) {
 
-        Stream selectedTrack = null;
-        List<Stream> currentStreams = tracks.get(type);
-        if (currentStreams != null) {
-            int choice = First;
-            selectedTrack = currentStreams.get(0);
-            boolean choiceIsUnsupported = selectedTrack.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Unsupported;
-            for (Stream stream : currentStreams) {
-
-                final boolean currentIsUnsupported = stream.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Unsupported;
-                final int current = getTrackChoice(stream);
-                if ((current != None && choice < current && !currentIsUnsupported)
-                 || (choiceIsUnsupported && !currentIsUnsupported)) {
-
-                    choice = current;
-                    selectedTrack = stream;
-                }
-            }
-        }
-        return selectedTrack;
+        return mTracks.getSelectedTrack(streamType);
     }
 
-    private int getTrackChoice(Stream stream) {
+    public void setSelectedTrack(VideoPlayer player, int streamType, int displayIndex) {
 
-        return  (baseLangCode.equals(stream.getLanguageCode()) ? Language : None) |
-                (stream.isDefault() ? Default : None) |
-                (stream.isForced() ? Forced : None);
-    }
-
-    public Stream getSelectedTrack(int type) {
-
-        switch(type) {
-            case Stream.Video_Stream:
-                return selectedVideoTrack;
-            case Stream.Audio_Stream:
-                return selectedAudioTrack;
-            case Stream.Subtitle_Stream:
-                return selectedSubtitleTrack;
-            default:
-                return null;
-        }
-    }
-
-    private int getAdjustedIndexForSelectedTrack(int type) {
-
-        switch(type) {
-            case Stream.Video_Stream:
-                return getAdjustedIndexForSelectedTrack(tracks.get(type), selectedVideoTrack);
-            case Stream.Audio_Stream:
-                return getAdjustedIndexForSelectedTrack(tracks.get(type), selectedAudioTrack);
-            case Stream.Subtitle_Stream:
-                return selectedSubtitleTrack != null ? selectedSubtitleTrack.getTrackTypeIndex() : TrackTypeOff;
-            default:
-                return TrackTypeOff;
-        }
-    }
-
-    public int getSelectedTrackIndex(int type) {
-
-        Stream selected = getSelectedTrack(type);
-        if (selected != null)
-            return selected.getTrackTypeIndex();
-        return TrackTypeOff;
-    }
-
-    private int getAdjustedIndexForSelectedTrack(List<Stream> streams, Stream selected) {
-
-        int adjustment = 0;
-        if (streams == null)
-            return TrackTypeOff;
-        for (Stream stream : streams) {
-
-            if (stream.equals(selected))
-                break;
-            else if (stream.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Unsupported)
-                ++adjustment;
-        }
-        if (selected.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Unsupported)
-            return TrackTypeOff;
-        final int index = selected.getTrackTypeIndex();
-        return index >= 0 ? index - adjustment : index;
-    }
-
-    public void setSelectedTrack(VideoPlayer player, int type, int index) {
-
-        setSelectedTrack(type, index);
+        int index = mTracks.setSelectedTrack(streamType, displayIndex);
         if (player != null) {
 
-            switch(type) {
+            switch(streamType) {
 
                 case Stream.Subtitle_Stream:
 
-                    index = getAdjustedIndexForSelectedTrack(Stream.Subtitle_Stream);
+                    didSelectSubs = index != TrackTypeOff;
                     player.setSelectedTrack(VideoPlayer.TYPE_TEXT, index);
                     break;
 
                 case Stream.Audio_Stream:
 
-                    index = getAdjustedIndexForSelectedTrack(Stream.Audio_Stream);
                     int BUILTIN_INDEX = index;
                     int FFMPEG_INDEX = TrackTypeOff;
-                    if (selectedAudioTrack != null) {
-                        switch (selectedAudioTrack.getDecodeStatus()) {
+                    if (index != TrackTypeOff) {
+                        switch (mTracks.getDecodeStatusForSelected(streamType)) {
 
                             case Hardware:
                             case Passthrough:
                                 break;
 
                             case Software:
-                            case LegacyPassthrough:
                             case Unsupported:
                             default:
 
@@ -254,45 +97,10 @@ public class MediaTrackSelector implements Parcelable {
         }
     }
 
-    private boolean setSelectedTrack(int type, int index) {
 
-        Stream stream = null;
-        List<Stream> streams = tracks.get(type);
-        if (streams != null) {
+    public int getCount(int streamType) {
 
-            if (index >= 0 && index < streams.size()) {
-
-                stream = streams.get(index);
-                switch(type) {
-                    case Stream.Video_Stream:
-                        selectedVideoTrack = stream;
-                        break;
-                    case Stream.Audio_Stream:
-                        selectedAudioTrack = stream;
-                        break;
-                    case Stream.Subtitle_Stream:
-                        didSelectSubs = true;
-                        selectedSubtitleTrack = stream;
-                        break;
-                    default:
-                        stream = null;
-                        break;
-                }
-            }
-            else if (index == TrackTypeOff && type == Stream.Subtitle_Stream) {
-
-                didSelectSubs = true;
-                selectedSubtitleTrack = streams.get(0);
-            }
-        }
-
-        return stream != null;
-    }
-
-    public int getCountForType(int type) {
-
-        List<Stream> streams = tracks.get(type);
-        return streams != null ? streams.size() : 0;
+        return mTracks.getCount(streamType);
     }
 
     @Override
@@ -317,26 +125,12 @@ public class MediaTrackSelector implements Parcelable {
 
         dest.writeString(baseLangCode);
         dest.writeInt(didSelectSubs ? 1 : 0);
-        dest.writeTypedList(tracks.get(Stream.Video_Stream));
-        dest.writeTypedList(tracks.get(Stream.Audio_Stream));
-        dest.writeTypedList(tracks.get(Stream.Subtitle_Stream));
-        dest.writeInt(selectedVideoTrack != null ? selectedVideoTrack.getTrackTypeIndex() : TrackTypeOff);
-        dest.writeInt(selectedAudioTrack != null ? selectedAudioTrack.getTrackTypeIndex() : TrackTypeOff);
-        dest.writeInt(selectedSubtitleTrack != null ? selectedSubtitleTrack.getTrackTypeIndex() : TrackTypeOff);
+        mTracks.writeToParcel(dest, flags);
     }
 
-    public StreamChoiceArrayAdapter getTracks(Context context, PlexServer server, int trackType) {
+    public StreamChoiceArrayAdapter getTracks(Context context, PlexServer server, int streamType) {
 
-        List<Stream.StreamChoice> list = new ArrayList<>();
-        StreamChoiceArrayAdapter adapter = new StreamChoiceArrayAdapter(context, server, list);
-        List<Stream> streams = tracks.get(trackType);
-        if (streams != null) {
-
-            int currentTrackIndex = getSelectedTrack(trackType).getTrackTypeIndex();
-            for(Stream stream : streams)
-                list.add(new Stream.StreamChoice(context, currentTrackIndex == stream.getTrackTypeIndex(), stream));
-        }
-        return adapter;
+        return mTracks.getTracks(context, server, streamType);
     }
 
     public static class StreamChoiceArrayAdapter extends ArrayAdapter<Stream.StreamChoice> {
@@ -386,7 +180,7 @@ public class MediaTrackSelector implements Parcelable {
 
     public boolean areSubtitlesEnabled() {
 
-        return selectedSubtitleTrack.getTrackTypeIndex() != MediaTrackSelector.TrackTypeOff
+        return mTracks.getSelectedPlayerIndex(Stream.Subtitle_Stream) != MediaTrackSelector.TrackTypeOff
                 && didSelectSubs;
     }
 }
