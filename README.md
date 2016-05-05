@@ -20,9 +20,13 @@ This is an AndroidTV 6.0 app designed to leverage an existing Plex server.  It i
 
 ##Building
 1. Building has only been done with Ubuntu 14.04.
-2. Open the project in Android Studio first and make sure the SDK and NDK are setup.  See Google for instructions on those.  This should create a file "./local.properties" which includes sdk.dir and ndk.dir entries.
-3. In a terminal run "./gradlew buildFFmpeg".  It will update git submodules, build ffmpeg for arm-v7 and x86, and copy the binaries.
-4. Proceed as normal now.  You will need to handle your own signing certificates.  Alias, passwords, and file locations can be stored in "./app/signing.properties".
+2. You will need to handle your own signing certificates.
+3. Open the project in Android Studio first and make sure the SDK and NDK are setup.  See Google for instructions on those.  This should create a file "./local.properties" which includes sdk.dir and ndk.dir entries.
+4. In a terminal run "git submodule update --init --recursive ExoPlayer"
+5. Make sure the base directory has a local.properties with ndk.dir & sdk.dir filled properly
+6. Make sure the base directory has a signing.properties with a STORE_FILE,STORE_PASSWORD,KEY_ALIAS, and KEY_PASSWORD setting filed for your signing certificate.
+7. In a terminal run "./gradlew buildFFmpeg".  It will update git submodules, build ffmpeg for arm-v7 and x86, and copy the binaries.
+8. Proceed as normal now.  You will need to handle your own signing certificates..
 
 ##Usage
 1. The app should autodetect local Plex servers and choose the first one at initial startup.  You can choose specific ones or manually enter details in the settings.
