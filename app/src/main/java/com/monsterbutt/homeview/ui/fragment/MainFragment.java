@@ -96,7 +96,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         mMgr = PlexServerManager.getInstance(act.getApplicationContext());
 
         setHeadersState(HEADERS_ENABLED);
-        setHeadersTransitionOnBackEnabled(true);
+        setHeadersTransitionOnBackEnabled(false);
         setOnSearchClickedListener(new View.OnClickListener() {
 
             @Override

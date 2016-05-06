@@ -62,6 +62,7 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
         text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
         setTitle(activity.getIntent().getStringExtra(SectionHubActivity.TITLE));
 
+        setHeadersTransitionOnBackEnabled(false);
         mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
         setAdapter(mRowsAdapter);
     }
