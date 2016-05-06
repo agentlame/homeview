@@ -39,8 +39,8 @@ public class DeviceAudioTrackRenderer extends MediaCodecAudioTrackRenderer {
         if (format.mimeType.equals(MimeTypes.AUDIO_DTS) && mItem.trackIsDtsHd(format.trackId)) {
 
             holder.format = MediaFormat.createAudioFormat(format.trackId, MimeTypes.AUDIO_DTS_HD,
-                                            format.NO_VALUE, format.bitrate, format.maxInputSize,
-                                            format.durationUs, format.channelCount, format.sampleRate,
+                                            format.bitrate, format.maxInputSize, format.durationUs,
+                                            format.channelCount, format.sampleRate,
                                             format.initializationData, format.language);
         }
         super.onInputFormatChanged(holder);

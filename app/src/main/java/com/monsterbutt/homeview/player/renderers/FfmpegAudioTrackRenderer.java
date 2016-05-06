@@ -112,8 +112,12 @@ public class FfmpegAudioTrackRenderer extends FfmpegTrackRenderer implements Med
     }
 
     @Override
-    protected void onOutputFormatChanged(android.media.MediaFormat outputFormat) {
-        audioTrack.configure(outputFormat, false);
+    protected void onOutputFormatChanged(android.media.MediaFormat format) {
+
+        String mimeType = MimeTypes.AUDIO_RAW;
+        int channelCount = format.getInteger(android.media.MediaFormat.KEY_CHANNEL_COUNT);
+        int sampleRate = format.getInteger(android.media.MediaFormat.KEY_SAMPLE_RATE);
+        audioTrack.configure(mimeType, channelCount, sampleRate, AudioFormat.ENCODING_PCM_16BIT);
     }
 
     @Override
