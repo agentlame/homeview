@@ -178,9 +178,12 @@
 
     <string name="section_toolbar_hub">Hub</string>
     <string name="section_toolbar_filter">Filter</string>
+    <string name="section_toolbar_sort">Sort</string>
 
     <string name="container_filter_selection_title">Filters</string>
     <string name="container_filter_selection_summary">Please choose a filter</string>
+    <string name="container_sort_selection_title">Sort Order</string>
+    <string name="container_sort_selection_summary">Choose a sort.  Reselecting the current choice toggles ascending/descending.</string>
 
     <string name="playback_start_dialog">Choose where to begin playback</string>
     <string name="playback_start_dialog_begin">From beginning</string>
@@ -209,5 +212,14 @@
     <string name="october">October</string>
     <string name="november">November</string>
     <string name="december">December</string>
+
+    <string name="sort_DateAdded">Date Added</string>
+    <string name="sort_Duration">Length</string>
+    <string name="sort_LastViewed">Last Viewed</string>
+    <string name="sort_Rating">Rating</string>
+    <string name="sort_ReleaseDate">Release Date</string>
+    <string name="sort_Title">Title</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
 
 </resources>

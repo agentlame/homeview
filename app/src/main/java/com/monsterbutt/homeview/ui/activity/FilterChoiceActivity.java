@@ -21,11 +21,13 @@ public class FilterChoiceActivity extends Activity {
     public static final String FILTERS = "filters";
     public static final String CURRENT_INDEX = "index";
     public static final String TITLE = "title";
+    public static final String SORT = "sort";
 
     private static FilterChoiceActivity activity;
 
     private List<ContainerGridFragment.SectionFilter> mFilters = null;
     private String breadcrumb;
+    private boolean isSort = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +40,7 @@ public class FilterChoiceActivity extends Activity {
             Intent intent = getIntent();
             mFilters = intent.getParcelableArrayListExtra(FILTERS);
             breadcrumb = intent.getStringExtra(TITLE);
+            isSort = intent.getBooleanExtra(SORT, false);
             FilterStepFragment frag = new FilterStepFragment();
             GuidedStepFragment.addAsRoot(this, frag, android.R.id.content);
         }
@@ -58,8 +61,9 @@ public class FilterChoiceActivity extends Activity {
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
 
             return new GuidanceStylist.Guidance(
-                    activity.getString(R.string.container_filter_selection_title),
-                    activity.getString(R.string.container_filter_selection_summary),
+
+                    activity.getString(activity.isSort ? R.string.container_sort_selection_title : R.string.container_filter_selection_title),
+                    activity.getString(activity.isSort ? R.string.container_sort_selection_summary : R.string.container_filter_selection_summary),
                     activity.breadcrumb,
                     getActivity().getDrawable(R.drawable.launcher));
         }
@@ -70,9 +74,9 @@ public class FilterChoiceActivity extends Activity {
             int index = 0;
             for (ContainerGridFragment.SectionFilter filter : activity.mFilters)
                 addAction(actions, index++, filter.name, "");
-            addAction(actions, CANCEL,
+            /*addAction(actions, CANCEL,
                     getResources().getString(R.string.preferences_cancel),
-                    getResources().getString(R.string.preferences_cancel_desc));
+                    getResources().getString(R.string.preferences_cancel_desc));*/
         }
 
         @Override

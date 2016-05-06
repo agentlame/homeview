@@ -76,6 +76,9 @@ public class Video extends AbstractPlexObject implements Parcelable {
 	 * Point where viewing can be resumed.
 	 */
 	private long viewOffset;
+
+	@Attribute(required=false)
+	private long lastViewedAt;
 	
 	@Attribute(name="thumb",required=false)
 	/**
@@ -141,6 +144,7 @@ public class Video extends AbstractPlexObject implements Parcelable {
 		episode = in.readString();
 		season = in.readString();
 		rating = in.readDouble();
+		lastViewedAt = in.readLong();
 		countries = in.createTypedArrayList(Country.CREATOR);
 		directors = in.createTypedArrayList(Director.CREATOR);
 		actors = in.createTypedArrayList(Role.CREATOR);
@@ -187,6 +191,7 @@ public class Video extends AbstractPlexObject implements Parcelable {
 		dest.writeString(episode);
 		dest.writeString(season);
 		dest.writeDouble(rating);
+		dest.writeLong(lastViewedAt);
 		dest.writeTypedList(countries);
 		dest.writeTypedList(directors);
 		dest.writeTypedList(actors);
@@ -612,4 +617,6 @@ public class Video extends AbstractPlexObject implements Parcelable {
 	public List<Related> getRelated() { return related; }
 
 	public List<Chapter> getChapters() { return chapters; }
+
+	public long getLastViewedAt() { return lastViewedAt; }
 }

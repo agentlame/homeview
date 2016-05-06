@@ -12,20 +12,33 @@ import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener {
 
+    public enum ItemSort {
+
+        DateAdded,
+        Duration,
+        LastViewed,
+        Rating,
+        ReleaseDate,
+        Title
+    }
+
     private class GridItem {
 
         PlexLibraryItem item;
         int index;
+        final boolean useScene;
 
-        public GridItem(PlexLibraryItem item, int index) {
+        public GridItem(PlexLibraryItem item, int index, boolean useScene) {
             this.item = item;
             this.index = index;
+            this.useScene = useScene;
         }
     }
 
@@ -55,7 +68,7 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener {
         String key = Long.toString(item.getRatingKey());
         if (!map.containsKey(key)) {
 
-            map.put(key, new GridItem(item, adapter.size()));
+            map.put(key, new GridItem(item, adapter.size(), useScene));
             adapter.add(useScene ? new SceneCard(context, item) : new PosterCard(context, item));
             return true;
         }
@@ -137,4 +150,135 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener {
             adapter.notifyArrayItemRangeChanged(item.index, 1);
         }
     }
+
+    public void sort(Context context, ItemSort sortType, boolean ascending) {
+
+        List<GridItem> items = new ArrayList<>(map.values());
+        Collections.sort(items, getComparator(sortType, ascending));
+
+        adapter.clear();
+        int index = 0;
+        for (GridItem item : items) {
+
+            item.index = index++;
+            adapter.add(item.useScene ? new SceneCard(context, item.item) : new PosterCard(context, item.item));
+        }
+    }
+
+    private Comparator<GridItem> getComparator(ItemSort sortType, boolean ascending) {
+
+        switch (sortType) {
+
+            case DateAdded:
+                return ascending ? SortDateAddedAsc : SortDateAddedDesc;
+            case Duration:
+                return ascending ? SortDurationAsc : SortDurationDesc;
+            case LastViewed:
+                return ascending ? SortLastViewedAsc : SortLastViewedDesc;
+            case Rating:
+                return ascending ? SortRatingAsc : SortRatingDesc;
+            case ReleaseDate:
+                return ascending ? SortReleaseDateAsc : SortReleaseDateDesc;
+            case Title:
+                return ascending ? SortTitleAsc : SortTitleDesc;
+            default:
+                return null;
+        }
+    }
+
+    private static Comparator<GridItem> SortDateAddedAsc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            if (lhs.item.getAddedAt() > rhs.item.getAddedAt())
+                return 1;
+            return -1;
+        }
+    };
+
+    private static Comparator<GridItem> SortDateAddedDesc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            if (rhs.item.getAddedAt() > lhs.item.getAddedAt())
+                return 1;
+            return -1;
+        }
+    };
+
+    private static Comparator<GridItem> SortDurationAsc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            if (lhs.item.getDuration() > rhs.item.getDuration())
+                return 1;
+            return -1;
+        }
+    };
+
+    private static Comparator<GridItem> SortDurationDesc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            if (rhs.item.getDuration() > lhs.item.getDuration())
+                return 1;
+            return -1;
+        }
+    };
+
+    private static Comparator<GridItem> SortLastViewedAsc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            if (lhs.item.getLastViewedAt() > rhs.item.getLastViewedAt())
+                return 1;
+            return -1;
+        }
+    };
+
+    private static Comparator<GridItem> SortLastViewedDesc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            if (rhs.item.getLastViewedAt() > lhs.item.getLastViewedAt())
+                return 1;
+            return -1;
+        }
+    };
+
+    private static Comparator<GridItem> SortRatingAsc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            return lhs.item.getRating().compareTo(rhs.item.getRating());
+        }
+    };
+
+    private static Comparator<GridItem> SortRatingDesc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            return rhs.item.getRating().compareTo(lhs.item.getRating());
+        }
+    };
+
+    private static Comparator<GridItem> SortReleaseDateAsc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            return lhs.item.getOriginalAvailableDate().compareTo(rhs.item.getOriginalAvailableDate());
+        }
+    };
+
+    private static Comparator<GridItem> SortReleaseDateDesc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            return rhs.item.getOriginalAvailableDate().compareTo(lhs.item.getOriginalAvailableDate());
+        }
+    };
+
+    private static Comparator<GridItem> SortTitleAsc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            return lhs.item.getSortTitle().compareTo(rhs.item.getSortTitle());
+        }
+    };
+
+    private static Comparator<GridItem> SortTitleDesc = new Comparator<GridItem>() {
+        @Override
+        public int compare(GridItem lhs, GridItem rhs) {
+            return rhs.item.getSortTitle().compareTo(lhs.item.getSortTitle());
+        }
+    };
 }

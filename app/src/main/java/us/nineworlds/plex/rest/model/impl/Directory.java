@@ -49,6 +49,8 @@ public class Directory extends AbstractPlexObject implements Parcelable {
 	@Attribute(required=false)
 	private String thumb;
 
+	@Attribute(required=false)
+	private String originallyAvailableAt;
 
 	protected Directory(Parcel in) {
 		super(in);
@@ -95,6 +97,7 @@ public class Directory extends AbstractPlexObject implements Parcelable {
 		childCount = in.readLong();
 		addedAt = in.readLong();
 		composite = in.readString();
+		originallyAvailableAt = in.readString();
 	}
 
 	@Override
@@ -143,6 +146,8 @@ public class Directory extends AbstractPlexObject implements Parcelable {
 		dest.writeLong(childCount);
 		dest.writeLong(addedAt);
 		dest.writeString(composite);
+		dest.writeString(originallyAvailableAt);
+		dest.writeLong(lastViewedAt);
 	}
 
 	@Override
@@ -515,6 +520,9 @@ public class Directory extends AbstractPlexObject implements Parcelable {
 
 	public long getIndex() { return index; }
 	public void setIndex(long idx) { index = idx; }
+
+	public String getOriginallyAvailableAt() { return originallyAvailableAt; }
+	public void setOriginallyAvailableAt(String val) { originallyAvailableAt = val; }
 
 	public long getParentIndex() { return parentIndex; }
 	public void setParentIndex(long idx) { parentIndex = idx; }

@@ -19,7 +19,7 @@
 
     <FrameLayout
         android:id="@+id/toolbar"
-        android:layout_width="80dp"
+        android:layout_width="90dp"
         android:layout_height="match_parent">
 
         <LinearLayout
@@ -37,6 +37,34 @@
                 android:background="?android:attr/selectableItemBackground"
                 android:focusableInTouchMode="true"
                 android:clickable="true"/>
+
+            <ListView
+                android:id="@+id/list_shortcut"
+                android:paddingTop="@dimen/toolbar_list_padding"
+                android:paddingLeft="@dimen/toolbar_list_padding"
+                android:layout_gravity="left|center_vertical"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:divider="@android:color/transparent"
+                android:dividerHeight="@dimen/jumprow_dividerheight"
+                android:focusableInTouchMode="true"
+                android:clickable="true"/>
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/toolbarRight"
+        android:layout_gravity="right"
+        android:layout_width="90dp"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center" >
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -62,18 +90,32 @@
 
             </LinearLayout>
 
-            <ListView
-                android:id="@+id/list_shortcut"
-                android:paddingTop="@dimen/toolbar_list_padding"
-                android:paddingLeft="@dimen/toolbar_list_padding"
-                android:layout_gravity="left|center_vertical"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:divider="@android:color/transparent"
-                android:dividerHeight="@dimen/jumprow_dividerheight"
-                android:focusableInTouchMode="true"
-                android:clickable="true"/>
+                android:orientation="vertical"
+                android:layout_margin="@dimen/toolbar_padding" >
+
+                <Button
+                    android:id="@+id/sortBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/toolbar_buttonheight"
+                    android:text="@string/section_toolbar_sort"
+                    android:focusableInTouchMode="true"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true" />
+
+                <TextView
+                    android:id="@+id/sortText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    tools:text="Title"/>
+
+            </LinearLayout>
+
         </LinearLayout>
+
     </FrameLayout>
 
 </android.support.design.widget.CoordinatorLayout>

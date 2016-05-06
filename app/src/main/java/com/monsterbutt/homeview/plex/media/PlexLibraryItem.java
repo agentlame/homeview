@@ -44,6 +44,11 @@ public abstract class PlexLibraryItem {
 
     public abstract long getRatingKey();
 
+    public String getRating() { return ""; }
+    public String getOriginalAvailableDate() { return ""; }
+    public long getLastViewedAt() { return 0; }
+    public long getDuration() { return 0; }
+
     public abstract String getSectionId();
 
     public abstract String getSectionTitle();

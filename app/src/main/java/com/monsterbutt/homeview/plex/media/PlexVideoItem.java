@@ -208,21 +208,28 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return mVideo.getContentRating();
     }
 
-    public double getRating() {
-        return mVideo.getRating();
+    @Override
+    public String getRating() {
+        return Double.toString(mVideo.getRating());
     }
 
     public String getYear() {
         return mVideo.getYear();
     }
 
+    @Override
     public String getOriginalAvailableDate() {
         return mVideo.getOriginallyAvailableDate();
     }
 
+    @Override
+    public long getLastViewedAt() { return mVideo.getLastViewedAt(); }
+
     public long getDurationMs() {
         return mVideo.getDuration();
     }
+    @Override
+    public long getDuration() { return getDurationMs(); }
 
     public List<Role> getActors() {
         return mVideo.getActors();

@@ -188,6 +188,18 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
+    public String getRating() { return mDirectory.getRating(); }
+
+    @Override
+    public String getOriginalAvailableDate() { return mDirectory.getOriginallyAvailableAt(); }
+
+    @Override
+    public long getLastViewedAt() { return mDirectory.getLastViewedAt(); }
+
+    @Override
+    public long getDuration() { return Long.valueOf(mDirectory.getLeafCount()); }
+
+    @Override
     public String getSectionTitle() {
         return mDirectory.getLibrarySectionTitle();
     }
@@ -219,7 +231,7 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
 
     @Override
     public long getAddedAt() {
-        return mDirectory.getCreatedAt();
+        return mDirectory.getAddedAt();
     }
 
     @Override

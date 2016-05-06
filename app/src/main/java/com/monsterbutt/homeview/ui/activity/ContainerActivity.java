@@ -29,9 +29,8 @@ public class ContainerActivity extends HomeViewActivity {
     private boolean mQuickListSelected = false;
     private int mQuickListSelectedIndex = 0;
 
-    private Button mHubBtn;
-    private Button mFilterBtn;
     private TextView mFilterText;
+    private TextView mSortText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,21 +43,29 @@ public class ContainerActivity extends HomeViewActivity {
             FrameLayout toolbar = (FrameLayout) findViewById(R.id.toolbar);
             toolbar.setVisibility(View.GONE);
         }
-        mHubBtn = (Button) findViewById(R.id.hubBtn);
-        mHubBtn.setOnClickListener(new View.OnClickListener() {
+        Button hubBtn = (Button) findViewById(R.id.hubBtn);
+        hubBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mFragment.hubButtonClicked();
             }
         });
-        mFilterBtn = (Button) findViewById(R.id.filterBtn);
-        mFilterBtn.setOnClickListener(new View.OnClickListener() {
+        Button filterBtn = (Button) findViewById(R.id.filterBtn);
+        filterBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mFragment.filterButtonClicked();
             }
         });
         mFilterText = (TextView) findViewById(R.id.filterText);
+        Button sortBtn = (Button) findViewById(R.id.sortBtn);
+        sortBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mFragment.sortButtonClicked();
+            }
+        });
+        mSortText = (TextView) findViewById(R.id.sortText);
 
         mQuickList = (ListView) findViewById(R.id.list_shortcut);
         mQuickList.setOnFocusChangeListener(new OnFocusChangeListener() {
@@ -109,9 +116,13 @@ public class ContainerActivity extends HomeViewActivity {
         mFilterText.setText(filter);
     }
 
+    public void setSortText(String sort) {
+        mSortText.setText(sort);
+    }
+
     public void setQuickJumpList(List<QuickJumpRow> quickjumpList) {
 
-        ArrayAdapter<QuickJumpRow> adapter = new ArrayAdapter<QuickJumpRow>(this,
+        ArrayAdapter<QuickJumpRow> adapter = new ArrayAdapter<>(this,
                 R.layout.quickjumprow, android.R.id.text1, quickjumpList);
         mQuickList.setAdapter(adapter);
     }

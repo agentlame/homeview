@@ -52,6 +52,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         HomeViewActivity.OnPlayKeyListener, WatchedStatusHandler.WatchStatusListener {
 
     private static final int RESULT_FILTER = 1;
+    private static final int RESULT_SORT = 2;
 
     private MediaCardBackgroundHandler mBackgroundHandler;
     private PlexServer mServer = null;
@@ -66,7 +67,9 @@ public class ContainerGridFragment extends VerticalGridFragment
     private final SectionFilter mAllFilter = new SectionFilter("All", PlexContainerItem.ALL);
 
     private ArrayList<SectionFilter> mFilters = new ArrayList<>();
+    private ArrayList<SectionSort> mSorts = new ArrayList<>();
     private SectionFilter mCurrentFilter = null;
+    private SectionSort mCurrentSort = null;
 
     private WatchedStatusHandler mWatchedState = null;
 
@@ -93,6 +96,50 @@ public class ContainerGridFragment extends VerticalGridFragment
             for (WatchedStatusHandler.UpdateStatus update : items)
                 mGrid.updateItem(update);
         }
+    }
+
+    public static class SectionSort extends SectionFilter implements Parcelable {
+
+        public final PlexItemGrid.ItemSort id;
+        public boolean isAscending = true;
+
+        public SectionSort(String name, PlexItemGrid.ItemSort key) {
+
+            super(name, name);
+            this.id = key;
+        }
+
+        public SectionSort(Parcel in) {
+
+            super(in);
+            id = PlexItemGrid.ItemSort.valueOf(in.readString());
+            isAscending = in.readInt() == 1;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+
+            super.writeToParcel(dest, flags);
+            dest.writeString(id.name());
+            dest.writeInt(isAscending ? 1 : 0);
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        public static final Creator<SectionSort> CREATOR = new Creator<SectionSort>() {
+            @Override
+            public SectionSort createFromParcel(Parcel in) {
+                return new SectionSort(in);
+            }
+
+            @Override
+            public SectionSort[] newArray(int size) {
+                return new SectionSort[size];
+            }
+        };
     }
 
     public static class SectionFilter implements Parcelable {
@@ -146,6 +193,15 @@ public class ContainerGridFragment extends VerticalGridFragment
             prepareEntranceTransition();
 
         Activity act = getActivity();
+        mSorts.add(new SectionSort(act.getString(R.string.sort_DateAdded), PlexItemGrid.ItemSort.DateAdded));
+        mSorts.add(new SectionSort(act.getString(R.string.sort_Duration), PlexItemGrid.ItemSort.Duration));
+        mSorts.add(new SectionSort(act.getString(R.string.sort_LastViewed), PlexItemGrid.ItemSort.LastViewed));
+        mSorts.add(new SectionSort(act.getString(R.string.sort_Rating), PlexItemGrid.ItemSort.Rating));
+        mSorts.add(new SectionSort(act.getString(R.string.sort_ReleaseDate), PlexItemGrid.ItemSort.ReleaseDate));
+        mSorts.add(new SectionSort(act.getString(R.string.sort_Title), PlexItemGrid.ItemSort.Title));
+        mCurrentSort = mSorts.get(mSorts.size()-1);
+        ((ContainerActivity) act).setSortText(mCurrentSort.name);
+
         mServer = PlexServerManager.getInstance(act.getApplicationContext()).getSelectedServer();
         mUseScene = act.getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false);
         if (!mUseScene)
@@ -345,14 +401,43 @@ public class ContainerGridFragment extends VerticalGridFragment
         startActivityForResult(intent, RESULT_FILTER);
     }
 
+    public void sortButtonClicked() {
+
+        Intent intent = new Intent(getActivity(), FilterChoiceActivity.class);
+        intent.putParcelableArrayListExtra(FilterChoiceActivity.FILTERS, mSorts);
+        intent.putExtra(FilterChoiceActivity.CURRENT_INDEX, mSorts.indexOf(mCurrentSort));
+        intent.putExtra(FilterChoiceActivity.TITLE, mContainer.getLibrarySectionTitle());
+        intent.putExtra(FilterChoiceActivity.SORT, true);
+        startActivityForResult(intent, RESULT_SORT);
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == RESULT_FILTER && resultCode != FilterChoiceActivity.CANCEL) {
+        if (resultCode != FilterChoiceActivity.CANCEL) {
+            switch (requestCode) {
 
-            mCurrentFilter = mFilters.get(resultCode);
-            ((ContainerActivity) getActivity()).setFilterText(mCurrentFilter.name);
-            new LoadSectionFilterTask().execute(mContainer.getLibrarySectionID(), mCurrentFilter.key);
+                case RESULT_FILTER:
+                    mCurrentFilter = mFilters.get(resultCode);
+                    ((ContainerActivity) getActivity()).setFilterText(mCurrentFilter.name);
+                    new LoadSectionFilterTask().execute(mContainer.getLibrarySectionID(), mCurrentFilter.key);
+                    break;
+                case RESULT_SORT:
+                    boolean isAscending = mCurrentSort.isAscending;
+                    PlexItemGrid.ItemSort lastSort = mCurrentSort.id;
+                    mCurrentSort = mSorts.get(resultCode);
+                    if (lastSort == mCurrentSort.id) {
+
+                        isAscending = !isAscending;
+                        mCurrentSort.isAscending = isAscending;
+                    }
+
+                    ((ContainerActivity) getActivity()).setSortText(mCurrentSort.name);
+                    mGrid.sort(getActivity(), mCurrentSort.id, isAscending);
+                    break;
+                default:
+                    break;
+            }
         }
     }
 
