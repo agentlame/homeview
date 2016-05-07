@@ -67,10 +67,6 @@
     <dimen name="codeccard_text_padding">8dp</dimen>
     <dimen name="codeccard_text_padding_small">2dp</dimen>
 
-    <dimen name="toolbar_padding">4dp</dimen>
-    <dimen name="toolbar_list_padding">20dp</dimen>
-    <dimen name="toolbar_buttonheight">25dp</dimen>
-
     <dimen name="about_title_text">24sp</dimen>
     <dimen name="about_header_text">36sp</dimen>
     <dimen name="about_path">10sp</dimen>
@@ -87,4 +83,13 @@
     <dimen name="codec_choice_image_padding">8dp</dimen>
 
     <dimen name="resumechoice_row_height">50dp</dimen>
+
+    <dimen name="container_quickjump_width">90dp</dimen>
+    <dimen name="container_item_textsize">12sp</dimen>
+    <dimen name="container_button_textsize">14sp</dimen>
+
+    <dimen name="toolbar_padding">2dp</dimen>
+    <dimen name="toolbar_list_padding_top">0dp</dimen>
+    <dimen name="toolbar_buttonheight">25dp</dimen>
+
 </resources>

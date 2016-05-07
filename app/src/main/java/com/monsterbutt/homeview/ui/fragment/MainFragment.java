@@ -36,6 +36,7 @@ import android.support.v17.leanback.widget.OnItemViewSelectedListener;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
+import android.support.v17.leanback.widget.TitleView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -228,7 +229,8 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         ServerLibraryTask libraryTask = (ServerLibraryTask) task;
         MediaContainer library = libraryTask.getLibrary();
-        TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
+        TitleView tv = (TitleView) getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group) ;
+        TextView text = (TextView) tv.findViewById(android.support.v17.leanback.R.id.title_text);
         text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
         setTitle(library.getTitle1());
 

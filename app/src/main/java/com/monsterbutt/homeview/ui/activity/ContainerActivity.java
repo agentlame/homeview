@@ -7,6 +7,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -40,8 +41,8 @@ public class ContainerActivity extends HomeViewActivity {
 
         if (getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false)) {
 
-            FrameLayout toolbar = (FrameLayout) findViewById(R.id.toolbar);
-            toolbar.setVisibility(View.GONE);
+            (findViewById(R.id.toolbarQuickJump)).setVisibility(View.GONE);
+            //(findViewById(R.id.toolbarHub)).setVisibility(View.GONE);
         }
         Button hubBtn = (Button) findViewById(R.id.hubBtn);
         hubBtn.setOnClickListener(new View.OnClickListener() {
