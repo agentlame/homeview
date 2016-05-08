@@ -69,7 +69,7 @@ public class ExtractorRendererBuilder implements VideoPlayer.RendererBuilder, Fr
         Allocator allocator = new DefaultAllocator(BUFFER_SEGMENT_SIZE);
         DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter(player.getMainHandler(),
                 null);
-        DataSource dataSource = new DefaultUriDataSource(activity, bandwidthMeter, userAgent);
+        DataSource dataSource = new DefaultUriDataSource(activity, bandwidthMeter, userAgent, true);
         ExtractorSampleSource sampleSource = new ExtractorSampleSource(uri, dataSource, allocator,
                 BUFFER_SEGMENT_COUNT * BUFFER_SEGMENT_SIZE);
         MediaCodecVideoTrackRenderer videoRenderer = new MediaCodecVideoTrackRenderer(activity,

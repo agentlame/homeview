@@ -10,8 +10,6 @@ This is an AndroidTV 6.0 app designed to leverage an existing Plex server.  It i
 5.  TrueHD passthrough is not currently supported.
 6.  Any decoded audio (or 24bit PCM) is down res'd to 16 bit as Android's 32bit float is only two channels.
 7.  VOBSUB and external SRT subtitles are not supported.
-8.  "Extras" listed from the server for an item are displayed in the UI but they are not usable/playable.  Cause has not been investigated.
-9.  Audio passthrough is enabled by default and used when available.   Auto refresh rate switching is disabled by default.
 
 ##Requirements
 1. Android Studio
@@ -31,3 +29,4 @@ This is an AndroidTV 6.0 app designed to leverage an existing Plex server.  It i
 ##Usage
 1. The app should autodetect local Plex servers and choose the first one at initial startup.  You can choose specific ones or manually enter details in the settings.
 2. The "Play" media button should shortcut you to the playback screen when pressing over highlighted media.
+3. Audio passthrough is enabled by default and used when available.   Auto refresh rate switching is disabled by default.
