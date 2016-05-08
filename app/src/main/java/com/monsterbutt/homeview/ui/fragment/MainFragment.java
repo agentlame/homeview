@@ -229,7 +229,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         ServerLibraryTask libraryTask = (ServerLibraryTask) task;
         MediaContainer library = libraryTask.getLibrary();
-        TitleView tv = (TitleView) getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group) ;
+        TitleView tv = (TitleView) getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group);
         TextView text = (TextView) tv.findViewById(android.support.v17.leanback.R.id.title_text);
         text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
         setTitle(library.getTitle1());

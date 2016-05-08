@@ -5,11 +5,7 @@ import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
@@ -30,8 +26,6 @@ public class ContainerActivity extends HomeViewActivity {
     private boolean mQuickListSelected = false;
     private int mQuickListSelectedIndex = 0;
 
-    private TextView mFilterText;
-    private TextView mSortText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,34 +33,8 @@ public class ContainerActivity extends HomeViewActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_container);
 
-        if (getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false)) {
-
+        if (getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false))
             (findViewById(R.id.toolbarQuickJump)).setVisibility(View.GONE);
-            //(findViewById(R.id.toolbarHub)).setVisibility(View.GONE);
-        }
-        Button hubBtn = (Button) findViewById(R.id.hubBtn);
-        hubBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFragment.hubButtonClicked();
-            }
-        });
-        Button filterBtn = (Button) findViewById(R.id.filterBtn);
-        filterBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFragment.filterButtonClicked();
-            }
-        });
-        mFilterText = (TextView) findViewById(R.id.filterText);
-        Button sortBtn = (Button) findViewById(R.id.sortBtn);
-        sortBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mFragment.sortButtonClicked();
-            }
-        });
-        mSortText = (TextView) findViewById(R.id.sortText);
 
         mQuickList = (ListView) findViewById(R.id.list_shortcut);
         mQuickList.setOnFocusChangeListener(new OnFocusChangeListener() {
@@ -113,19 +81,14 @@ public class ContainerActivity extends HomeViewActivity {
         }
     }
 
-    public void setFilterText(String filter) {
-        mFilterText.setText(filter);
-    }
+    public void setQuickListVisible(boolean visible) {
 
-    public void setSortText(String sort) {
-        mSortText.setText(sort);
+        (findViewById(R.id.toolbarQuickJump)).setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     public void setQuickJumpList(List<QuickJumpRow> quickjumpList) {
 
-        ArrayAdapter<QuickJumpRow> adapter = new ArrayAdapter<>(this,
-                R.layout.quickjumprow, android.R.id.text1, quickjumpList);
-        mQuickList.setAdapter(adapter);
+        mQuickList.setAdapter(new ArrayAdapter<>(this, R.layout.quickjumprow, android.R.id.text1, quickjumpList));
     }
 
     public static class QuickJumpRow {

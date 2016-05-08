@@ -12,10 +12,13 @@ import android.support.v17.leanback.widget.OnItemViewSelectedListener;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
+import android.support.v17.leanback.widget.TitleView;
 import android.support.v17.leanback.widget.VerticalGridPresenter;
 import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.media.Episode;
@@ -75,6 +78,9 @@ public class ContainerGridFragment extends VerticalGridFragment
 
     private View mCurrentCardTransitionImage = null;
     private CardObject mCurrentCard = null;
+
+    private TextView mFilterText;
+    private TextView mSortText;
 
     @Override
     public WatchedStatusHandler.UpdateStatusList getItemsToCheck() {
@@ -200,7 +206,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         mSorts.add(new SectionSort(act.getString(R.string.sort_ReleaseDate), PlexItemGrid.ItemSort.ReleaseDate));
         mSorts.add(new SectionSort(act.getString(R.string.sort_Title), PlexItemGrid.ItemSort.Title));
         mCurrentSort = mSorts.get(mSorts.size()-1);
-        ((ContainerActivity) act).setSortText(mCurrentSort.name);
+
 
         mServer = PlexServerManager.getInstance(act.getApplicationContext()).getSelectedServer();
         mUseScene = act.getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false);
@@ -412,6 +418,40 @@ public class ContainerGridFragment extends VerticalGridFragment
     }
 
     @Override
+    public void onStart() {
+
+        super.onStart();
+        TitleView tv = (TitleView) getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group);
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.lb_container_header, tv, false);
+        tv.addView(view);
+
+        Button hubBtn = (Button) view.findViewById(R.id.hubBtn);
+        hubBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hubButtonClicked();
+            }
+        });
+        Button filterBtn = (Button) view.findViewById(R.id.filterBtn);
+        filterBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                filterButtonClicked();
+            }
+        });
+        mFilterText = (TextView) view.findViewById(R.id.filterText);
+        Button sortBtn = (Button) view.findViewById(R.id.sortBtn);
+        sortBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sortButtonClicked();
+            }
+        });
+        mSortText = (TextView) view.findViewById(R.id.sortText);
+        mSortText.setText(mCurrentSort.name);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (resultCode != FilterChoiceActivity.CANCEL) {
@@ -419,20 +459,21 @@ public class ContainerGridFragment extends VerticalGridFragment
 
                 case RESULT_FILTER:
                     mCurrentFilter = mFilters.get(resultCode);
-                    ((ContainerActivity) getActivity()).setFilterText(mCurrentFilter.name);
+                    mFilterText.setText(mCurrentFilter.name);
                     new LoadSectionFilterTask().execute(mContainer.getLibrarySectionID(), mCurrentFilter.key);
                     break;
                 case RESULT_SORT:
                     boolean isAscending = mCurrentSort.isAscending;
                     PlexItemGrid.ItemSort lastSort = mCurrentSort.id;
                     mCurrentSort = mSorts.get(resultCode);
+                    ((ContainerActivity)getActivity()).setQuickListVisible(mCurrentSort.id == PlexItemGrid.ItemSort.Title);
                     if (lastSort == mCurrentSort.id) {
 
                         isAscending = !isAscending;
                         mCurrentSort.isAscending = isAscending;
                     }
 
-                    ((ContainerActivity) getActivity()).setSortText(mCurrentSort.name);
+                    mSortText.setText(mCurrentSort.name);
                     mGrid.sort(getActivity(), mCurrentSort.id, isAscending);
                     break;
                 default:
@@ -454,7 +495,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         @Override
         protected void onPostExecute(MediaContainer container) {
 
-            ((ContainerActivity) getActivity()).setFilterText(mCurrentFilter.name);
+            mFilterText.setText(mCurrentFilter.name);
             updateAdapter(container);
         }
     }

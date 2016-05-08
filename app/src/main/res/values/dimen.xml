@@ -87,6 +87,8 @@
     <dimen name="container_quickjump_width">90dp</dimen>
     <dimen name="container_item_textsize">12sp</dimen>
     <dimen name="container_button_textsize">14sp</dimen>
+    <dimen name="container_header_height">125dp</dimen>
+    <dimen name="container_header_margin">30dp</dimen>
 
     <dimen name="toolbar_padding">2dp</dimen>
     <dimen name="toolbar_list_padding_top">0dp</dimen>
