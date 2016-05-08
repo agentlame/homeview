@@ -22,6 +22,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v17.leanback.widget.Presenter;
 import android.text.TextUtils;
 import android.util.TypedValue;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.bumptech.glide.Glide;
@@ -39,14 +40,21 @@ import com.monsterbutt.homeview.ui.android.ImageCardView;
  */
 public class CardPresenter extends Presenter {
 
+    public interface CardPresenterLongClickListener {
+
+        boolean longClickOccured();
+    }
+
     private int mSelectedBackgroundColor = -1;
     private int mDefaultBackgroundColor = -1;
 
-    private PlexServer mPlex = null;
+    final private PlexServer mPlex;
+    final private CardPresenterLongClickListener mListener;
 
-    public CardPresenter(PlexServer plex) {
+    public CardPresenter(PlexServer plex, CardPresenterLongClickListener listener) {
 
         mPlex = plex;
+        mListener = listener;
     }
 
     @Override
@@ -87,8 +95,16 @@ public class CardPresenter extends Presenter {
     public void onBindViewHolder(Presenter.ViewHolder viewHolder, Object item) {
 
         CardObject obj = (CardObject) item;
-
         final ImageCardView cardView = (ImageCardView) viewHolder.view;
+        cardView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+
+                if (mListener != null)
+                    return mListener.longClickOccured();
+                return false;
+            }
+        });
         Context context = cardView.getContext();
         cardView.setTitleText(obj.getTitle());
         cardView.setContentText(obj.getContent());

@@ -42,6 +42,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.SettingCard;
 import com.monsterbutt.homeview.presenters.SettingPresenter;
 import com.monsterbutt.homeview.services.ThemeService;
@@ -50,6 +51,7 @@ import com.monsterbutt.homeview.ui.MediaRowCreator;
 import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.activity.SearchActivity;
 import com.monsterbutt.homeview.ui.activity.SettingsActivity;
+import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.android.ImageCardView;
 import com.monsterbutt.homeview.ui.handler.MediaCardBackgroundHandler;
 import com.monsterbutt.homeview.R;
@@ -64,7 +66,7 @@ import com.monsterbutt.homeview.ui.activity.ServerChoiceActivity;
 
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
-public class MainFragment extends BrowseFragment implements PlexServerTaskCaller, OnItemViewSelectedListener, OnItemViewClickedListener, MainActivity.OnPlayKeyListener {
+public class MainFragment extends BrowseFragment implements PlexServerTaskCaller, OnItemViewSelectedListener, OnItemViewClickedListener, MainActivity.OnPlayKeyListener, CardPresenter.CardPresenterLongClickListener {
 
     private static final String TAG = "MainFragment";
 
@@ -192,8 +194,12 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
     @Override
     public boolean playKeyPressed() {
-
         return  mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
+    }
+
+    @Override
+    public boolean longClickOccured() {
+        return playKeyPressed();
     }
 
     private class CheckForPlexServerTask extends TimerTask {
@@ -303,7 +309,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
             return;
         existing.currentIndex = index;
         if (existing.data instanceof PlexItemRow)
-            ((PlexItemRow)existing.data).updateRow(MediaRowCreator.fillAdapterForRow(getActivity(), mMgr.getSelectedServer(), row, useLandscape));
+            ((PlexItemRow)existing.data).updateRow(MediaRowCreator.fillAdapterForRow(getActivity(), mMgr.getSelectedServer(), row, useLandscape, this));
     }
 
     private void addMainRow(MediaRowCreator.MediaRow row, boolean useLandscape, int index) {
@@ -313,8 +319,8 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         for (String sub : getString(R.string.main_rows_header_strip).split(";"))
             header = header.replace(sub, "").trim();
         PlexItemRow updateRow = index != 0 ?
-                MediaRowCreator.fillAdapterForWatchedRow(getActivity(), mMgr.getSelectedServer(), row, header, hash, useLandscape)
-                : MediaRowCreator.fillAdapterForRow(getActivity(), mMgr.getSelectedServer(), row, header, hash, useLandscape);
+                MediaRowCreator.fillAdapterForWatchedRow(getActivity(), mMgr.getSelectedServer(), row, header, hash, useLandscape, this)
+                : MediaRowCreator.fillAdapterForRow(getActivity(), mMgr.getSelectedServer(), row, header, hash, useLandscape, this);
         if (index != mRows.size()) {
             for(MediaRowCreator.RowData oldRow : mRows.values()) {
                 if (oldRow.currentIndex >= index)

@@ -47,18 +47,18 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener {
 
     private WatchedStatusHandler watchedHandler = null;
 
-    public static PlexItemGrid getGrid(PlexServer server) {
+    public static PlexItemGrid getGrid(PlexServer server, CardPresenter.CardPresenterLongClickListener listener) {
 
-        return new PlexItemGrid(server, false);
+        return new PlexItemGrid(server, false, listener);
     }
 
-    public static PlexItemGrid getWatchedStateGrid(PlexServer server) {
+    public static PlexItemGrid getWatchedStateGrid(PlexServer server, CardPresenter.CardPresenterLongClickListener listener) {
 
-        return new PlexItemGrid(server, true);
+        return new PlexItemGrid(server, true, listener);
     }
 
-    private PlexItemGrid(PlexServer server, boolean useWatchedState) {
-        this.adapter = new ArrayObjectAdapter(new CardPresenter(server));
+    private PlexItemGrid(PlexServer server, boolean useWatchedState, CardPresenter.CardPresenterLongClickListener listener) {
+        this.adapter = new ArrayObjectAdapter(new CardPresenter(server, listener));
         if (useWatchedState)
             watchedHandler = new WatchedStatusHandler(server, this);
     }

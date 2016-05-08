@@ -89,7 +89,7 @@ import us.nineworlds.plex.rest.model.impl.Video;
 public class DetailsFragment extends android.support.v17.leanback.app.DetailsFragment
         implements OnItemViewClickedListener, OnActionClickedListener,
         HomeViewActivity.OnPlayKeyListener, OnItemViewSelectedListener,
-        WatchedStatusHandler.WatchStatusListener {
+        WatchedStatusHandler.WatchStatusListener, CardPresenter.CardPresenterLongClickListener {
 
     private View mCurrentCardTransitionImage = null;
     private CardObject mCurrentCard = null;
@@ -273,6 +273,11 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         }
     }
 
+    @Override
+    public boolean longClickOccured() {
+        return playKeyPressed();
+    }
+
     static class MovieDetailsOverviewLogoPresenter extends DetailsOverviewLogoPresenter {
 
         private final boolean usePoster;
@@ -420,7 +425,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         }
     }
 
-    private class LoadMetadataTask extends AsyncTask<String, Void, PlexLibraryItem> {
+    private class LoadMetadataTask extends AsyncTask<String, Void, PlexLibraryItem> implements CardPresenter.CardPresenterLongClickListener {
 
         private final PlexServer server;
 
@@ -462,10 +467,10 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
             }
             else
                 mTracks = null;
-            mChildRow = item.getChildren(activity, mServer);
+            mChildRow = item.getChildren(activity, mServer, this);
             if (mChildRow != null)
                 mAdapter.add(mChildRow);
-            ListRow extras = item.getExtras(activity, mServer);
+            ListRow extras = item.getExtras(activity, mServer, this);
             if (extras != null)
                 mAdapter.add(extras);
 
@@ -474,6 +479,11 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
             if (!mThemeAlreadyRun)
                 mThemeAlreadyRun = ThemeService.startTheme(getActivity(), mItem.getThemeKey(mServer));
+        }
+
+        @Override
+        public boolean longClickOccured() {
+            return playKeyPressed();
         }
     }
 
@@ -514,7 +524,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
             for (MediaContainer mc : list) {
 
                 if (mc.getVideos() != null && !mc.getVideos().isEmpty()) {
-                    ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(mServer));
+                    ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(mServer, DetailsFragment.this));
                     ListRow row = new ListRow(new HeaderItem(0, mc.getTitle1()),
                             adapter);
                     for (Video video: mc.getVideos())

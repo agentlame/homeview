@@ -37,24 +37,24 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
 
     private WatchedStatusHandler watchedHandler = null;
 
-    public static PlexItemRow getRow(PlexServer server, String header) {
+    public static PlexItemRow getRow(PlexServer server, String header, CardPresenter.CardPresenterLongClickListener listener) {
 
-        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server)), false);
+        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server, listener)), false);
     }
 
-    public static PlexItemRow getWatchedStateRow(PlexServer server, String header) {
+    public static PlexItemRow getWatchedStateRow(PlexServer server, String header, CardPresenter.CardPresenterLongClickListener listener) {
 
-        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server)), true);
+        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server, listener)), true);
     }
 
-    public static PlexItemRow getRow(PlexServer server, String header, int hash) {
+    public static PlexItemRow getRow(PlexServer server, String header, int hash, CardPresenter.CardPresenterLongClickListener listener) {
 
-        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server)), hash, false);
+        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server, listener)), hash, false);
     }
 
-    public static PlexItemRow getWatchedStateRow(PlexServer server, String header, int hash) {
+    public static PlexItemRow getWatchedStateRow(PlexServer server, String header, int hash, CardPresenter.CardPresenterLongClickListener listener) {
 
-        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server)), hash, true);
+        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server, listener)), hash, true);
     }
 
     private PlexItemRow(PlexServer server, String header, ArrayObjectAdapter adapter, boolean useWatchedState) {

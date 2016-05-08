@@ -86,11 +86,15 @@ import com.monsterbutt.homeview.plex.tasks.GetVideoTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTaskCaller;
 import com.monsterbutt.homeview.plex.tasks.VideoProgressTask;
+import com.monsterbutt.homeview.presenters.CardObject;
+import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.CodecCard;
+import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.services.UpdateRecommendationsService;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.android.ImageCardView;
 import com.monsterbutt.homeview.ui.android.NextUpView;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 
@@ -115,7 +119,7 @@ public class PlaybackFragment
         implements VideoPlayer.Listener, PlexServerTaskCaller,
         OnItemViewClickedListener, HomeViewActivity.OnStopKeyListener,
         PlaybackControlHelper.ProgressUpdateCallback, HomeViewActivity.OnBackPressedListener,
-        SurfaceHolder.Callback, VideoPlayer.CaptionListener {
+        SurfaceHolder.Callback, VideoPlayer.CaptionListener, CardPresenter.CardPresenterLongClickListener {
 
     private static final int CHOOSER_TIMEOUT = 10000;
     private static final String TAG = "PlaybackOverlayFragment";
@@ -156,6 +160,9 @@ public class PlaybackFragment
 
     private ImageView mSubtitlesImage = null;
     private TextView mSubtitlesText =null;
+
+    private View mCurrentCardTransitionImage = null;
+    private CardObject mCurrentCard = null;
 
     @Override
     public void onAttach(Context context) {
@@ -252,6 +259,12 @@ public class PlaybackFragment
             @Override
             public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item,
                                        RowPresenter.ViewHolder rowViewHolder, Row row) {
+                if (item instanceof CardObject) {
+
+                    mCurrentCard = (CardObject) item;
+                    mCurrentCardTransitionImage = itemViewHolder.view instanceof ImageCardView ?
+                            ((ImageCardView) itemViewHolder.view).getMainImageView() : null;
+                }
             }
         });
 
@@ -406,7 +419,7 @@ public class PlaybackFragment
         mCodecRow = mSelectedVideo.getCodecsRow(getActivity(), mServer, mSelectedVideoTracks);
         if (mCodecRow != null)
             mRowsAdapter.add(mCodecRow);
-        mExtrasRow = mSelectedVideo.getChildren(getActivity(), mServer);
+        mExtrasRow = mSelectedVideo.getChildren(getActivity(), mServer, this);
         if (mExtrasRow != null)
             mRowsAdapter.add(mExtrasRow);
     }
@@ -764,42 +777,55 @@ public class PlaybackFragment
         }
     }
 
+    public void chapterSelected(Chapter chapter) {
+
+        long currPos = getCurrentPosition();
+        long pos = chapter.getChapterStart();
+        int prevState = getPlaybackState();
+        setPlaybackState(pos > currPos ? PlaybackState.STATE_REWINDING : PlaybackState.STATE_FAST_FORWARDING);
+        setPosition(pos);
+        setPlaybackState(prevState);
+    }
+
+    public void codecSelected(final CodecCard card) {
+
+        final int trackTypeClicked = card.getTrackType();
+        card.onCardClicked(getActivity(), mServer, mSelectedVideoTracks, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+                mSelectedVideoTracks.setSelectedTrack(mPlayer, trackTypeClicked, which);
+                ArrayObjectAdapter adapter = (ArrayObjectAdapter) mCodecRow.getAdapter();
+                int index = adapter.indexOf(card);
+                if (0 <= index) {
+                    adapter.replace(index, new CodecCard(getActivity(),
+                            mSelectedVideoTracks.getSelectedTrack(trackTypeClicked),
+                            trackTypeClicked,
+                            mSelectedVideoTracks.getCount(trackTypeClicked)));
+
+                    adapter.notifyArrayItemRangeChanged(index, 1);
+                }
+                dialog.dismiss();
+            }
+        });
+    }
+
+    public boolean onItemClicked(Object item) {
+
+        if (item instanceof SceneCard && ((SceneCard) item).getItem() instanceof Chapter)
+            chapterSelected((Chapter)((SceneCard) item).getItem());
+        else if (item instanceof CodecCard)
+            codecSelected((CodecCard) item);
+        else if (item instanceof PosterCard)
+            ((PosterCard)item).onClicked(this, null, mCurrentCardTransitionImage);
+        else
+            return false;
+        return true;
+    }
+
     @Override
     public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        if (item instanceof SceneCard && ((SceneCard) item).getItem() instanceof Chapter) {
-
-            Chapter chapter = (Chapter)((SceneCard) item).getItem();
-            long currPos = getCurrentPosition();
-            long pos = chapter.getChapterStart();
-            int prevState = getPlaybackState();
-            setPlaybackState(pos > currPos ? PlaybackState.STATE_REWINDING : PlaybackState.STATE_FAST_FORWARDING);
-            setPosition(pos);
-            setPlaybackState(prevState);
-        }
-        else if (item instanceof CodecCard) {
-
-            final CodecCard card = (CodecCard) item;
-            final int trackTypeClicked = card.getTrackType();
-            card.onCardClicked(getActivity(), mServer, mSelectedVideoTracks, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-
-                    mSelectedVideoTracks.setSelectedTrack(mPlayer, trackTypeClicked, which);
-                    ArrayObjectAdapter adapter = (ArrayObjectAdapter) mCodecRow.getAdapter();
-                    int index = adapter.indexOf(card);
-                    if (0 <= index) {
-                        adapter.replace(index, new CodecCard(getActivity(),
-                                mSelectedVideoTracks.getSelectedTrack(trackTypeClicked),
-                                trackTypeClicked,
-                                mSelectedVideoTracks.getCount(trackTypeClicked)));
-
-                        adapter.notifyArrayItemRangeChanged(index, 1);
-                    }
-                    dialog.dismiss();
-                }
-            });
-        }
+        onItemClicked(item);
     }
 
     @Override
@@ -922,6 +948,11 @@ public class PlaybackFragment
         Media media = mSelectedVideo.getMedia().get(0);
         mSourceHeight = Integer.valueOf(media.getHeight());
         mSourceWidth = Integer.valueOf(media.getWidth());
+    }
+
+    @Override
+    public boolean longClickOccured() {
+        return mCurrentCard != null && onItemClicked(mCurrentCard);
     }
 
     // An event was triggered by MediaController.TransportControls and must be handled here.

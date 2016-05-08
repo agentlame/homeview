@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.presenters.CardObject;
+import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.ui.MediaRowCreator;
 import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
@@ -117,7 +118,7 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
         return  mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
     }
 
-    private class LoadMetadataTask extends AsyncTask<String, Void, MediaContainer> {
+    private class LoadMetadataTask extends AsyncTask<String, Void, MediaContainer> implements CardPresenter.CardPresenterLongClickListener {
 
         @Override
         protected MediaContainer doInBackground(String... params) {
@@ -157,7 +158,7 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
                 int index = 0;
                 for (MediaRowCreator.MediaRow row : newRows) {
 
-                    PlexItemRow rowUpdate = MediaRowCreator.fillAdapterForWatchedRow(getActivity(), mServer, row, false);
+                    PlexItemRow rowUpdate = MediaRowCreator.fillAdapterForWatchedRow(getActivity(), mServer, row, false, this);
                     if (mRows.containsKey(row.title)) {
 
                         MediaRowCreator.RowData current = mRows.get(row.title);
@@ -172,6 +173,11 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
                     ++index;
                 }
             }
+        }
+
+        @Override
+        public boolean longClickOccured() {
+            return playKeyPressed();
         }
     }
 }

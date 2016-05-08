@@ -3,11 +3,9 @@ package com.monsterbutt.homeview.ui.android;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.ColorInt;
 import android.support.v17.leanback.widget.BaseCardView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,22 +40,6 @@ public class ImageCardView extends BaseCardView {
     public SimpleTarget<GlideDrawable> getTarget() { return mTarget; }
     public void  setTarget(SimpleTarget<GlideDrawable> target) { mTarget = target; }
 
-    /**
-     * Create an ImageCardView using a given theme for customization.
-     *
-     * @param context    The Context the view is running in, through which it can
-     *                   access the current theme, resources, etc.
-     * @param themeResId The resourceId of the theme you want to apply to the ImageCardView. The theme
-     *                   includes attributes "imageCardViewStyle", "imageCardViewTitleStyle",
-     *                   "imageCardViewContentStyle" etc. to customize individual part of ImageCardView.
-     * @deprecated Calling this constructor inefficiently creates one ContextThemeWrapper per card,
-     * you should share it in card Presenter: wrapper = new ContextThemeWrapper(context, themResId);
-     * return new ImageCardView(wrapper);
-     */
-    @Deprecated
-    public ImageCardView(Context context, int themeResId) {
-        this(new ContextThemeWrapper(context, themeResId));
-    }
 
     public ImageCardView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -202,23 +184,6 @@ public class ImageCardView extends BaseCardView {
         return mImageView;
     }
 
-    /**
-     * Enables or disables adjustment of view bounds on the main image.
-     */
-    public void setMainImageAdjustViewBounds(boolean adjustViewBounds) {
-        if (mImageView != null) {
-            mImageView.setAdjustViewBounds(adjustViewBounds);
-        }
-    }
-
-    /**
-     * Sets the ScaleType of the main image.
-     */
-    public void setMainImageScaleType(ImageView.ScaleType scaleType) {
-        if (mImageView != null) {
-            mImageView.setScaleType(scaleType);
-        }
-    }
 
     /**
      * Sets the image drawable with fade-in animation.
@@ -290,26 +255,6 @@ public class ImageCardView extends BaseCardView {
         mProgressView.setLayoutParams(lp);
     }
 
-    /**
-     * Returns the ImageView drawable.
-     */
-    public Drawable getMainImage() {
-        if (mImageView == null) {
-            return null;
-        }
-
-        return mImageView.getDrawable();
-    }
-
-    /**
-     * Returns the info area background drawable.
-     */
-    public Drawable getInfoAreaBackground() {
-        if (mInfoArea != null) {
-            return mInfoArea.getBackground();
-        }
-        return null;
-    }
 
     /**
      * Sets the info area background drawable.
@@ -317,15 +262,6 @@ public class ImageCardView extends BaseCardView {
     public void setInfoAreaBackground(Drawable drawable) {
         if (mInfoArea != null) {
             mInfoArea.setBackground(drawable);
-        }
-    }
-
-    /**
-     * Sets the info area background color.
-     */
-    public void setInfoAreaBackgroundColor(@ColorInt int color) {
-        if (mInfoArea != null) {
-            mInfoArea.setBackgroundColor(color);
         }
     }
 
@@ -339,16 +275,6 @@ public class ImageCardView extends BaseCardView {
         mTitleView.setText(text);
     }
 
-    /**
-     * Returns the title text.
-     */
-    public CharSequence getTitleText() {
-        if (mTitleView == null) {
-            return null;
-        }
-
-        return mTitleView.getText();
-    }
 
     /**
      * Sets the content text.
@@ -361,16 +287,6 @@ public class ImageCardView extends BaseCardView {
         mContentView.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
     }
 
-    /**
-     * Returns the content text.
-     */
-    public CharSequence getContentText() {
-        if (mContentView == null) {
-            return null;
-        }
-
-        return mContentView.getText();
-    }
 
     /**
      * Sets the badge image drawable.
@@ -387,16 +303,6 @@ public class ImageCardView extends BaseCardView {
         }
     }
 
-    /**
-     * Returns the badge image drawable.
-     */
-    public Drawable getBadgeImage() {
-        if (mBadgeImage == null) {
-            return null;
-        }
-
-        return mBadgeImage.getDrawable();
-    }
 
     private void fadeIn() {
         mImageView.setAlpha(0f);

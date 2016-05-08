@@ -8,6 +8,7 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
+import com.monsterbutt.homeview.presenters.CardPresenter;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -77,28 +78,34 @@ public class MediaRowCreator {
     }
 
     public static  PlexItemRow fillAdapterForWatchedRow(Context context, PlexServer server, MediaRow row,
-                                                        String title, int hash, boolean useLandscape) {
-        return MediaRowCreator.fillAdapterForRow(context, server, row, title, hash, useLandscape, true);
+                                                        String title, int hash, boolean useLandscape,
+                                                        CardPresenter.CardPresenterLongClickListener listener) {
+        return MediaRowCreator.fillAdapterForRow(context, server, row, title, hash, useLandscape, true, listener);
     }
 
-    public static  PlexItemRow fillAdapterForWatchedRow(Context context, PlexServer server, MediaRow row, boolean useLandscape) {
-        return MediaRowCreator.fillAdapterForRow(context, server, row, row.title, row.title.hashCode(), useLandscape, true);
-    }
-
-    public static  PlexItemRow fillAdapterForRow(Context context, PlexServer server, MediaRow row, boolean useLandscape) {
-        return MediaRowCreator.fillAdapterForRow(context, server, row, row.title, row.title.hashCode(), useLandscape, false);
+    public static  PlexItemRow fillAdapterForWatchedRow(Context context, PlexServer server,
+                                                        MediaRow row, boolean useLandscape,
+                                                        CardPresenter.CardPresenterLongClickListener listener) {
+        return MediaRowCreator.fillAdapterForRow(context, server, row, row.title, row.title.hashCode(), useLandscape, true, listener);
     }
 
     public static  PlexItemRow fillAdapterForRow(Context context, PlexServer server, MediaRow row,
-                                                 String title, int hash, boolean useLandscape) {
-        return MediaRowCreator.fillAdapterForRow(context, server, row, title, hash, useLandscape, false);
+                                                 boolean useLandscape, CardPresenter.CardPresenterLongClickListener listener) {
+        return MediaRowCreator.fillAdapterForRow(context, server, row, row.title, row.title.hashCode(), useLandscape, false, listener);
+    }
+
+    public static  PlexItemRow fillAdapterForRow(Context context, PlexServer server, MediaRow row,
+                                                 String title, int hash, boolean useLandscape,
+                                                 CardPresenter.CardPresenterLongClickListener listener) {
+        return MediaRowCreator.fillAdapterForRow(context, server, row, title, hash, useLandscape, false, listener);
     }
 
     private static  PlexItemRow fillAdapterForRow(Context context, PlexServer server, MediaRow row,
-                                                 String title, int hash, boolean useLandscape, boolean watched) {
+                                                 String title, int hash, boolean useLandscape,
+                                                 boolean watched, CardPresenter.CardPresenterLongClickListener listener) {
 
-        PlexItemRow gridRow = watched ? PlexItemRow.getWatchedStateRow(server, title, hash)
-                                      : PlexItemRow.getRow(server, title, hash);
+        PlexItemRow gridRow = watched ? PlexItemRow.getWatchedStateRow(server, title, hash, listener)
+                                      : PlexItemRow.getRow(server, title, hash, listener);
 
         Iterator<Directory> itDirs = row.directories != null ? row.directories.iterator() : null;
         Directory currDir = null;

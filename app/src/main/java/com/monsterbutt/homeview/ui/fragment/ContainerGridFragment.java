@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.media.Episode;
+import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.services.ThemeService;
 import com.monsterbutt.homeview.ui.PlexItemGrid;
 import com.monsterbutt.homeview.ui.activity.FilterChoiceActivity;
@@ -52,7 +53,7 @@ import us.nineworlds.plex.rest.model.impl.Video;
 
 public class ContainerGridFragment extends VerticalGridFragment
         implements OnItemViewClickedListener, OnItemViewSelectedListener,
-        HomeViewActivity.OnPlayKeyListener, WatchedStatusHandler.WatchStatusListener {
+        HomeViewActivity.OnPlayKeyListener, WatchedStatusHandler.WatchStatusListener, CardPresenter.CardPresenterLongClickListener {
 
     private static final int RESULT_FILTER = 1;
     private static final int RESULT_SORT = 2;
@@ -102,6 +103,11 @@ public class ContainerGridFragment extends VerticalGridFragment
             for (WatchedStatusHandler.UpdateStatus update : items)
                 mGrid.updateItem(update);
         }
+    }
+
+    @Override
+    public boolean longClickOccured() {
+        return playKeyPressed();
     }
 
     public static class SectionSort extends SectionFilter implements Parcelable {
@@ -296,8 +302,8 @@ public class ContainerGridFragment extends VerticalGridFragment
         }
 
         List<ContainerActivity.QuickJumpRow> quickjumpList = new ArrayList<>();
-        mGrid = mUseScene ? PlexItemGrid.getWatchedStateGrid(mServer)
-                          : PlexItemGrid.getGrid(mServer);
+        mGrid = mUseScene ? PlexItemGrid.getWatchedStateGrid(mServer, this)
+                          : PlexItemGrid.getGrid(mServer, this);
         if (container != null) {
 
           //  setTitle(container.getTitle1());

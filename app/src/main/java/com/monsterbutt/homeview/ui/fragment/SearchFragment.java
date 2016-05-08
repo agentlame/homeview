@@ -50,7 +50,7 @@ import com.monsterbutt.homeview.ui.handler.MediaCardBackgroundHandler;
  */
 public class SearchFragment extends android.support.v17.leanback.app.SearchFragment
         implements android.support.v17.leanback.app.SearchFragment.SearchResultProvider,
-        LoaderManager.LoaderCallbacks<Cursor>, OnItemViewSelectedListener, OnItemViewClickedListener, HomeViewActivity.OnPlayKeyListener {
+        LoaderManager.LoaderCallbacks<Cursor>, OnItemViewSelectedListener, OnItemViewClickedListener, HomeViewActivity.OnPlayKeyListener, CardPresenter.CardPresenterLongClickListener {
     private static final String TAG = "SearchFragment";
 
     //private static final boolean FINISH_ON_RECOGNIZER_CANCELED = true;
@@ -73,7 +73,7 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
         super.onCreate(savedInstanceState);
 
         mServer = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
-        mVideoCursorAdapter =new CursorObjectAdapter(new CardPresenter(mServer));
+        mVideoCursorAdapter = new CursorObjectAdapter(new CardPresenter(mServer, this));
         mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
         mVideoCursorAdapter.setMapper(new VideoCursorMapper());
 
@@ -262,4 +262,8 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
         return mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
     }
 
+    @Override
+    public boolean longClickOccured() {
+        return playKeyPressed();
+    }
 }

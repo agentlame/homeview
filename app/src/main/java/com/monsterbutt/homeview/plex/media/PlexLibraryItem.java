@@ -146,7 +146,7 @@ public abstract class PlexLibraryItem {
 
     public abstract void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride, boolean isStartOverride);
 
-    public PlexItemRow getChildren(Context context, PlexServer server) {
+    public PlexItemRow getChildren(Context context, PlexServer server, CardPresenter.CardPresenterLongClickListener listener) {
 
         boolean skipAllSeason = (this instanceof Show) &&
                 !SettingsManager.getInstance(context).getBoolean("preferences_navigation_showallseason");
@@ -156,9 +156,9 @@ public abstract class PlexLibraryItem {
         if (children != null && !children.isEmpty()) {
             // setup bottom row for seasons, episodes, or chapters
             if (shouldChildRowWatchState())
-                row = PlexItemRow.getWatchedStateRow(server, getHeaderForChildren(context));
+                row = PlexItemRow.getWatchedStateRow(server, getHeaderForChildren(context), listener);
             else
-                row = PlexItemRow.getRow(server, getHeaderForChildren(context));
+                row = PlexItemRow.getRow(server, getHeaderForChildren(context), listener);
             for (PlexLibraryItem child : children) {
 
                 if (skipAllSeason && child.getKey().endsWith(Season.ALL_SEASONS))
@@ -169,14 +169,14 @@ public abstract class PlexLibraryItem {
         return row;
     }
 
-    public ListRow getExtras(Context context, PlexServer server) {
+    public ListRow getExtras(Context context, PlexServer server, CardPresenter.CardPresenterLongClickListener listener) {
 
         String title = context != null ? context.getString(R.string.extras_row_header) : "Extras";
         ListRow row = null;
         List<PlexLibraryItem> extras = getExtraItems();
         if (extras != null && !extras.isEmpty()) {
             // setup bottom row for seasons, episodes, or chapters
-            ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(server));
+            ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(server, listener));
             row = new ListRow(new HeaderItem(0, title), adapter);
             for (PlexLibraryItem extra : extras)
                 adapter.add(new SceneCard(context, extra));
