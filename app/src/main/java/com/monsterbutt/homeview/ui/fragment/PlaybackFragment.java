@@ -387,6 +387,7 @@ public class PlaybackFragment
 
         if (doPlay && getPlaybackState() != PlaybackState.STATE_PLAYING) {
 
+            getActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             mPlayer.getPlayerControl().start();
             setPlaybackState(PlaybackState.STATE_PLAYING);
         } else {
@@ -1063,6 +1064,7 @@ public class PlaybackFragment
         @Override
         public void onStop() {
 
+            getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             getActivity().finish();
         }
 

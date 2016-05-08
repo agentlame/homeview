@@ -199,8 +199,6 @@ public class FrameRateSwitcher {
     public static void setDisplayRefreshRate(Activity activity, final VideoPlayer player,
                                               final FrameRateSwitcherListener listener) {
 
-
-        activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         SettingsManager mgr = SettingsManager.getInstance(activity);
         if (mgr.getBoolean("preferences_device_refreshrate")) {
 
