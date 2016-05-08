@@ -449,6 +449,15 @@ public class ContainerGridFragment extends VerticalGridFragment
         });
         mSortText = (TextView) view.findViewById(R.id.sortText);
         mSortText.setText(mCurrentSort.name);
+
+        if (mUseScene) {
+
+            hubBtn.setVisibility(View.GONE);
+            sortBtn.setVisibility(View.GONE);
+            filterBtn.setVisibility(View.GONE);
+            mSortText.setVisibility(View.GONE);
+            mFilterText.setVisibility(View.GONE);
+        }
     }
 
     @Override
