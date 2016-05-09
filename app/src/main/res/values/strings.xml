@@ -141,6 +141,10 @@
     <string name="preferences_device_speakers_summary">Choose your speaker configuration</string>
     <string name="preferences_device_speakers_dialog">Select speaker configuration</string>
     <string name="preferences_device_speakers_entries_default">8</string>
+    <string name="preferences_device_refreshrate_timeout">Refresh Rate Timeout</string>
+    <string name="preferences_device_refreshrate_timeout_summary">Choose a timeout value for when to revert refresh rates after a failure.</string>
+    <string name="preferences_device_refreshrate_timeout_dialog">Select timeout value</string>
+    <string name="preferences_device_refreshrate_timeout_entries_default">3000</string>
     <string name="preferences_device">Device Setup</string>
 
     <string name="preferences_nextup_episode">Next episode threshold</string>

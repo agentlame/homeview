@@ -43,19 +43,21 @@ public class FrameRateSwitcher {
         private final FrameRateSwitcherListener listener;
         private final FrameRateSwitcher switcher;
         private boolean isPlugged = true;
-        private boolean isFinished = false;
-        private final int TIMEOUT = 5000;
+        static private boolean isFinished;
         Timer timeoutTimer;
+        static private final String lock = "lock";
 
         private RefreshRateSwitchReceiver(Activity activity, VideoPlayer player,
                                           FrameRateSwitcherListener listener, FrameRateSwitcher switcher) {
 
+            RefreshRateSwitchReceiver.isFinished = false;
             this.activity = activity;
             this.player = player;
             this.listener = listener;
             this.switcher = switcher;
             timeoutTimer = new Timer();
-            timeoutTimer.schedule(new TimeOutTask(), TIMEOUT);
+            timeoutTimer.schedule(new TimeOutTask(),
+                    SettingsManager.getInstance(activity).getLong("preferences_device_refreshrate_timeout"));
         }
 
         @Override
@@ -79,17 +81,17 @@ public class FrameRateSwitcher {
 
         private void notifySwitchOccurred(boolean timedOut) {
 
-            synchronized (this) {
+            synchronized (lock) {
 
-                if (!isFinished) {
+                if (!RefreshRateSwitchReceiver.isFinished) {
 
-                    isFinished = true;
+                    RefreshRateSwitchReceiver.isFinished = true;
                     timeoutTimer.cancel();
                     timeoutTimer = null;
 
 
                     final WindowManager.LayoutParams params = activity.getWindow().getAttributes();
-                    if (timedOut) {
+                    if (timedOut && params.preferredDisplayModeId != switcher.newMode.getModeId()) {
 
                         activity.runOnUiThread(new Runnable() {
                             @Override

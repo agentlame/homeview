@@ -144,6 +144,17 @@
             android:summary="@string/preferences_device_refreshrate_summary"
             android:defaultValue="true" />
 
+        <ListPreference
+            android:key="preferences_device_refreshrate_timeout"
+            android:drawable="@drawable/ic_hourglass_empty_white_48dp"
+            android:dependency="preferences_device_refreshrate"
+            android:title="@string/preferences_device_refreshrate_timeout"
+            android:summary="@string/preferences_device_refreshrate_timeout_summary"
+            android:entries="@array/preferences_device_refreshrate_timeout_entries_text"
+            android:entryValues="@array/preferences_device_refreshrate_timeout_entries"
+            android:dialogTitle="@string/preferences_device_refreshrate_timeout_dialog"
+            android:defaultValue="@string/preferences_device_refreshrate_timeout_entries_default" />
+
         <CheckBoxPreference
             android:key="preferences_device_passthrough"
             android:drawable="@drawable/ic_surround_sound_white_48dp"

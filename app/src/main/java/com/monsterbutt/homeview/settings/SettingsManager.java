@@ -154,6 +154,16 @@ public class SettingsManager {
         return "";
     }
 
+
+    public long getLong(String key) {
+        SettingValue val = getSetting(key);
+        if (val instanceof SettingText)
+            return Long.valueOf(((SettingText)val).value());
+        else if (val instanceof SettingArray)
+            return Long.valueOf(((SettingArray)val).currentValue());
+        return 0;
+    }
+
     public List<SettingsSection> getSettingsLayout() { return mSections; }
 
     public void reloadSetting(String key) {
