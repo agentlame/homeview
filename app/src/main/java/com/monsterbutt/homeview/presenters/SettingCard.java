@@ -36,6 +36,8 @@ public class SettingCard extends CardObject {
         title = mSetting.title();
     }
 
+    public boolean isBooleanSetting() { return mSetting instanceof SettingBoolean; }
+
     @Override
     public String getKey() { return mSetting.key(); }
 
