@@ -42,6 +42,11 @@ public class PosterCard extends CardObject {
     }
 
     @Override
+    public void setUpdateStatus(WatchedStatusHandler.UpdateStatus updateStatus) {
+        item.setStatus(updateStatus);
+    }
+
+    @Override
     public String getTitle() {
         return item.getCardTitle(mContext);
     }

@@ -14,24 +14,32 @@ public class BootupActivity extends BroadcastReceiver {
     private static final String TAG = "BootupActivity";
 
     private static final long INITIAL_DELAY = 5000;
+    private static boolean isActive = false;
+    private static final String lock = "lock";
 
     @Override
     public void onReceive(Context context, Intent intent) {
 
         if (intent.getAction().endsWith(Intent.ACTION_BOOT_COMPLETED))
-            scheduleRecommendationUpdate(context);
+            BootupActivity.scheduleRecommendationUpdate(context);
     }
 
-    private void scheduleRecommendationUpdate(Context context) {
+    static public void scheduleRecommendationUpdate(Context context) {
         Log.d(TAG, "Scheduling recommendations update");
 
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        Intent recommendationIntent = new Intent(context, UpdateRecommendationsService.class);
-        PendingIntent alarmIntent = PendingIntent.getService(context, 0, recommendationIntent, 0);
+        context = context.getApplicationContext();
+        synchronized (lock) {
+            if (!isActive) {
+                isActive = true;
+                AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+                Intent recommendationIntent = new Intent(context, UpdateRecommendationsService.class);
+                PendingIntent alarmIntent = PendingIntent.getService(context, 0, recommendationIntent, 0);
 
-        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                INITIAL_DELAY,
-                AlarmManager.INTERVAL_HALF_HOUR,
-                alarmIntent);
+                alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        INITIAL_DELAY,
+                        AlarmManager.INTERVAL_HALF_HOUR,
+                        alarmIntent);
+            }
+        }
     }
 }

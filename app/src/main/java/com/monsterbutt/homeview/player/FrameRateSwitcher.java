@@ -8,12 +8,26 @@ import android.content.IntentFilter;
 import android.text.TextUtils;
 import android.view.Display;
 import android.view.WindowManager;
+import android.widget.Toast;
 
+import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.settings.SettingsManager;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class FrameRateSwitcher {
 
     private static class RefreshRateSwitchReceiver extends BroadcastReceiver {
+
+        private class TimeOutTask extends TimerTask {
+
+            @Override
+            public void run() {
+
+                notifySwitchOccurred(true);
+            }
+        }
 
         private final static String intentVal = "android.media.action.HDMI_AUDIO_PLUG";
 
@@ -29,6 +43,9 @@ public class FrameRateSwitcher {
         private final FrameRateSwitcherListener listener;
         private final FrameRateSwitcher switcher;
         private boolean isPlugged = true;
+        private boolean isFinished = false;
+        private final int TIMEOUT = 5000;
+        Timer timeoutTimer;
 
         private RefreshRateSwitchReceiver(Activity activity, VideoPlayer player,
                                           FrameRateSwitcherListener listener, FrameRateSwitcher switcher) {
@@ -37,6 +54,8 @@ public class FrameRateSwitcher {
             this.player = player;
             this.listener = listener;
             this.switcher = switcher;
+            timeoutTimer = new Timer();
+            timeoutTimer.schedule(new TimeOutTask(), TIMEOUT);
         }
 
         @Override
@@ -51,10 +70,46 @@ public class FrameRateSwitcher {
                     case 1:
                         if (!isPlugged) {
                             isPlugged = true;
-                            activity.unregisterReceiver(this);
-                            listener.switchOccured(player, switcher);
+                            notifySwitchOccurred(false);
                         }
                         break;
+                }
+            }
+        }
+
+        private void notifySwitchOccurred(boolean timedOut) {
+
+            synchronized (this) {
+
+                if (!isFinished) {
+
+                    isFinished = true;
+                    timeoutTimer.cancel();
+                    timeoutTimer = null;
+
+
+                    final WindowManager.LayoutParams params = activity.getWindow().getAttributes();
+                    if (timedOut) {
+
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (params.preferredDisplayModeId != switcher.oldMode.getModeId()) {
+
+                                    params.preferredDisplayModeId = switcher.oldMode.getModeId();
+                                    activity.getWindow().setAttributes(params);
+                                }
+                                Toast.makeText(activity, activity.getString(R.string.refresh_switch_fail), Toast.LENGTH_LONG).show();
+                                listener.switchOccured(player, switcher);
+                            }
+                        });
+
+                    }
+                    else {
+                        switcher.didSucceed = params.preferredDisplayModeId == switcher.newMode.getModeId();
+                        listener.switchOccured(player, switcher);
+                    }
+                    activity.unregisterReceiver(this);
                 }
             }
         }
@@ -76,6 +131,7 @@ public class FrameRateSwitcher {
 
     public final Display.Mode oldMode;
     public final Display.Mode newMode;
+    public boolean didSucceed = false;
 
     public final float preferredFrameRate;
 

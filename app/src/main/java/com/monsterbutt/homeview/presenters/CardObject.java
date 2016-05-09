@@ -76,4 +76,7 @@ public abstract class CardObject {
         }
         return false;
     }
+
+    public void setUpdateStatus(WatchedStatusHandler.UpdateStatus updateStatus) {
+    }
 }

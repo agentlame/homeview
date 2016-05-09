@@ -29,4 +29,4 @@ This is an AndroidTV 6.0 app designed to leverage an existing Plex server.  It i
 ##Usage
 1. The app should autodetect local Plex servers and choose the first one at initial startup.  You can choose specific ones or manually enter details in the settings.
 2. The "Play" media button should shortcut you to the playback screen when pressing over highlighted media.
-3. Audio passthrough is enabled by default and used when available.   Auto refresh rate switching is disabled by default.
+3. Audio passthrough and refresh rate switching is enabled by default and used when available.

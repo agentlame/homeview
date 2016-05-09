@@ -222,4 +222,6 @@
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
 
+    <string name="refresh_switch_fail">Refresh rate switch timed out.</string>
+
 </resources>

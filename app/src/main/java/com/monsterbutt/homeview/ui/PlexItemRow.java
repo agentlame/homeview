@@ -169,8 +169,9 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
                 adapter.add(newIndex, item);
             }
             else {
+                CardObject oldItem = (CardObject) adapter.get(currIndex);
                 ri.index = currIndex;
-                adapter.replace(currIndex, item);
+                oldItem.setUpdateStatus(item.getUpdateStatus());
             }
             map.put(key, ri);
         }

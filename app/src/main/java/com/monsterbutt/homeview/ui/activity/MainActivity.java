@@ -15,12 +15,12 @@
 package com.monsterbutt.homeview.ui.activity;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.plex.PlexServerManager;
-import com.monsterbutt.homeview.services.UpdateRecommendationsService;
 
 /*
  * MainActivity class that loads MainFragment
@@ -42,9 +42,17 @@ public class MainActivity extends HomeViewActivity {
 
         super.onResume();
         mMgr = PlexServerManager.getInstance(this);
+        new NotificationTask().execute();
+    }
 
-        Intent recommendationIntent = new Intent(getApplicationContext(), UpdateRecommendationsService.class);
-        startService(recommendationIntent);
+    private class NotificationTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            BootupActivity.scheduleRecommendationUpdate(MainActivity.this);
+            return null;
+        }
     }
 
     @Override
