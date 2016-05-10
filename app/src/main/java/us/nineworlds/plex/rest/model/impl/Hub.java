@@ -24,7 +24,7 @@ public class Hub  {
     @Attribute(required=false)
     private String type;
 
-    @Attribute(required=true)
+    @Attribute(required=false)
     private String hubKey;
 
     @Attribute(required=false)
