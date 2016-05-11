@@ -1,5 +1,34 @@
 apply plugin: 'com.android.application'
 
+def appVersionStr = '1.0'
+def appVersionInt = 10
+
+if (project.hasProperty('appVersion')) {
+    appVersionStr = appVersion
+    appVersionInt = (appVersion.toFloat()*10).toInteger()
+}
+
+def buildVersion     =           0
+def ApiVersion       =     23
+
+def AppVersionShift  =        1000
+def ApiVersionShift  =      100000
+
+def BaseVersionCode =    900000000
+
+if (! project.hasProperty('buildNum')) {
+    version = "${appVersionStr}.SNAPSHOT"
+}
+else {
+    version = "${appVersionStr}.${buildNum}"
+    buildVersion = buildNum.toInteger()
+}
+
+println "Repo Version : ${version}"
+println "App Version : ${appVersionStr} (${appVersionInt})"
+println "Build : ${buildVersion}"
+println "API : ${ApiVersion}"
+
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
@@ -11,9 +40,14 @@ android {
         applicationId "com.monsterbutt.homeview"
         minSdkVersion 23
         targetSdkVersion 23
-        versionCode 1
-        versionName "1.0"
         archivesBaseName = "homeview"
+
+        versionName appVersionStr
+        versionCode = BaseVersionCode +
+                (ApiVersion * ApiVersionShift) +
+                (appVersionInt * AppVersionShift) +
+                buildVersion
+        println "Version Code (Default) : ${versionCode}"
     }
 
     packagingOptions {
