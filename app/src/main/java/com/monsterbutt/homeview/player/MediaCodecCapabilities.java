@@ -58,6 +58,7 @@ public class MediaCodecCapabilities {
         codecTranslations.put("audio/dca",      MimeTypes.AUDIO_DTS);
         codecTranslations.put("audio/dca-hra",  MimeTypes.AUDIO_DTS_HD);
         codecTranslations.put("audio/dca-ma",   MimeTypes.AUDIO_DTS_HD);
+        codecTranslations.put("audio/aac-lc",   MimeTypes.AUDIO_AAC);
 
         codecTranslations.put("text/pgs",       MimeTypes.APPLICATION_PGS);
         codecTranslations.put("text/srt",       MimeTypes.APPLICATION_SUBRIP);
@@ -161,12 +162,12 @@ public class MediaCodecCapabilities {
     private DecodeType determineVideoDecoderType(String mimeType) {
 
         DecodeType ret = DecodeType.Unsupported;
-        if (videoDecoderCodecs.get(mimeType) != null)
+        if (checkForDecoder(videoDecoderCodecs, mimeType))
             ret = DecodeType.Hardware;
         else {
 
             String alt = codecTranslations.get(mimeType);
-            if (!TextUtils.isEmpty(alt) && videoDecoderCodecs.get(alt) != null)
+            if (!TextUtils.isEmpty(alt) && checkForDecoder(videoDecoderCodecs, alt))
                 ret = DecodeType.Hardware;
         }
 
@@ -199,12 +200,40 @@ public class MediaCodecCapabilities {
             String alt = codecTranslations.get(mimeType);
             if (!TextUtils.isEmpty(alt) && determineAudioPassthrough(alt, bitDepth))
                 ret = DecodeType.Passthrough;
-            else if (audioDecoderCodecs.get(mimeType) != null)
+            else if (checkForDecoder(audioDecoderCodecs, mimeType))
                 ret = DecodeType.Hardware;
-            else if (!TextUtils.isEmpty(alt) && audioDecoderCodecs.get(alt) != null)
+            else if (!TextUtils.isEmpty(alt) && checkForDecoder(audioDecoderCodecs,alt))
                     ret = DecodeType.Hardware;
         }
         return ret;
+    }
+
+    private boolean checkForDecoder(Map<String, List<MediaCodecInfo>> decoders, String mimeType) {
+
+        if (decoders.get(mimeType) != null)
+            return true;
+        for (List<MediaCodecInfo> codecs : decoders.values()) {
+
+            if (codecs == null || codecs.isEmpty())
+                continue;
+
+            for (MediaCodecInfo codec : codecs) {
+                try {
+                    if (mimeType.equals(codec.getName()) || codec.getCapabilitiesForType(mimeType) != null)
+                        return true;
+                }
+                catch (IllegalArgumentException e) {}
+                String[] types = codec.getSupportedTypes();
+                if (types == null || types.length == 0)
+                    continue;
+                for (String type : types) {
+
+                    if (type.equals(mimeType))
+                        return true;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean determineAudioPassthrough(String mimeType, long bitDepth) {
