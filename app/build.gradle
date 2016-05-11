@@ -16,6 +16,10 @@ android {
         archivesBaseName = "homeview"
     }
 
+    packagingOptions {
+        exclude 'META-INF/beans.xml'
+    }
+
     sourceSets.main.jni.srcDirs = [] //disable automatic ndk-build call
 
     signingConfigs {
@@ -68,6 +72,14 @@ tasks.withType(JavaCompile) {
     compileTask -> compileTask.dependsOn ndkBuild
 }
 
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        url 'http://4thline.org/m2'
+    }
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:recyclerview-v7:23.2.1'
@@ -84,4 +96,10 @@ dependencies {
     }
     compile project(':ExoPlayer')
     compile 'com.android.support:design:23.2.1'
+
+    compile group: 'org.fourthline.cling', name: 'cling-core', version:'2.1.0'
+    compile group: 'org.fourthline.cling', name: 'cling-support', version:'2.1.0'
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version:'8.1.12.v20130726'
+    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version:'8.1.12.v20130726'
+    compile group: 'org.eclipse.jetty', name: 'jetty-client', version:'8.1.12.v20130726'
 }

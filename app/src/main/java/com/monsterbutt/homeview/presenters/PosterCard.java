@@ -60,7 +60,7 @@ public class PosterCard extends CardObject {
     public String getImageUrl(PlexServer server) {
 
         String url = item.getCardImageURL();
-        if (!TextUtils.isEmpty(url))
+        if (!TextUtils.isEmpty(url) && server != null)
             url = server.makeServerURL(url);
         return url;
     }

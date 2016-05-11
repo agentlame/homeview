@@ -75,6 +75,11 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     private  boolean mShouldPlayFirst = false;
     private WatchedState mWatchedState;
 
+    protected PlexVideoItem() {
+        mVideo = null;
+        mWatchedState = WatchedState.Watched;
+    }
+
     protected PlexVideoItem(Video video) {
 
         mVideo = video;
@@ -251,6 +256,10 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return mVideo.getCountries();
     }
 
+    public boolean hasSourceStats() {
+        return true;
+    }
+
     public List<Media> getMedia() {
         return mVideo.getMedias();
     }
@@ -327,14 +336,6 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
                 ret.add(PlexVideoItem.getItem(video));
         }
         return ret;
-    }
-
-        public String getVideoURL(PlexServer server) {
-
-        if (server != null && mVideo != null)
-            return String.format("//%s%s", server.getServerAddress(),
-                                            mVideo.getMedias().get(0).getVideoPart().get(0).getFilename());
-        return "";
     }
 
     @Override
@@ -613,11 +614,6 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
                 mVideo.getRelated().get(0).getHubs() : null;
     }
 
-    public String getFilePath() {
-
-        return getMedia().get(0).getVideoPart().get(0).getFilename();
-    }
-
     public String getPathKey() {
 
         return getMedia().get(0).getVideoPart().get(0).getKey();
@@ -645,5 +641,28 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
             }
         }
         return ret;
+    }
+
+    public boolean shouldDiscoverQueue() { return true; }
+    public boolean shouldUpdateStatusOnPlayback() { return true; }
+
+    public String getVideoPath(PlexServer server) {
+
+        String serverURL = server.getServerURL();
+        String url = getPathKey();
+        String ret = "";
+        if (!TextUtils.isEmpty(url) && serverURL != null) {
+            ret = serverURL;
+            if (url.startsWith("/") && ret.endsWith("/"))
+                ret += url.substring(1);
+            else
+                ret += url;
+        }
+        return ret;
+    }
+
+    public boolean selectedHasMissingData() {
+        return getMedia().get(0).getVideoPart().get(0).getStreams() == null
+                || !hasChapters(); // force chapter check in here, even if they don't exist
     }
 }

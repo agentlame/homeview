@@ -661,5 +661,4 @@ public class VideoPlayer implements ExoPlayer.Listener, ChunkSampleSource.EventL
     }
 
     public PlexVideoItem getPreparedVideo() { return mPreparedVideo; }
-
 }

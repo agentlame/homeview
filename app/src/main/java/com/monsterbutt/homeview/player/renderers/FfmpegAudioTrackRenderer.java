@@ -81,10 +81,9 @@ public class FfmpegAudioTrackRenderer extends FfmpegTrackRenderer implements Med
         if (!MimeTypes.isAudio(mimeType) || MimeTypes.AUDIO_UNKNOWN.equals(mimeType))
             return false;
 
-        boolean handles = !(allowPassthrough(mimeType) && mediaCodecSelector.getPassthroughDecoderName() != null
-                && mediaCodecSelector.getDecoderInfo(mimeType, false) == null);
-
-        return handles;
+        boolean hasPass = allowPassthrough(mimeType) && mediaCodecSelector.getPassthroughDecoderName() != null;
+        boolean hasDecode = mediaCodecSelector.getDecoderInfo(mimeType, false) != null;
+        return !hasPass && !hasDecode;
     }
 
     @Override

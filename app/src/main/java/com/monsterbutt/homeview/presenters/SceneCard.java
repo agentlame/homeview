@@ -32,7 +32,7 @@ public class SceneCard extends PosterCard {
     public String getImageUrl(PlexServer server) {
 
         String url = item.getWideCardImageURL();
-        if (!TextUtils.isEmpty(url))
+        if (!TextUtils.isEmpty(url) && server != null)
             url = server.makeServerURL(url);
         return url;
     }

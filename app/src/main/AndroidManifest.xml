@@ -48,6 +48,8 @@
         <activity android:name=".ui.activity.SettingEditTextActivity" />
         <activity android:name=".ui.activity.SettingsArrayActivity" />
         <activity android:name=".ui.activity.SectionHubActivity" />
+        <activity android:name=".ui.activity.UpnpServersActivity" />
+        <activity android:name=".ui.activity.UpnpItemsActivity" />
 
         <activity
             android:name="com.monsterbutt.homeview.ui.activity.SearchActivity"
@@ -78,6 +80,7 @@
             </intent-filter>
         </service>
         <service android:name=".services.GDMService" />
+        <service android:name=".services.UpnpService" />
         <service
             android:name="com.monsterbutt.homeview.services.UpdateRecommendationsService"
             android:enabled="true" />

@@ -39,9 +39,4 @@ public class Clip extends Episode implements Parcelable {
             return new Clip[size];
         }
     };
-
-    @Override
-    public String getFilePath() {
-        return "";
-    }
 }

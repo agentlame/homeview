@@ -258,7 +258,7 @@ public class FrameRateSwitcher {
                                               final FrameRateSwitcherListener listener) {
 
         SettingsManager mgr = SettingsManager.getInstance(activity);
-        if (mgr.getBoolean("preferences_device_refreshrate")) {
+        if (mgr.getBoolean("preferences_device_refreshrate") && player.getPreparedVideo().hasSourceStats()) {
 
             WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
             Display display = wm.getDefaultDisplay();

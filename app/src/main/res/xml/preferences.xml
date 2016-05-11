@@ -7,6 +7,7 @@
 
 		<Preference 
 			android:title="@string/preferences_server_server"
+            android:key="preferences_server_plex"
             android:drawable="@drawable/ic_settings_remote_white_48dp">
 
             <intent
@@ -15,53 +16,16 @@
 
         </Preference>
 
-        <CheckBoxPreference
-            android:key="preferences_server_smb"
-            android:drawable="@drawable/ic_folder_shared_white_48dp"
-            android:title="@string/preferences_server_smb"
-            android:summary="@string/preferences_server_smb_summary"
-            android:defaultValue="false"
-            android:enabled="false" />
+        <Preference
+            android:title="@string/preferences_server_upnp"
+            android:key="preferences_server_upnp"
+            android:drawable="@drawable/ic_rss_feed_white_48dp">
 
-        <EditTextPreference
-            android:key="preferences_server_smb_root"
-            android:drawable="@drawable/ic_code_white_48dp"
-            android:dependency="preferences_server_smb"
-            android:title="@string/preferences_server_smb_root"
-            android:summary="@string/preferences_server_smb_root_summary"
-            android:dialogTitle="@string/preferences_server_smb_root_dialog"
-            android:defaultValue=""
-            android:enabled="false" />
+            <intent
+                android:targetPackage="com.monsterbutt.homeview.ui.activity"
+                android:targetClass="com.monsterbutt.homeview.ui.activity.UpnpServersActivity"/>
 
-        <EditTextPreference
-            android:key="preferences_server_smb_user"
-            android:drawable="@drawable/ic_face_white_48dp"
-            android:dependency="preferences_server_smb"
-            android:title="@string/preferences_server_smb_user"
-            android:summary="@string/preferences_server_smb_user_summary"
-            android:dialogTitle="@string/preferences_server_smb_user_dialog"
-            android:defaultValue=""
-            android:enabled="false" />
-
-        <EditTextPreference
-            android:key="preferences_server_smb_pass"
-            android:drawable="@drawable/ic_verified_user_white_48dp"
-            android:dependency="preferences_server_smb"
-            android:title="@string/preferences_server_smb_pass"
-            android:summary="@string/preferences_server_smb_pass_summary"
-            android:dialogTitle="@string/preferences_server_smb_pass_dialog"
-            android:defaultValue=""
-            android:enabled="false" />
-
-        <EditTextPreference
-            android:key="preferences_server_smb_domain"
-            android:drawable="@drawable/ic_account_balance_white_48dp"
-            android:dependency="preferences_server_smb"
-            android:title="@string/preferences_server_smb_domain"
-            android:summary="@string/preferences_server_smb_domain_summary"
-            android:dialogTitle="@string/preferences_server_smb_domain_dialog"
-            android:defaultValue="@string/preferences_server_smb_domain_default"
-            android:enabled="false" /> />
+        </Preference>
 
     </PreferenceCategory>
 
@@ -180,6 +144,7 @@
 
         <Preference
             android:title="@string/preferences_about"
+            android:key="preferences_about_about"
             android:drawable="@drawable/ic_help_white_48dp">
 
             <intent

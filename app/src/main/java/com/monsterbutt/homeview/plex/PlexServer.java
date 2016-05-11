@@ -7,11 +7,8 @@ import android.util.Log;
 
 import com.monsterbutt.homeview.plex.media.Movie;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
-import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.plex.media.Show;
-import com.monsterbutt.homeview.settings.SettingsManager;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -194,6 +191,13 @@ public class PlexServer {
             }
         }
         return ret;
+    }
+
+    public String getServerURL() {
+
+        if ( mFactory != null)
+            return mFactory.baseURL();
+        return "";
     }
 
     public String makeServerURL(String url) {
@@ -444,43 +448,6 @@ public class PlexServer {
 
     public List<MediaContainer> searchShowsForEpisodes(String query) {
         return searchShowsForEpisodes(PlexContainerItem.ALL, query);
-    }
-
-    public String getVideoPath(Context context, PlexVideoItem video) {
-
-        SettingsManager mgr = SettingsManager.getInstance(context);
-        if (mgr.getBoolean("preferences_server_smb")) {
-
-            String smbDomain = mgr.getString("preferences_server_smb_domain");
-            String smbRoot = mgr.getString("preferences_server_smb_root");
-            String smbUser = mgr.getString("preferences_server_smb_user");
-            String smbPass = mgr.getString("preferences_server_smb_pass");
-            String ret = String.format("smb://%s/", mConfiguration.getHost());
-            if (!TextUtils.isEmpty(smbDomain) && !TextUtils.isEmpty(smbUser) && !TextUtils.isEmpty(smbPass))
-                ret = String.format("smb://%s;%s:%s@%s/", smbDomain, smbUser, smbPass, mConfiguration.getHost());
-            else if (!TextUtils.isEmpty(smbUser) && !TextUtils.isEmpty(smbPass))
-                ret = String.format("smb://%s:%s@%s/", smbUser, smbPass, mConfiguration.getHost());
-            else if (!TextUtils.isEmpty(smbDomain) && !TextUtils.isEmpty(smbUser))
-                ret = String.format("smb://%s;%s@%s/", smbDomain, smbUser, mConfiguration.getHost());
-            else if (!TextUtils.isEmpty(smbUser))
-                ret = String.format("smb://%s@%s/", smbUser, mConfiguration.getHost());
-
-            if (!TextUtils.isEmpty(smbRoot)) {
-
-                while(smbRoot.startsWith("/"))
-                    smbRoot = smbRoot.substring(1);
-                if (!smbRoot.endsWith("/"))
-                    smbRoot += "/";
-                ret = String.format("%s%s", ret, smbRoot);
-            }
-            String filePath = video.getFilePath();
-            while (filePath.startsWith("/"))
-                filePath = filePath.substring(1);
-            ret = String.format("%s%s", ret, filePath);
-            return ret;
-        }
-
-        return makeServerURL(video.getPathKey());
     }
 
     public boolean setUnwatched(String key, String ratingKey) {

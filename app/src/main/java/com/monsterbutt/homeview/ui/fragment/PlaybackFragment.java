@@ -81,6 +81,7 @@ import com.monsterbutt.homeview.plex.media.Chapter;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.plex.media.Stream;
+import com.monsterbutt.homeview.plex.media.UpnpItem;
 import com.monsterbutt.homeview.plex.tasks.GetVideoQueueTask;
 import com.monsterbutt.homeview.plex.tasks.GetVideoTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTask;
@@ -205,7 +206,7 @@ public class PlaybackFragment
 
         if (mPlayer == null && mSelectedVideo != null) {
 
-            if (selectedHasMissingData())
+            if (mSelectedVideo.selectedHasMissingData())
                 new GetFullInfo().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mSelectedVideo.getKey());
             else
                 playVideo(mSelectedVideo, mAutoPlayExtras);
@@ -251,7 +252,8 @@ public class PlaybackFragment
 
         String key = mSelectedVideo != null ? mSelectedVideo.getKey()
                 : act.getIntent().getStringExtra(PlaybackActivity.KEY);
-        new GetVideoQueueTask(this, mServer).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, key);
+        if (mSelectedVideo == null || mSelectedVideo.shouldDiscoverQueue())
+            new GetVideoQueueTask(this, mServer).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, key);
         initializePlaybackRow();
 
         // Set up listeners.
@@ -333,7 +335,7 @@ public class PlaybackFragment
                 .setDescription(v.getPlaybackSubtitle(context))
                 .setExtras(bundle)
                 .setMediaId(Long.toString(v.getRatingKey()) + "")
-                .setMediaUri(Uri.parse(mServer.getVideoPath(context, v)))
+                .setMediaUri(Uri.parse(v.getVideoPath(mServer)))
                 .setIconUri(Uri.parse(v.getPlaybackImageURL()))
                 .setSubtitle(v.getPlaybackSubtitle(context))
                 .setTitle(v.getPlaybackTitle(context))
@@ -397,12 +399,6 @@ public class PlaybackFragment
         }
     }
 
-    private boolean selectedHasMissingData() {
-
-        return mSelectedVideo.getMedia().get(0).getVideoPart().get(0).getStreams() == null
-            || !mSelectedVideo.hasChapters(); // force chapter check in here, even if they don't exist
-    }
-
     private void setupVideoForPlayback() {
 
         updatePlaybackRow();
@@ -432,10 +428,8 @@ public class PlaybackFragment
     private VideoPlayer.RendererBuilder getRendererBuilder() {
         String userAgent = Util.getUserAgent(getActivity(), "ExoVideoPlayer");
 
-        String path = mServer.getVideoPath(getActivity(), mSelectedVideo);
-        Uri contentUri = Uri.parse(path);
+        Uri contentUri = Uri.parse(mSelectedVideo.getVideoPath(mServer));
         int contentType = Util.inferContentType(contentUri.getLastPathSegment());
-
         switch (contentType) {
             case Util.TYPE_OTHER: {
                 return new ExtractorRendererBuilder(getActivity(), userAgent, contentUri);
@@ -568,17 +562,20 @@ public class PlaybackFragment
             case ExoPlayer.STATE_PREPARING:
                 mIsMetadataSet = false;
 
-                mSelectedVideoTracks.setSelectedTrack(mPlayer, Stream.Audio_Stream,
-                        mSelectedVideoTracks.getSelectedTrackDisplayIndex(Stream.Audio_Stream));
-                mSelectedVideoTracks.setSelectedTrack(mPlayer, Stream.Subtitle_Stream,
-                        mSelectedVideoTracks.getSelectedTrackDisplayIndex(Stream.Subtitle_Stream));
+                if (mSelectedVideoTracks != null) {
+                    mSelectedVideoTracks.setSelectedTrack(mPlayer, Stream.Audio_Stream,
+                            mSelectedVideoTracks.getSelectedTrackDisplayIndex(Stream.Audio_Stream));
+                    mSelectedVideoTracks.setSelectedTrack(mPlayer, Stream.Subtitle_Stream,
+                            mSelectedVideoTracks.getSelectedTrackDisplayIndex(Stream.Subtitle_Stream));
+                }
                 break;
             case ExoPlayer.STATE_READY:
 
                 // Duration is set here.
                 if (!mIsMetadataSet) {
 
-                    updateRecommendations(mSelectedVideo.getRatingKey());
+                    if (!mSelectedVideo.shouldUpdateStatusOnPlayback())
+                        updateRecommendations(mSelectedVideo.getRatingKey());
                     updateMetadata();
                     mIsMetadataSet = true;
                 }
@@ -652,7 +649,14 @@ public class PlaybackFragment
         int cardWidth = res.getDimensionPixelSize(R.dimen.playback_overlay_width);
         int cardHeight = res.getDimensionPixelSize(R.dimen.playback_overlay_height);
 
-        String url = mServer != null ? mServer.makeServerURL(video != null ? video.getPlaybackImageURL() : "") : "";
+        String url = "";
+        if (video != null) {
+
+            if (video instanceof UpnpItem)
+                url = video.getPlaybackImageURL();
+            else if (mServer != null)
+                url =  mServer.makeServerURL(video.getPlaybackImageURL());
+        }
         Glide.with(this)
                 .load(Uri.parse(url))
                 .asBitmap()
@@ -690,7 +694,7 @@ public class PlaybackFragment
     private void setSelectedVideo(PlexVideoItem video) {
 
         mSelectedVideo = video;
-        if (mSelectedVideo != null)
+        if (mSelectedVideo != null && mSelectedVideo.shouldUpdateStatusOnPlayback())
             mProgressTask = VideoProgressTask.getTask(mServer, mSelectedVideo);
         if (mSelectedVideo != null && mSelectedVideoTracks == null) {
             mSelectedVideoTracks = mSelectedVideo.fillTrackSelector(getActivity(),
@@ -748,7 +752,7 @@ public class PlaybackFragment
                 return;
             if (startPlayback && mSelectedVideo != null) {
 
-                if (selectedHasMissingData())
+                if (mSelectedVideo.selectedHasMissingData())
                     new GetFullInfo().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mSelectedVideo.getKey());
                 else
                     playVideo(mSelectedVideo, mAutoPlayExtras);
@@ -770,7 +774,7 @@ public class PlaybackFragment
             PlexVideoItem video = ((GetVideoTask) task).getVideo();
             if (video != null) {
 
-                if (selectedHasMissingData())
+                if (video.selectedHasMissingData())
                     new GetFullInfo().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, video.getKey());
                 else
                     playVideo(video, mAutoPlayExtras);
@@ -920,7 +924,7 @@ public class PlaybackFragment
                 // if no cue... duh
                 // or if cue is not PGS (we only handle that currently)
                 // or subs are turned off but we are checking for forced subs and it isn't forced
-                if (cue == null || (!mSelectedVideoTracks.areSubtitlesEnabled() &&
+                if (cue == null || (mSelectedVideoTracks != null && !mSelectedVideoTracks.areSubtitlesEnabled() &&
                         (cue instanceof PgsCue && !((PgsCue)cue).isForcedSubtitle()))) {
 
                     mSubtitlesText.setText("");
@@ -946,6 +950,8 @@ public class PlaybackFragment
 
     private void setCurrentSourceStats() {
 
+        if (!mSelectedVideo.hasSourceStats())
+            return;
         Media media = mSelectedVideo.getMedia().get(0);
         mSourceHeight = Integer.valueOf(media.getHeight());
         mSourceWidth = Integer.valueOf(media.getWidth());
@@ -969,7 +975,8 @@ public class PlaybackFragment
         // This method should play any media item regardless of the Queue.
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
 
-            new GetVideoTask(PlaybackFragment.this, mServer).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "/library/metadata/" + mediaId);
+            if (mSelectedVideo.shouldDiscoverQueue())
+                new GetVideoTask(PlaybackFragment.this, mServer).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "/library/metadata/" + mediaId);
         }
 
         @Override
