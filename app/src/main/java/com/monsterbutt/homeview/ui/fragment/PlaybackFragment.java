@@ -33,6 +33,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.v17.leanback.app.PlaybackOverlayFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.ClassPresenterSelector;
 import android.support.v17.leanback.widget.ListRow;
@@ -46,6 +47,8 @@ import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.util.Log;
 import android.view.Display;
+import android.view.InputEvent;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -120,7 +123,7 @@ public class PlaybackFragment
         implements VideoPlayer.Listener, PlexServerTaskCaller,
         OnItemViewClickedListener, HomeViewActivity.OnStopKeyListener,
         PlaybackControlHelper.ProgressUpdateCallback, HomeViewActivity.OnBackPressedListener,
-        SurfaceHolder.Callback, VideoPlayer.CaptionListener, CardPresenter.CardPresenterLongClickListener {
+        SurfaceHolder.Callback, VideoPlayer.CaptionListener, CardPresenter.CardPresenterLongClickListener, PlaybackOverlayFragment.InputEventHandler {
 
     private static final int CHOOSER_TIMEOUT = 10000;
     private static final String TAG = "PlaybackOverlayFragment";
@@ -164,6 +167,8 @@ public class PlaybackFragment
 
     private View mCurrentCardTransitionImage = null;
     private CardObject mCurrentCard = null;
+
+    private boolean mGuiShowing = false;
 
     @Override
     public void onAttach(Context context) {
@@ -271,8 +276,29 @@ public class PlaybackFragment
         });
 
         setOnItemViewClickedListener(this);
+        setFadeCompleteListener(new OnFadeCompleteListener() {
+            @Override
+            public void onFadeInComplete() { setGuiShowing(true); }
+            @Override
+            public void onFadeOutComplete() { setGuiShowing(false); }
+        });
+        setInputEventHandler(this);
         ((HomeViewActivity)getActivity()).setStopKeyListner(this);
         ((HomeViewActivity)getActivity()).setBackPressedListener(this);
+    }
+
+    private boolean isGuiShowing() {
+        boolean ret;
+        synchronized (this) {
+            ret = mGuiShowing;
+        }
+        return ret;
+    }
+
+    private void setGuiShowing(boolean val) {
+        synchronized (this) {
+            mGuiShowing = val;
+        }
     }
 
     @Override
@@ -962,6 +988,63 @@ public class PlaybackFragment
         return mCurrentCard != null && onItemClicked(mCurrentCard);
     }
 
+    @Override
+    public boolean handleInputEvent(InputEvent event) {
+
+        if (isGuiShowing() || !(event instanceof KeyEvent))
+            return false;
+
+        switch (((KeyEvent) event).getKeyCode()) {
+
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                rewind();
+                break;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                fastForward();
+                break;
+            default:
+                break;
+        }
+
+        return false;
+    }
+
+    private boolean rewind() {
+
+        if (mPlayer.getDuration() != ExoPlayer.UNKNOWN_TIME) {
+            int prevState = getPlaybackState();
+            setPlaybackState(PlaybackState.STATE_REWINDING);
+
+            long curr = mPlayer.getCurrentPosition();
+            if (curr > 0) {
+                long loc = curr -
+                        (Long.valueOf(getActivity().getString(R.string.skip_back_seconds)) * 1000);
+                if (loc < 0)
+                    loc = 0;
+                setPosition(loc);
+                setPlaybackState(prevState);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean fastForward() {
+
+        if (mPlayer.getDuration() != ExoPlayer.UNKNOWN_TIME) {
+            int prevState = getPlaybackState();
+            setPlaybackState(PlaybackState.STATE_FAST_FORWARDING);
+            long loc =  mPlayer.getCurrentPosition() +(Long.valueOf(getActivity().getString(R.string.skip_forward_seconds)) * 1000);
+
+            if (loc < mPlayer.getDuration()) {
+                setPosition(loc);
+                setPlaybackState(prevState);
+                return true;
+            }
+        }
+        return false;
+    }
+
     // An event was triggered by MediaController.TransportControls and must be handled here.
     // Here we update the media itself to act on the event that was triggered.
     private class MediaSessionCallback extends MediaSession.Callback {
@@ -1057,15 +1140,7 @@ public class PlaybackFragment
 
         @Override
         public void onFastForward() {
-            if (mPlayer.getDuration() != ExoPlayer.UNKNOWN_TIME) {
-                // Fast forward 10 seconds.
-                int prevState = getPlaybackState();
-                setPlaybackState(PlaybackState.STATE_FAST_FORWARDING);
-                long loc =  mPlayer.getCurrentPosition() +(Long.valueOf(getActivity().getString(R.string.skip_forward_seconds)) * 1000);
-
-                setPosition(loc);
-                setPlaybackState(prevState);
-            }
+            fastForward();
         }
 
         @Override
@@ -1077,12 +1152,7 @@ public class PlaybackFragment
 
         @Override
         public void onRewind() {
-            // Rewind 10 seconds.
-            int prevState = getPlaybackState();
-            setPlaybackState(PlaybackState.STATE_REWINDING);
-            setPosition(mPlayer.getCurrentPosition() -
-                    (Long.valueOf(getActivity().getString(R.string.skip_back_seconds))* 1000));
-            setPlaybackState(prevState);
+            rewind();
         }
 
         @Override
