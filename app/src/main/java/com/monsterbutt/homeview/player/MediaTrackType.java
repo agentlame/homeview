@@ -84,12 +84,13 @@ public class MediaTrackType implements Parcelable {
         // this skips off and unsupported as exoplayer know nothing of off and skips unsupported
         if (selected == null || selected.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Unsupported)
             return MediaTrackSelector.TrackTypeOff;
+        boolean isSoftware = selected.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Software;
         int playerIndex = selected.getTrackTypeIndex();
         for (int currIndex = playerIndex; 0 < currIndex--; /**/) {
 
             Stream currStream = streams.get(currIndex);
-            if (currStream.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Unsupported ||
-                currStream.getTrackTypeIndex() == MediaTrackSelector.TrackTypeOff)
+            if ((isSoftware && currStream.getDecodeStatus() != MediaCodecCapabilities.DecodeType.Software)
+                || (!isSoftware && currStream.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Software))
                 --playerIndex;
         }
         return playerIndex;

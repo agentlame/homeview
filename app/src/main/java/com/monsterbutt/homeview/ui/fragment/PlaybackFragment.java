@@ -125,7 +125,7 @@ public class PlaybackFragment
         PlaybackControlHelper.ProgressUpdateCallback, HomeViewActivity.OnBackPressedListener,
         SurfaceHolder.Callback, VideoPlayer.CaptionListener, CardPresenter.CardPresenterLongClickListener, PlaybackOverlayFragment.InputEventHandler {
 
-    private static final int CHOOSER_TIMEOUT = 10000;
+    private static final int CHOOSER_TIMEOUT = 15000;
     private static final String TAG = "PlaybackOverlayFragment";
     private static final boolean DEBUG = BuildConfig.DEBUG;
     private static final int BACKGROUND_TYPE = PlaybackFragment.BG_LIGHT;

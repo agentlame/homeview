@@ -71,27 +71,25 @@ public class MediaTrackSelector implements Parcelable {
 
                 case Stream.Audio_Stream:
 
-                    int BUILTIN_INDEX = index;
-                    int FFMPEG_INDEX = TrackTypeOff;
                     if (index != TrackTypeOff) {
                         switch (mTracks.getDecodeStatusForSelected(streamType)) {
 
                             case Hardware:
                             case Passthrough:
+                                player.setSelectedTrack(VideoPlayer.TYPE_AUDIO_FFMPEG, TrackTypeOff);
+                                player.setSelectedTrack(VideoPlayer.TYPE_AUDIO, index);
                                 break;
 
                             case Software:
                             case Unsupported:
                             default:
 
-                                FFMPEG_INDEX = index;
-                                BUILTIN_INDEX = TrackTypeOff;
+                                player.setSelectedTrack(VideoPlayer.TYPE_AUDIO, TrackTypeOff);
+                                player.setSelectedTrack(VideoPlayer.TYPE_AUDIO_FFMPEG, index);
                                 break;
                         }
                     }
 
-                    player.setSelectedTrack(VideoPlayer.TYPE_AUDIO, BUILTIN_INDEX);
-                    player.setSelectedTrack(VideoPlayer.TYPE_AUDIO_FFMPEG, FFMPEG_INDEX);
                     break;
             }
         }
