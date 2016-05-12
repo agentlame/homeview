@@ -43,7 +43,7 @@ public class AboutActivity extends ListActivity {
 
         public final static String TAG = "Item";
 
-        final private String title;
+        private String title;
         final private String blurb;
         final private String path;
          private String text;
@@ -105,6 +105,11 @@ public class AboutActivity extends ListActivity {
         catch (IOException|XmlPullParserException e) {
             e.printStackTrace();
         }
+
+        try {
+            if (!items.isEmpty() && items.get(0).title.equals("Homeview"))
+                items.get(0).title += String.format(" (%s)", getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
+        } catch (Exception e) {}
 
         return items;
     }

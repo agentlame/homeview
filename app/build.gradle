@@ -24,6 +24,8 @@ else {
     buildVersion = buildNum.toInteger()
 }
 
+appVersionStr = "${appVersionStr}.${buildVersion}"
+
 println "Repo Version : ${version}"
 println "App Version : ${appVersionStr} (${appVersionInt})"
 println "Build : ${buildVersion}"
