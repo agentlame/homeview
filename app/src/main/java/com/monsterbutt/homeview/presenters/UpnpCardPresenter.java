@@ -1,19 +1,3 @@
-/*
- * Copyright (c) 2015 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.monsterbutt.homeview.presenters;
 
 import android.content.Context;
@@ -30,17 +14,13 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.ui.android.ImageCardView;
 
-/*
- * A CardPresenter is used to generate Views and bind Objects to them on demand.
- * It contains an Image CardView
- */
-public class CardPresenter extends Presenter {
+public class UpnpCardPresenter extends Presenter {
 
-    public interface CardPresenterLongClickListener {
+
+    public interface UpnpCardPresenterLongClickListener {
 
         boolean longClickOccured();
     }
@@ -48,12 +28,10 @@ public class CardPresenter extends Presenter {
     private int mSelectedBackgroundColor = -1;
     private int mDefaultBackgroundColor = -1;
 
-    final private PlexServer mPlex;
-    final private CardPresenterLongClickListener mListener;
+    final private UpnpCardPresenterLongClickListener mListener;
 
-    public CardPresenter(PlexServer plex, CardPresenterLongClickListener listener) {
+    public UpnpCardPresenter(UpnpCardPresenterLongClickListener listener) {
 
-        mPlex = plex;
         mListener = listener;
     }
 
@@ -77,6 +55,7 @@ public class CardPresenter extends Presenter {
 
         cardView.setFocusable(true);
         cardView.setFocusableInTouchMode(true);
+        cardView.allowDoubleLine(true);
         updateCardBackgroundColor(cardView, false);
         return new ViewHolder(cardView);
     }
@@ -107,8 +86,8 @@ public class CardPresenter extends Presenter {
         cardView.setTitleText(obj.getTitle());
         cardView.setContentText(obj.getContent());
 
-        String imageURL = obj.getImageUrl(mPlex);
-            // Set card size from dimension resources.
+        String imageURL = obj.getImageUrl(null);
+        // Set card size from dimension resources.
         final Resources res = cardView.getResources();
         int width = res.getDimensionPixelSize(obj.getWidth());
         int height = res.getDimensionPixelSize(obj.getHeight());
@@ -166,3 +145,4 @@ public class CardPresenter extends Presenter {
         cardView.setProgress(0);
     }
 }
+

@@ -36,6 +36,8 @@ public class ImageCardView extends BaseCardView {
     private ImageView mBadgeImage;
     private boolean mAttachedToWindow;
 
+    private boolean mAllowDoubleLine = false;
+
     private SimpleTarget<GlideDrawable> mTarget = null;
     public SimpleTarget<GlideDrawable> getTarget() { return mTarget; }
     public void  setTarget(SimpleTarget<GlideDrawable> target) { mTarget = target; }
@@ -184,6 +186,7 @@ public class ImageCardView extends BaseCardView {
         return mImageView;
     }
 
+    public void allowDoubleLine(boolean val) { mAllowDoubleLine = val;}
 
     /**
      * Sets the image drawable with fade-in animation.
@@ -273,6 +276,11 @@ public class ImageCardView extends BaseCardView {
             return;
         }
         mTitleView.setText(text);
+        if (mAllowDoubleLine && TextUtils.isEmpty(mContentView.getText())) {
+
+            mTitleView.setMinLines(2);
+            mTitleView.setMaxLines(2);
+        }
     }
 
 
@@ -285,6 +293,11 @@ public class ImageCardView extends BaseCardView {
         }
         mContentView.setText(text);
         mContentView.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
+        if (mAllowDoubleLine && !TextUtils.isEmpty(text)) {
+
+            mTitleView.setMinLines(1);
+            mTitleView.setMaxLines(1);
+        }
     }
 
 

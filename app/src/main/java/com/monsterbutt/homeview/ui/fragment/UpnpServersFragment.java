@@ -22,7 +22,7 @@ import android.widget.Toast;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.media.UpnpServer;
 import com.monsterbutt.homeview.presenters.CardObject;
-import com.monsterbutt.homeview.presenters.CardPresenter;
+import com.monsterbutt.homeview.presenters.UpnpCardPresenter;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.services.UpnpService;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
@@ -35,7 +35,7 @@ import org.fourthline.cling.model.meta.RemoteDevice;
 import org.fourthline.cling.registry.DefaultRegistryListener;
 import org.fourthline.cling.registry.Registry;
 
-public class UpnpServersFragment extends VerticalGridFragment implements CardPresenter.CardPresenterLongClickListener, OnItemViewSelectedListener, OnItemViewClickedListener, HomeViewActivity.OnPlayKeyListener {
+public class UpnpServersFragment extends VerticalGridFragment implements UpnpCardPresenter.UpnpCardPresenterLongClickListener, OnItemViewSelectedListener, OnItemViewClickedListener, HomeViewActivity.OnPlayKeyListener {
 
     private ArrayObjectAdapter adapter;
 
@@ -90,7 +90,7 @@ public class UpnpServersFragment extends VerticalGridFragment implements CardPre
         setOnItemViewSelectedListener(this);
         setOnItemViewClickedListener(this);
 
-        adapter = new ArrayObjectAdapter(new CardPresenter(null, this));
+        adapter = new ArrayObjectAdapter(new UpnpCardPresenter(this));
         setAdapter(adapter);
 
         // This will start the UPnP service if it wasn't already started
@@ -148,10 +148,7 @@ public class UpnpServersFragment extends VerticalGridFragment implements CardPre
 
     @Override
     public boolean playKeyPressed() {
-
-        if (mCurrentCard != null)
-             return mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
-        return false;
+        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
     }
 
     protected class BrowseRegistryListener extends DefaultRegistryListener {

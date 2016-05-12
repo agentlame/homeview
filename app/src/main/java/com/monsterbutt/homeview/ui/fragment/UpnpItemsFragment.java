@@ -24,7 +24,7 @@ import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.media.UpnpContainer;
 import com.monsterbutt.homeview.plex.media.UpnpItem;
 import com.monsterbutt.homeview.presenters.CardObject;
-import com.monsterbutt.homeview.presenters.CardPresenter;
+import com.monsterbutt.homeview.presenters.UpnpCardPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.services.UpnpService;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
@@ -43,7 +43,7 @@ import org.fourthline.cling.support.model.item.Item;
 
 import java.util.List;
 
-public class UpnpItemsFragment extends VerticalGridFragment implements OnItemViewSelectedListener, OnItemViewClickedListener, HomeViewActivity.OnPlayKeyListener, CardPresenter.CardPresenterLongClickListener {
+public class UpnpItemsFragment extends VerticalGridFragment implements OnItemViewSelectedListener, OnItemViewClickedListener, HomeViewActivity.OnPlayKeyListener, UpnpCardPresenter.UpnpCardPresenterLongClickListener {
 
     public static final String SHARED_ELEMENT_NAME = "SHARED";
     public static final String DEVICE_ID = "deviceID";
@@ -128,7 +128,7 @@ public class UpnpItemsFragment extends VerticalGridFragment implements OnItemVie
         setOnItemViewSelectedListener(this);
         setOnItemViewClickedListener(this);
 
-        adapter = new ArrayObjectAdapter(new CardPresenter(null, this));
+        adapter = new ArrayObjectAdapter(new UpnpCardPresenter(this));
         setAdapter(adapter);
 
         // This will start the UPnP service if it wasn't already started
