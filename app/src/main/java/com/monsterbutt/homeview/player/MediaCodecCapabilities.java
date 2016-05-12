@@ -59,6 +59,7 @@ public class MediaCodecCapabilities {
         codecTranslations.put("audio/dca-hra",  MimeTypes.AUDIO_DTS_HD);
         codecTranslations.put("audio/dca-ma",   MimeTypes.AUDIO_DTS_HD);
         codecTranslations.put("audio/aac-lc",   MimeTypes.AUDIO_AAC);
+        codecTranslations.put("audio/mp3",      MimeTypes.AUDIO_MPEG);
 
         codecTranslations.put("text/pgs",       MimeTypes.APPLICATION_PGS);
         codecTranslations.put("text/srt",       MimeTypes.APPLICATION_SUBRIP);
