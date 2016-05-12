@@ -214,7 +214,9 @@ public abstract class FfmpegTrackRenderer extends SampleSourceTrackRenderer {
             codecCounters.codecReleaseCount++;
             try {
                 codec.stop();
-            } finally {
+            }
+            catch(Exception e) {}
+            finally {
                 try {
                     codec.release();
                 } finally {
