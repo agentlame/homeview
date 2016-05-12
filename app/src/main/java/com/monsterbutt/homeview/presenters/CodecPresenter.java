@@ -113,6 +113,5 @@ public class CodecPresenter extends Presenter {
     @Override
     public void onUnbindViewHolder(ViewHolder viewHolder) {
 
-        ((CodecCardView) viewHolder.view).setMainImage(null);
     }
 }
