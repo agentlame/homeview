@@ -22,7 +22,7 @@ public class ThemeService extends Service implements MediaPlayer.OnPreparedListe
     
     public static final String THEME_ALREADY_RUN = "theme_run_already";
 
-    private static final float VOLUME = 0.40f;
+    private static final float VOLUME = 0.15f;
 
     MediaPlayer mMediaPlayer = null;
 
