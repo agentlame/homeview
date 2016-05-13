@@ -265,7 +265,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
             mItem.setStatus(items.get(0));
 
-            boolean isWatched = !(mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched);
+            boolean isWatched = mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched;
             DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
             setActions((SparseArrayObjectAdapter) row.getActionsAdapter(), isWatched);
             row.setItem(null);

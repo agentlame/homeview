@@ -52,7 +52,7 @@ public abstract class FfmpegTrackRenderer extends SampleSourceTrackRenderer {
     private static final int REINITIALIZATION_STATE_SIGNAL_END_OF_STREAM = 1;
     private static final int REINITIALIZATION_STATE_WAIT_END_OF_STREAM = 2;
 
-    private static final int NUM_BUFFERS = 16;
+    private static final int NUM_BUFFERS = 32;
     private static final int INITIAL_INPUT_BUFFER_SIZE = 768 * 1024; // Value based on cs/SoftVpx.cpp.
 
     public final CodecCounters codecCounters;
