@@ -686,7 +686,6 @@ public class PlaybackFragment
         Glide.with(this)
                 .load(Uri.parse(url))
                 .asBitmap()
-                .centerCrop()
                 .error(getActivity().getDrawable(R.drawable.default_video_cover))
                 .into(new SimpleTarget<Bitmap>(cardWidth, cardHeight) {
                     @Override
