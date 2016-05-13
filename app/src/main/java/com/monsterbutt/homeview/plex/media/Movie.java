@@ -60,10 +60,10 @@ public class Movie extends PlexVideoItem implements Parcelable {
 
     @Override
     public String getCardContent(Context context) {
-        return  String.format("%s %s %d %s",
-                mVideo.getYear(),
+        return  String.format("%s %s %s %s",
+                getYear(),
                 context.getString(R.string.mid_dot),
-                getDurationInMin(),
+                Long.toString(getDurationInMin()),
                 context.getString(R.string.minutes_abbrev));
     }
 
@@ -74,10 +74,11 @@ public class Movie extends PlexVideoItem implements Parcelable {
 
     @Override
     public String getPlaybackSubtitle(Context context) {
-        return String.format("%s %s %s",
-                getYear(),
-                context.getString(R.string.mid_dot),
-                getStudio());
+
+        String tag = getTagline();
+        if (!TextUtils.isEmpty(tag))
+            return String.format("%s %s %s", getYear(), context.getString(R.string.mid_dot), tag);
+        return getYear();
     }
 
     public String getPlaybackImageURL() {

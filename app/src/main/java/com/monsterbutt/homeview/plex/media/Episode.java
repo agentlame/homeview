@@ -136,13 +136,28 @@ public class Episode extends PlexVideoItem implements Parcelable {
 
         String showName = getShowName();
         String season = getSeasonNum();
-        if (!TextUtils.isEmpty(showName) && !TextUtils.isEmpty(season))
+        String date = Utils.convertDateToText(context, mVideo.getOriginallyAvailableDate());
+        if (!TextUtils.isEmpty(showName) && !TextUtils.isEmpty(season)) {
+            if (!TextUtils.isEmpty(date))
+                return String.format("%s %s %s %s %s %s", showName, context.getString(R.string.mid_dot),
+                        context.getString(R.string.Season), season,  context.getString(R.string.mid_dot),
+                        date);
             return String.format("%s %s %s %s", showName, context.getString(R.string.mid_dot),
-                                context.getString(R.string.Season), season);
-        if (!TextUtils.isEmpty(showName))
+                    context.getString(R.string.Season), season);
+        }
+        if (!TextUtils.isEmpty(showName)) {
+            if (!TextUtils.isEmpty(date))
+                return String.format("%s %s %s", showName, context.getString(R.string.mid_dot), date);
             return showName;
-        if (!TextUtils.isEmpty(season))
+        }
+        if (!TextUtils.isEmpty(season)) {
+            if (!TextUtils.isEmpty(date))
+                return String.format("%s %s %s %s", context.getString(R.string.Season), season,
+                        context.getString(R.string.mid_dot), date);
             return String.format("%s %s", context.getString(R.string.Season), season);
+        }
+        if (!TextUtils.isEmpty(date))
+            return date;
 
         return "";
     }

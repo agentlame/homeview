@@ -14,11 +14,13 @@ import android.support.v17.leanback.widget.ControlButtonPresenterSelector;
 import android.support.v17.leanback.widget.OnActionClickedListener;
 import android.support.v17.leanback.widget.PlaybackControlsRow;
 import android.support.v17.leanback.widget.PlaybackControlsRowPresenter;
+import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.SparseArrayObjectAdapter;
 import android.text.TextUtils;
 import android.view.View;
 
 import com.monsterbutt.homeview.model.Video;
+import com.monsterbutt.homeview.presenters.PlaybackDetailsPresenter;
 import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
 
 
@@ -55,9 +57,28 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
         mSpeed = PLAYBACK_SPEED_NORMAL;
     }
 
+    private PlaybackControlsRowPresenter makeControlsRowAndPresenter() {
+        PlaybackControlsRow controlsRow = new PlaybackControlsRow(this);
+        setControlsRow(controlsRow);
+
+        return new PlaybackControlsRowPresenter(new PlaybackDetailsPresenter()) {
+            @Override
+            protected void onBindRowViewHolder(RowPresenter.ViewHolder vh, Object item) {
+                super.onBindRowViewHolder(vh, item);
+                vh.setOnKeyListener(PlaybackControlHelper.this);
+            }
+
+            @Override
+            protected void onUnbindRowViewHolder(RowPresenter.ViewHolder vh) {
+                super.onUnbindRowViewHolder(vh);
+                vh.setOnKeyListener(null);
+            }
+        };
+    }
+
     @Override
     public PlaybackControlsRowPresenter createControlsRowAndPresenter() {
-        PlaybackControlsRowPresenter presenter = super.createControlsRowAndPresenter();
+        PlaybackControlsRowPresenter presenter = makeControlsRowAndPresenter();
 
         ArrayObjectAdapter adapter = new ArrayObjectAdapter(new ControlButtonPresenterSelector());
         getControlsRow().setSecondaryActionsAdapter(adapter);
