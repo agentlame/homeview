@@ -456,6 +456,8 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
             DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
             row.setItem(null);
             row.setItem(mItem);
+            DetailsOverviewRow actionrow = (DetailsOverviewRow) mAdapter.get(0);
+            setActions((SparseArrayObjectAdapter) actionrow.getActionsAdapter(), mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched);
             Activity activity = getActivity();
             if (item instanceof PlexVideoItem) {
                 mTracks = ((PlexVideoItem) mItem).fillTrackSelector(getActivity(),

@@ -119,8 +119,15 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
                 continue;
 
             RowItem rowItem = map.get(update.key);
-            rowItem.item.setStatus(update);
-            indexList.add(rowItem.index);
+            if (rowItem != null) {
+
+                Object obj = adapter.get(rowItem.index);
+                if (obj != null && obj instanceof  PosterCard && ((PosterCard) obj).getRatingsKey().equals(update.key)) {
+                    ((PosterCard) obj).setUpdateStatus(update);
+                    rowItem.item.setStatus(update);
+                    indexList.add(rowItem.index);
+                }
+            }
         }
 
         if (!indexList.isEmpty()) {
