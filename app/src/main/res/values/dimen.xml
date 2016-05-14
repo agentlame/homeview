@@ -13,7 +13,7 @@
     <dimen name="CARD_CODEC_HEIGHT">60dp</dimen>
 
     <dimen name="POSTER_WIDTH">250dp</dimen>
-    <dimen name="POSTER_HEIGHT">380dp</dimen>
+    <dimen name="POSTER_HEIGHT">400dp</dimen>
 
     <dimen name="DETAIL_POSTER_WIDTH">180dp</dimen>
     <dimen name="DETAIL_POSTER_HEIGHT">274dp</dimen>

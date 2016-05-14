@@ -190,6 +190,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         Glide.with(context)
                 .load(mServer.makeServerURL(usePoster ? mItem.getCardImageURL() : mItem.getWideCardImageURL()))
                 .asBitmap()
+                .fitCenter()
                 .dontAnimate()
                 .error(R.drawable.default_background)
                 .into(new SimpleTarget<Bitmap>(width, height) {
