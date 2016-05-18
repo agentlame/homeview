@@ -3,7 +3,6 @@ package com.monsterbutt.homeview.plex.tasks;
 import android.os.AsyncTask;
 
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.plex.PlexServerManager;
 
 
 public class PlexServerTask extends AsyncTask<Object, Void, Boolean> {
@@ -20,12 +19,6 @@ public class PlexServerTask extends AsyncTask<Object, Void, Boolean> {
     protected PlexServer getServer() {
 
         return mServer;
-    }
-
-    @Override
-    protected void	onPreExecute() {
-
-        mCaller.handlePreTaskUI();
     }
 
     @Override

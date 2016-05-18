@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import android.app.Activity;
 import android.content.Context;
@@ -31,61 +29,41 @@ import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
-import android.support.v17.leanback.widget.OnItemViewClickedListener;
-import android.support.v17.leanback.widget.OnItemViewSelectedListener;
-import android.support.v17.leanback.widget.Presenter;
-import android.support.v17.leanback.widget.Row;
-import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.TitleView;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-import com.monsterbutt.homeview.presenters.CardPresenter;
+import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.presenters.SettingCard;
 import com.monsterbutt.homeview.presenters.SettingPresenter;
-import com.monsterbutt.homeview.services.ThemeService;
 import com.monsterbutt.homeview.settings.SettingLaunch;
 import com.monsterbutt.homeview.ui.MediaRowCreator;
 import com.monsterbutt.homeview.ui.PlexItemRow;
+import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.SearchActivity;
 import com.monsterbutt.homeview.ui.activity.SettingsActivity;
-import com.monsterbutt.homeview.ui.android.HomeViewActivity;
-import com.monsterbutt.homeview.ui.android.ImageCardView;
-import com.monsterbutt.homeview.ui.handler.MediaCardBackgroundHandler;
+import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTaskCaller;
 import com.monsterbutt.homeview.plex.tasks.ServerLibraryTask;
-import com.monsterbutt.homeview.presenters.CardObject;
-import com.monsterbutt.homeview.ui.activity.MainActivity;
 import com.monsterbutt.homeview.ui.activity.ServerChoiceActivity;
+import com.monsterbutt.homeview.ui.handler.ServerStatusHandler;
+import com.monsterbutt.homeview.ui.handler.ThemeHandler;
 
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
-public class MainFragment extends BrowseFragment implements PlexServerTaskCaller, OnItemViewSelectedListener, OnItemViewClickedListener, MainActivity.OnPlayKeyListener, CardPresenter.CardPresenterLongClickListener {
-
-    private static final String TAG = "MainFragment";
+public class MainFragment extends BrowseFragment implements PlexServerTaskCaller,
+                                                            ServerStatusHandler.ServerStatusListener {
 
     private static final String SETTINGS_ROW_KEY = "Settings";
 
-    private static final int SERVER_CHOICE_RESULT = 1;
-    private static final int SERVER_CHECK_DELAY = 1000;
-    private View mCurrentCardTransitionImage = null;
-    private CardObject mCurrentCard = null;
-    private boolean  mForcedServerSelectOnce = false;
 
-    private String mBackgroundURL = "";
-
-    private Timer mServerCheckTimer = null;
-
-    protected ArrayObjectAdapter mRowsAdapter;
-    protected PlexServerManager mMgr = null;
-    protected MediaCardBackgroundHandler mBackgroundHandler;
-
+    private ArrayObjectAdapter mRowsAdapter;
+    private CardSelectionHandler mSelectionHandler;
+    private UILifecycleManager mLifeCycleMgr = new UILifecycleManager();
+    private PlexServer mServer = null;
 
     private Map<String, MediaRowCreator.RowData> mRows = new HashMap<>();
 
@@ -94,9 +72,6 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         super.onActivityCreated(savedInstanceState);
         setTitle(getString(R.string.app_name)); // Badge, when set, takes precedent
-
-        MainActivity act = (MainActivity) getActivity();
-        mMgr = PlexServerManager.getInstance(act.getApplicationContext());
 
         setHeadersState(HEADERS_ENABLED);
         setHeadersTransitionOnBackEnabled(false);
@@ -109,118 +84,50 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
             }
         });
 
-        setOnItemViewClickedListener(this);
-        setOnItemViewSelectedListener(this);
-        act.setPlayKeyListener(this);
+        TitleView tv = (TitleView) getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group);
+        TextView text = (TextView) tv.findViewById(android.support.v17.leanback.R.id.title_text);
+        text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 
+        mSelectionHandler = new CardSelectionHandler(this);
         mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
         setAdapter(mRowsAdapter);
+        mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
+        mLifeCycleMgr.put(ServerStatusHandler.key, new ServerStatusHandler(this, this));
+        mLifeCycleMgr.put(ThemeHandler.key, new ThemeHandler(getActivity(), false, true));
     }
-
 
     @Override
     public void onDestroy() {
 
         super.onDestroy();
-        if (null != mServerCheckTimer) {
-            Log.d(TAG, "onDestroy: " + mServerCheckTimer.toString());
-            mServerCheckTimer.cancel();
-        }
+        mLifeCycleMgr.destroyed();
     }
 
     @Override
     public void onPause() {
 
         super.onPause();
-        mBackgroundHandler.cancel();
-
-        for (MediaRowCreator.RowData row : mRows.values()) {
-
-            if (row.data instanceof PlexItemRow)
-                ((PlexItemRow)row.data).pause();
-        }
+        mLifeCycleMgr.paused();
     }
 
     @Override
     public void onResume() {
 
         super.onResume();
-
-        ThemeService.stopTheme(getActivity());
-        mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
-
-        for (MediaRowCreator.RowData row : mRows.values()) {
-
-            if (row.data instanceof PlexItemRow)
-                ((PlexItemRow)row.data).resume();
-        }
-
-        if (!TextUtils.isEmpty(mBackgroundURL))
-            mBackgroundHandler.updateBackground(mBackgroundURL, false);
-
-        if (mMgr.isDiscoveryRunning()) {
-
-            mServerCheckTimer = new Timer();
-            mServerCheckTimer.schedule(new CheckForPlexServerTask(), SERVER_CHECK_DELAY);
-        }
-        else
-            checkServerStatus();
-    }
-
-    private void checkServerStatus() {
-
-        PlexServer selected = mMgr.getSelectedServer();
-        if (selected != null && selected.isValid())
-            refreshPage();
-        else if (!mForcedServerSelectOnce) {
-
-            mForcedServerSelectOnce = true;
-            startActivityForResult(new Intent(getActivity(), ServerChoiceActivity.class), SERVER_CHOICE_RESULT);
-        }
+        mLifeCycleMgr.resumed();
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if (requestCode == SERVER_CHOICE_RESULT) {
+        if (requestCode == ServerStatusHandler.SERVER_CHOICE_RESULT) {
 
-            PlexServer server = mMgr.getSelectedServer();
+            PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
             if (server != null && server.isValid())
-                refreshPage();
+                setSelectedServer(server);
             else
                 addSettingsRow(true, 0);
         }
-    }
-
-    @Override
-    public boolean playKeyPressed() {
-        return  mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
-    }
-
-    @Override
-    public boolean longClickOccured() {
-        return playKeyPressed();
-    }
-
-    private class CheckForPlexServerTask extends TimerTask {
-
-        @Override
-        public void run() {
-
-            if (mMgr.isDiscoveryRunning())
-                mServerCheckTimer.schedule(new CheckForPlexServerTask(), SERVER_CHECK_DELAY);
-            else {
-
-                mServerCheckTimer.cancel();
-                mServerCheckTimer = null;
-                checkServerStatus();
-            }
-        }
-    }
-
-    @Override
-    public void handlePreTaskUI() {
-
     }
 
     @Override
@@ -235,12 +142,9 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         ServerLibraryTask libraryTask = (ServerLibraryTask) task;
         MediaContainer library = libraryTask.getLibrary();
-        TitleView tv = (TitleView) getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group);
-        TextView text = (TextView) tv.findViewById(android.support.v17.leanback.R.id.title_text);
-        text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
         setTitle(library.getTitle1());
 
-        if (mCurrentCard == null) {
+        if (null == mSelectionHandler.getSelection()) {
 
             String artKey = null;
             MediaContainer arts = libraryTask.getRandomArts();
@@ -249,10 +153,8 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
                 int photoPos = (int) (1000 * Math.random()) % arts.getPhotos().size();
                 artKey = arts.getPhotos().get(photoPos).getKey();
             }
-            if (artKey != null && !artKey.isEmpty()) {
-                mBackgroundURL = mMgr.getSelectedServer().makeServerURL(artKey);
-                mBackgroundHandler.updateBackground(mBackgroundURL, true);
-            }
+            if (artKey != null && !artKey.isEmpty() && mServer != null)
+                mSelectionHandler.updateBackground(mServer.makeServerURL(artKey), true);
         }
         int rowCount = setRowsFromLibrary(libraryTask.getSections(), libraryTask.getHubs(), getString(R.string.main_landscape_rows), ";");
         addSettingsRow(false, rowCount);
@@ -281,10 +183,10 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
             mRowsAdapter.add(row);
             gridRowAdapter.add(new SettingCard(context,
                     new SettingLaunch(context.getString(R.string.settings_server),
-                            mMgr.getSelectedServer().getServerName(),
+                            mServer.getServerName(),
                             R.drawable.ic_settings_remote_white_48dp,
                             ServerChoiceActivity.class.getName(),
-                            SERVER_CHOICE_RESULT)));
+                            ServerStatusHandler.SERVER_CHOICE_RESULT)));
         }
 
         if (!serverOnly) {
@@ -297,9 +199,10 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         }
     }
 
-    private void refreshPage() {
+   public void setSelectedServer(PlexServer server) {
 
-        new ServerLibraryTask(this, mMgr.getSelectedServer()).execute();
+        mServer = server;
+        mSelectionHandler.setServer(server);
     }
 
     private void updateMainRow(MediaRowCreator.MediaRow row, boolean useLandscape, int index) {
@@ -309,7 +212,8 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
             return;
         existing.currentIndex = index;
         if (existing.data instanceof PlexItemRow)
-            ((PlexItemRow)existing.data).updateRow(MediaRowCreator.fillAdapterForRow(getActivity(), mMgr.getSelectedServer(), row, useLandscape, this));
+            ((PlexItemRow)existing.data).updateRow(MediaRowCreator.fillAdapterForRow(getActivity(),
+                        mServer, row, useLandscape, mSelectionHandler));
     }
 
     private void addMainRow(MediaRowCreator.MediaRow row, boolean useLandscape, int index) {
@@ -319,8 +223,10 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         for (String sub : getString(R.string.main_rows_header_strip).split(";"))
             header = header.replace(sub, "").trim();
         PlexItemRow updateRow = index != 0 ?
-                MediaRowCreator.fillAdapterForWatchedRow(getActivity(), mMgr.getSelectedServer(), row, header, hash, useLandscape, this)
-                : MediaRowCreator.fillAdapterForRow(getActivity(), mMgr.getSelectedServer(), row, header, hash, useLandscape, this);
+                MediaRowCreator.fillAdapterForWatchedRow(getActivity(), mServer, row, header, hash,
+                                                         useLandscape, mSelectionHandler)
+                : MediaRowCreator.fillAdapterForRow(getActivity(), mServer, row, header, hash,
+                                                    useLandscape, mSelectionHandler);
         if (index != mRows.size()) {
             for(MediaRowCreator.RowData oldRow : mRows.values()) {
                 if (oldRow.currentIndex >= index)
@@ -328,6 +234,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
             }
         }
         mRows.put(row.key, new MediaRowCreator.RowData(row.key, index, updateRow));
+        mLifeCycleMgr.put(row.key, updateRow);
         mRowsAdapter.add(index, updateRow);
     }
 
@@ -370,27 +277,6 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         }
         return rows;
     }
-
-    @Override
-    public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item,
-                               RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        if (item instanceof CardObject) {
-            mCurrentCard = (CardObject) item;
-            mCurrentCardTransitionImage = ((ImageCardView) itemViewHolder.view).getMainImageView();
-            mBackgroundURL = mBackgroundHandler.updateBackgroundTimed(mMgr.getSelectedServer(), (CardObject) item);
-        }
-    }
-
-    @Override
-    public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
-                              RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        if (item instanceof CardObject)
-            ((CardObject) item).onClicked(this, null, mCurrentCardTransitionImage);
-    }
-
-
 
     protected HashMap<String, Integer> makeOrderHashFromStringDelim(String str, String delim) {
 

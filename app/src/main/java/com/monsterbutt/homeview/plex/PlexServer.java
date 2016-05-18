@@ -496,4 +496,15 @@ public class PlexServer {
         }
         return false;
     }
+
+
+    public String getThemeURL(MediaContainer container) {
+
+        String theme = container.getThemeKey();
+        if (TextUtils.isEmpty(theme))
+            theme = container.getGrandparentTheme();
+        if (!TextUtils.isEmpty(theme))
+            theme = makeServerURL(theme);
+        return theme;
+    }
 }

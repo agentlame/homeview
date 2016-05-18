@@ -6,25 +6,16 @@ import android.os.Bundle;
 import android.support.v17.leanback.app.BrowseFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.ListRowPresenter;
-import android.support.v17.leanback.widget.OnItemViewClickedListener;
-import android.support.v17.leanback.widget.OnItemViewSelectedListener;
-import android.support.v17.leanback.widget.Presenter;
-import android.support.v17.leanback.widget.Row;
-import android.support.v17.leanback.widget.RowPresenter;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
-import com.monsterbutt.homeview.presenters.CardObject;
-import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.ui.MediaRowCreator;
 import com.monsterbutt.homeview.ui.PlexItemRow;
+import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
-import com.monsterbutt.homeview.ui.android.ImageCardView;
-import com.monsterbutt.homeview.ui.android.HomeViewActivity;
-import com.monsterbutt.homeview.ui.handler.MediaCardBackgroundHandler;
+import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,14 +26,12 @@ import java.util.Map;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 
-public class SectionHubFragment extends BrowseFragment implements HomeViewActivity.OnPlayKeyListener, OnItemViewClickedListener, OnItemViewSelectedListener {
+public class SectionHubFragment extends BrowseFragment  {
 
     private PlexServer mServer;
-    private MediaCardBackgroundHandler mBackgroundHandler;
 
-    private View mCurrentCardTransitionImage = null;
-    private CardObject mCurrentCard = null;
-    private String mBackgroundURL = "";
+    private CardSelectionHandler mSelectionHandler;
+    private UILifecycleManager mLifeCycleMgr = new UILifecycleManager();
 
     private Map<String, MediaRowCreator.RowData> mRows = new HashMap<>();
     private ArrayObjectAdapter mRowsAdapter;
@@ -51,13 +40,10 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
     public void onActivityCreated(Bundle savedInstanceState) {
 
         super.onActivityCreated(savedInstanceState);
-        ((HomeViewActivity) getActivity()).setPlayKeyListener(this);
 
         Activity activity = getActivity();
         mServer = PlexServerManager.getInstance(activity.getApplicationContext()).getSelectedServer();
-        setOnItemViewClickedListener(this);
-        setOnItemViewSelectedListener(this);
-        ((HomeViewActivity)activity).setPlayKeyListener(this);
+        mSelectionHandler = new CardSelectionHandler(this, mServer);
 
         TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
         text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
@@ -72,14 +58,7 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
     public void onResume() {
 
         super.onResume();
-
-        for (MediaRowCreator.RowData row : mRows.values())
-            ((PlexItemRow)row.data).resume();
-
-        mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
-        if (!TextUtils.isEmpty(mBackgroundURL))
-            mBackgroundHandler.updateBackground(mBackgroundURL, false);
-
+        mLifeCycleMgr.resumed();
         new LoadMetadataTask().execute(getActivity().getIntent().getStringExtra(SectionHubActivity.SECTIONID));
     }
 
@@ -87,38 +66,10 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
     public void onPause() {
 
         super.onPause();
-
-        for (MediaRowCreator.RowData row : mRows.values())
-            ((PlexItemRow)row.data).pause();
-        mBackgroundHandler.cancel();
+        mLifeCycleMgr.paused();
     }
 
-    @Override
-    public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item,
-                               RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        if (item instanceof CardObject) {
-            mCurrentCard = (CardObject) item;
-            mCurrentCardTransitionImage = ((ImageCardView) itemViewHolder.view).getMainImageView();
-            mBackgroundURL = mBackgroundHandler.updateBackgroundTimed(mServer, mCurrentCard);
-        }
-    }
-
-    @Override
-    public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
-                              RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        if (item instanceof CardObject)
-            ((CardObject) item).onClicked(this, null, mCurrentCardTransitionImage);
-    }
-
-    @Override
-    public boolean playKeyPressed() {
-
-        return  mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
-    }
-
-    private class LoadMetadataTask extends AsyncTask<String, Void, MediaContainer> implements CardPresenter.CardPresenterLongClickListener {
+    private class LoadMetadataTask extends AsyncTask<String, Void, MediaContainer>  {
 
         @Override
         protected MediaContainer doInBackground(String... params) {
@@ -150,6 +101,7 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
                     }
 
                     if (!found) {
+                        mLifeCycleMgr.remove(row.id);
                         mRows.remove(row.id);
                         mRowsAdapter.removeItems(row.currentIndex, 1);
                     }
@@ -158,7 +110,8 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
                 int index = 0;
                 for (MediaRowCreator.MediaRow row : newRows) {
 
-                    PlexItemRow rowUpdate = MediaRowCreator.fillAdapterForWatchedRow(getActivity(), mServer, row, false, this);
+                    PlexItemRow rowUpdate = MediaRowCreator.fillAdapterForWatchedRow(getActivity(),
+                                                            mServer, row, false, mSelectionHandler);
                     if (mRows.containsKey(row.title)) {
 
                         MediaRowCreator.RowData current = mRows.get(row.title);
@@ -166,18 +119,13 @@ public class SectionHubFragment extends BrowseFragment implements HomeViewActivi
                         current.currentIndex = index;
                     }
                     else {
-
+                        mLifeCycleMgr.put(row.title, rowUpdate);
                         mRows.put(row.title, new MediaRowCreator.RowData(row.title ,index, rowUpdate));
                         mRowsAdapter.add(index, rowUpdate);
                     }
                     ++index;
                 }
             }
-        }
-
-        @Override
-        public boolean longClickOccured() {
-            return playKeyPressed();
         }
     }
 }

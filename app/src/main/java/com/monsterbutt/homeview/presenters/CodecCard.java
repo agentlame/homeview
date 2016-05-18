@@ -16,8 +16,13 @@ import com.monsterbutt.homeview.plex.media.VideoFormat;
 import us.nineworlds.plex.rest.model.impl.Media;
 
 
-
 public class CodecCard extends PosterCard {
+
+    public interface OnClickListenerHandler {
+
+        MediaTrackSelector getSelector();
+        DialogInterface.OnClickListener getDialogOnClickListener(final Object card, final int trackType);
+    }
 
     private class CodecIconHolder {
 
@@ -165,16 +170,19 @@ public class CodecCard extends PosterCard {
         return totalTracksForType;
     }
 
-    public void onCardClicked(Activity activity, PlexServer server, MediaTrackSelector selector, DialogInterface.OnClickListener listener) {
+    public void onCardClicked(Activity activity, PlexServer server, OnClickListenerHandler listener) {
 
-        if (getTotalTracksForType() > 1) {
+        DialogInterface.OnClickListener callback = listener != null ?
+                listener.getDialogOnClickListener(this, getTrackType()) : null;
+        MediaTrackSelector selector = listener != null ?
+                listener.getSelector() : null;
+        if (getTotalTracksForType() > 1 && selector != null && callback != null) {
             AlertDialog dialog = new AlertDialog.Builder(activity, R.style.AlertDialogStyle)
                     .setIcon(R.drawable.launcher)
                     .setTitle(R.string.track_dialog)
-                    .setAdapter(selector.getTracks(activity, server, getTrackType()), listener)
+                    .setAdapter(selector.getTracks(activity, server, getTrackType()), callback)
                     .create();
             dialog.show();
-
         }
     }
 

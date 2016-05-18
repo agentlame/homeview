@@ -7,6 +7,7 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
+import com.monsterbutt.homeview.ui.UILifecycleManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +17,9 @@ import us.nineworlds.plex.rest.model.impl.Directory;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 import us.nineworlds.plex.rest.model.impl.Video;
 
-public class WatchedStatusHandler {
+public class WatchedStatusHandler implements UILifecycleManager.LifecycleListener {
+
+    public static final String key = "watchedstatushandler";
 
     public static class UpdateStatus {
 
@@ -51,7 +54,6 @@ public class WatchedStatusHandler {
     }
 
     private final PlexServer mServer;
-    private final String mLock = "lock";
     private boolean mIsPaused = false;
     private Map<WatchStatusListener, ListenerHandler> mListeners = new HashMap<>();
 
@@ -76,17 +78,19 @@ public class WatchedStatusHandler {
             mListeners.remove(listener);
     }
 
-    public void pause() {
+    @Override
+    public void onPause() {
 
-        synchronized (mLock) {
+        synchronized (this) {
             mIsPaused = true;
         }
     }
 
-    public void resume() {
+    @Override
+    public void onResume() {
 
         boolean wasPaused;
-        synchronized (mLock) {
+        synchronized (this) {
             wasPaused = mIsPaused;
             mIsPaused = false;
         }
@@ -94,6 +98,9 @@ public class WatchedStatusHandler {
         if (wasPaused)
             checkStatus();
     }
+
+    @Override
+    public void onDestroyed() {}
 
     public void checkStatus() {
 

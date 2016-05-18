@@ -730,11 +730,6 @@ public class PlaybackFragment
     }
 
     @Override
-    public void handlePreTaskUI() {
-
-    }
-
-    @Override
     public void handlePostTaskUI(Boolean result, PlexServerTask task) {
 
         if (getActivity() == null || getActivity().isDestroyed() || getActivity().isFinishing())
@@ -818,27 +813,34 @@ public class PlaybackFragment
         setPlaybackState(prevState);
     }
 
-    public void codecSelected(final CodecCard card) {
+    private class CodecClickHandler implements CodecCard.OnClickListenerHandler {
 
-        final int trackTypeClicked = card.getTrackType();
-        card.onCardClicked(getActivity(), mServer, mSelectedVideoTracks, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
+        @Override
+        public MediaTrackSelector getSelector() {
+            return mSelectedVideoTracks;
+        }
 
-                mSelectedVideoTracks.setSelectedTrack(mPlayer, trackTypeClicked, which);
-                ArrayObjectAdapter adapter = (ArrayObjectAdapter) mCodecRow.getAdapter();
-                int index = adapter.indexOf(card);
-                if (0 <= index) {
-                    adapter.replace(index, new CodecCard(getActivity(),
-                            mSelectedVideoTracks.getSelectedTrack(trackTypeClicked),
-                            trackTypeClicked,
-                            mSelectedVideoTracks.getCount(trackTypeClicked)));
+        @Override
+        public DialogInterface.OnClickListener getDialogOnClickListener(final Object card, final int trackType) {
+            return new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
 
-                    adapter.notifyArrayItemRangeChanged(index, 1);
+                    mSelectedVideoTracks.setSelectedTrack(mPlayer, trackType, which);
+                    ArrayObjectAdapter adapter = (ArrayObjectAdapter) mCodecRow.getAdapter();
+                    int index = adapter.indexOf(card);
+                    if (0 <= index) {
+                        adapter.replace(index, new CodecCard(getActivity(),
+                                mSelectedVideoTracks.getSelectedTrack(trackType),
+                                trackType,
+                                mSelectedVideoTracks.getCount(trackType)));
+
+                        adapter.notifyArrayItemRangeChanged(index, 1);
+                    }
+                    dialog.dismiss();
                 }
-                dialog.dismiss();
-            }
-        });
+            };
+        }
     }
 
     public boolean onItemClicked(Object item) {
@@ -846,7 +848,7 @@ public class PlaybackFragment
         if (item instanceof SceneCard && ((SceneCard) item).getItem() instanceof Chapter)
             chapterSelected((Chapter)((SceneCard) item).getItem());
         else if (item instanceof CodecCard)
-            codecSelected((CodecCard) item);
+            ((CodecCard) item).onCardClicked(getActivity(), mServer, new CodecClickHandler());
         else if (item instanceof PosterCard)
             ((PosterCard)item).onClicked(this, null, mCurrentCardTransitionImage);
         else

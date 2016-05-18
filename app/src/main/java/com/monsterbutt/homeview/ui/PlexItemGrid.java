@@ -17,7 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener {
+public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
+                                     UILifecycleManager.LifecycleListener {
 
     public enum ItemSort {
 
@@ -75,16 +76,25 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener {
         return false;
     }
 
-    public void resume() {
+    @Override
+    public void onResume() {
 
         if (watchedHandler != null)
-            watchedHandler.resume();
+            watchedHandler.onResume();
     }
 
-    public void pause() {
+    @Override
+    public void onPause() {
 
         if (watchedHandler != null)
-            watchedHandler.pause();
+            watchedHandler.onPause();
+    }
+
+    @Override
+    public void onDestroyed() {
+
+        if (watchedHandler != null)
+            watchedHandler.onDestroyed();
     }
 
     public WatchedStatusHandler.UpdateStatusList getItemsToCheck() {

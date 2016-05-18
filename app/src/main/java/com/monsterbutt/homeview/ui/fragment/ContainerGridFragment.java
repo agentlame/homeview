@@ -7,11 +7,6 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v17.leanback.app.VerticalGridFragment;
-import android.support.v17.leanback.widget.OnItemViewClickedListener;
-import android.support.v17.leanback.widget.OnItemViewSelectedListener;
-import android.support.v17.leanback.widget.Presenter;
-import android.support.v17.leanback.widget.Row;
-import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.TitleView;
 import android.support.v17.leanback.widget.VerticalGridPresenter;
 import android.text.TextUtils;
@@ -22,24 +17,21 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.media.Episode;
-import com.monsterbutt.homeview.presenters.CardPresenter;
-import com.monsterbutt.homeview.services.ThemeService;
+import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.ui.PlexItemGrid;
+import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.FilterChoiceActivity;
 import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
-import com.monsterbutt.homeview.ui.android.ImageCardView;
-import com.monsterbutt.homeview.ui.handler.MediaCardBackgroundHandler;
+import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
-import com.monsterbutt.homeview.presenters.CardObject;
-import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.ui.activity.ContainerActivity;
+import com.monsterbutt.homeview.ui.handler.ThemeHandler;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
@@ -50,21 +42,15 @@ import us.nineworlds.plex.rest.model.impl.Directory;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 import us.nineworlds.plex.rest.model.impl.Video;
 
-
 public class ContainerGridFragment extends VerticalGridFragment
-        implements OnItemViewClickedListener, OnItemViewSelectedListener,
-        HomeViewActivity.OnPlayKeyListener, WatchedStatusHandler.WatchStatusListener, CardPresenter.CardPresenterLongClickListener {
+        implements  WatchedStatusHandler.WatchStatusListener, CardSelectionHandler.CardSelectionListener {
 
     private static final int RESULT_FILTER = 1;
     private static final int RESULT_SORT = 2;
 
-    private MediaCardBackgroundHandler mBackgroundHandler;
     private PlexServer mServer = null;
     private MediaContainer mContainer = null;
     private boolean mUseScene = false;
-    private boolean mThemeAlreadyRun = false;
-    private boolean mContinueTheme = false;
-    private String mBackgroundURL = "";
 
     private PlexItemGrid mGrid = null;
 
@@ -75,10 +61,10 @@ public class ContainerGridFragment extends VerticalGridFragment
     private SectionFilter mCurrentFilter = null;
     private SectionSort mCurrentSort = null;
 
-    private WatchedStatusHandler mWatchedState = null;
 
-    private View mCurrentCardTransitionImage = null;
-    private CardObject mCurrentCard = null;
+    private UILifecycleManager mLifeCycleMgr = new UILifecycleManager();
+    private CardSelectionHandler mSelectionHandler;
+    private ThemeHandler mThemeHandler;
 
     private TextView mFilterText;
     private TextView mSortText;
@@ -86,11 +72,12 @@ public class ContainerGridFragment extends VerticalGridFragment
     @Override
     public WatchedStatusHandler.UpdateStatusList getItemsToCheck() {
 
+        CardObject card = mSelectionHandler.getSelection();
         WatchedStatusHandler.UpdateStatusList list = null;
-        if (mCurrentCard != null) {
+        if (card != null) {
 
             list = new WatchedStatusHandler.UpdateStatusList();
-            list.add(mCurrentCard.getUpdateStatus());
+            list.add(card.getUpdateStatus());
         }
         return list;
     }
@@ -103,11 +90,6 @@ public class ContainerGridFragment extends VerticalGridFragment
             for (WatchedStatusHandler.UpdateStatus update : items)
                 mGrid.updateItem(update);
         }
-    }
-
-    @Override
-    public boolean longClickOccured() {
-        return playKeyPressed();
     }
 
     public static class SectionSort extends SectionFilter implements Parcelable {
@@ -217,10 +199,15 @@ public class ContainerGridFragment extends VerticalGridFragment
         mServer = PlexServerManager.getInstance(act.getApplicationContext()).getSelectedServer();
         mUseScene = act.getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false);
         if (!mUseScene)
-            mWatchedState = new WatchedStatusHandler(mServer, this);
-        mThemeAlreadyRun = act.getIntent().getBooleanExtra(ThemeService.THEME_ALREADY_RUN, false);
+            mLifeCycleMgr.put(WatchedStatusHandler.key, new WatchedStatusHandler(mServer, this));
 
-        mBackgroundURL = act.getIntent().getStringExtra(ContainerActivity.BACKGROUND);
+        mThemeHandler = new ThemeHandler(act, mUseScene, !mUseScene);
+        mLifeCycleMgr.put(ThemeHandler.key, mThemeHandler);
+        mSelectionHandler = new CardSelectionHandler(this, this, mServer);
+        mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
+        String background = act.getIntent().getStringExtra(ContainerActivity.BACKGROUND);
+        if (!TextUtils.isEmpty(background))
+            mSelectionHandler.updateBackground(background, true);
         VerticalGridPresenter gridPresenter = new VerticalGridPresenter();
         String colCount = mUseScene ? act.getString(R.string.gridview_scene_columns)
                                     : act.getString(R.string.gridview_poster_columns);
@@ -228,9 +215,6 @@ public class ContainerGridFragment extends VerticalGridFragment
         setTitle(null);
         gridPresenter.setNumberOfColumns(Integer.valueOf(colCount));
         setGridPresenter(gridPresenter);
-        setOnItemViewSelectedListener(this);
-        setOnItemViewClickedListener(this);
-        ((HomeViewActivity) act).setPlayKeyListener(this);
         String key = act.getIntent().getStringExtra(ContainerActivity.KEY);
         new GetContainerTask().execute(key);
     }
@@ -238,59 +222,14 @@ public class ContainerGridFragment extends VerticalGridFragment
     @Override
     public void onResume() {
         super.onResume();
-        mContinueTheme = false;
-
-        if (mGrid != null)
-            mGrid.resume();
-        if (mWatchedState != null)
-            mWatchedState.resume();
-        mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
-        if (!TextUtils.isEmpty(mBackgroundURL))
-            mBackgroundHandler.updateBackground(mServer.makeServerURL(mBackgroundURL), false);
+        mLifeCycleMgr.resumed();
     }
 
     @Override
     public void onPause() {
 
         super.onPause();
-
-        if (mGrid != null)
-            mGrid.pause();
-        if (mWatchedState != null)
-            mWatchedState.pause();
-
-        mBackgroundHandler.cancel();
-        if (mContinueTheme || !mThemeAlreadyRun ||
-                (getActivity() != null && getActivity().isFinishing()
-                        && mContainer.getDirectories() == null))
-            return;
-        ThemeService.stopTheme(getActivity());
-    }
-
-    @Override
-    public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        if (item instanceof PosterCard) {
-            Bundle extras = null;
-            mContinueTheme = true;
-            if (mThemeAlreadyRun) {
-                extras = new Bundle();
-                extras.putBoolean(ThemeService.THEME_ALREADY_RUN, true);
-            }
-            ((PosterCard) item).onClicked(this, extras, ((ImageCardView) itemViewHolder.view).getMainImageView());
-        }
-    }
-
-    @Override
-    public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        if (item instanceof CardObject) {
-
-            mCurrentCard = (CardObject) item;
-            mCurrentCardTransitionImage = ((ImageCardView) itemViewHolder.view).getMainImageView();
-            if (!mUseScene)
-                mBackgroundURL = mBackgroundHandler.updateBackgroundTimed(mServer, mCurrentCard);
-        }
+        mLifeCycleMgr.paused();
     }
 
     private void updateAdapter(MediaContainer container) {
@@ -302,11 +241,10 @@ public class ContainerGridFragment extends VerticalGridFragment
         }
 
         List<ContainerActivity.QuickJumpRow> quickjumpList = new ArrayList<>();
-        mGrid = mUseScene ? PlexItemGrid.getWatchedStateGrid(mServer, this)
-                          : PlexItemGrid.getGrid(mServer, this);
+        mGrid = mUseScene ? PlexItemGrid.getWatchedStateGrid(mServer, mSelectionHandler)
+                          : PlexItemGrid.getGrid(mServer, mSelectionHandler);
+        mLifeCycleMgr.put("containerGrid", mGrid);
         if (container != null) {
-
-          //  setTitle(container.getTitle1());
 
             Video currVid = null;
             Iterator<Video> itVideos = null;
@@ -390,12 +328,6 @@ public class ContainerGridFragment extends VerticalGridFragment
       return true;
     }
 
-    @Override
-    public boolean playKeyPressed() {
-
-        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
-    }
-
     public void hubButtonClicked() {
 
         Intent intent = new Intent(getActivity(), SectionHubActivity.class);
@@ -464,6 +396,11 @@ public class ContainerGridFragment extends VerticalGridFragment
             mSortText.setVisibility(View.GONE);
             mFilterText.setVisibility(View.GONE);
         }
+    }
+
+    @Override
+    public Bundle getPlaySelectionBundle(boolean cardWasScene) {
+        return mThemeHandler.getPlaySelectionBundle(null);
     }
 
     @Override
@@ -562,18 +499,12 @@ public class ContainerGridFragment extends VerticalGridFragment
 
                 String art = container.getArt();
                 if (art != null && !art.isEmpty())
-                    mBackgroundHandler.updateBackground(mServer.makeServerURL(art), true);
+                    mSelectionHandler.updateBackground(mServer.makeServerURL(art), true);
                 updateAdapter(container);
             }
 
-            if (!mThemeAlreadyRun) {
-                String theme = mContainer.getThemeKey();
-                if (TextUtils.isEmpty(theme))
-                    theme = mContainer.getGrandparentTheme();
-                if (!TextUtils.isEmpty(theme))
-                    theme = mServer.makeServerURL(theme);
-                mThemeAlreadyRun = ThemeService.startTheme(getActivity(), theme);
-            }
+            mThemeHandler.startTheme(mServer.getThemeURL(mContainer));
         }
     }
 }
+

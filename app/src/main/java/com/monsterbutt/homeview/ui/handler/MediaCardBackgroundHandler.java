@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v17.leanback.app.BackgroundManager;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 
 import com.bumptech.glide.DrawableRequestBuilder;
@@ -18,6 +19,7 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
+import com.monsterbutt.homeview.ui.UILifecycleManager;
 
 import java.net.URI;
 import java.util.Timer;
@@ -25,7 +27,7 @@ import java.util.TimerTask;
 
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
-public class MediaCardBackgroundHandler {
+public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleListener {
 
     private static final int BACKGROUND_UPDATE_DELAY = 500;
     private final Handler mHandler = new Handler();
@@ -37,30 +39,18 @@ public class MediaCardBackgroundHandler {
     private BackgroundManager mBackgroundManager;
 
     private SimpleTarget<GlideDrawable> mTarget;
-    private final String mLock = "lock";
     private boolean mSetting = false;
+
+    private String mBackgroundURL = "";
 
 
     public MediaCardBackgroundHandler(Activity activity) {
 
         mActivity = activity;
-        mBackgroundManager = BackgroundManager.getInstance(mActivity);
-        mBackgroundManager.attach(mActivity.getWindow());
         mDefaultBackground = mActivity.getDrawable(R.drawable.default_background);
         mMetrics = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getMetrics(mMetrics);
-    }
 
-    public void cancel() {
-
-        synchronized (mLock) {
-
-            if (mSetting)
-                Glide.clear(mTarget);
-
-            if (null != mBackgroundTimer)
-                mBackgroundTimer.cancel();
-        }
+        onResume();
     }
 
     public void updateBackground(String uri, boolean animate) {
@@ -68,15 +58,16 @@ public class MediaCardBackgroundHandler {
         if (mActivity.isDestroyed() || mActivity.isFinishing())
             return;
 
-        cancel();
-        synchronized (mLock) {
+        onPause();
+        synchronized (this) {
 
+            mBackgroundURL = uri;
             mSetting = true;
             mTarget = new SimpleTarget<GlideDrawable>(mMetrics.widthPixels, mMetrics.heightPixels) {
                 @Override
                 public void onResourceReady(GlideDrawable resource,
                                             GlideAnimation<? super GlideDrawable> glideAnimation) {
-                    synchronized (mLock) {
+                    synchronized (this) {
                         mSetting = false;
                         if (resource != null)
                             mBackgroundManager.setDrawable(resource);
@@ -85,7 +76,7 @@ public class MediaCardBackgroundHandler {
             };
 
             DrawableRequestBuilder builder = Glide.with(mActivity)
-                                            .load(uri)
+                                            .load(mBackgroundURL)
                                             .centerCrop()
                                             .error(mDefaultBackground);
             if (!animate)
@@ -96,12 +87,12 @@ public class MediaCardBackgroundHandler {
 
     private void startBackgroundTimer(String path) {
 
-        cancel();
+        onPause();
         mBackgroundTimer = new Timer();
         mBackgroundTimer.schedule(new UpdateBackgroundTask(path), BACKGROUND_UPDATE_DELAY);
     }
 
-    public String updateBackgroundTimed(PlexServer server, CardObject item) {
+    public void updateBackgroundTimed(PlexServer server, CardObject item) {
 
         String url;
         if (item instanceof SceneCard) {
@@ -110,7 +101,7 @@ public class MediaCardBackgroundHandler {
             if (!card.useItemBackgroundArt()) {
 
                 new GetRandomArtForSectionTask(server).execute(card.getSectionId());
-                return "";
+                return;
             }
             else
                 url = item.getBackgroundImageUrl();
@@ -122,9 +113,41 @@ public class MediaCardBackgroundHandler {
         else
             url = "blank";
 
-        if (url != null && !url.isEmpty())
-            startBackgroundTimer(server.makeServerURL(url));
-        return url;
+        mBackgroundURL = url;
+        if (mBackgroundURL != null && !mBackgroundURL.isEmpty())
+            startBackgroundTimer(server.makeServerURL(mBackgroundURL));
+    }
+
+    @Override
+    public void onResume() {
+
+        synchronized (this) {
+
+            mBackgroundManager = BackgroundManager.getInstance(mActivity);
+            mBackgroundManager.attach(mActivity.getWindow());
+            mActivity.getWindowManager().getDefaultDisplay().getMetrics(mMetrics);
+
+            if (!TextUtils.isEmpty(mBackgroundURL))
+                updateBackground(mBackgroundURL, false);
+        }
+    }
+
+    @Override
+    public void onPause() {
+
+        synchronized (this) {
+
+            if (mSetting)
+                Glide.clear(mTarget);
+
+            if (null != mBackgroundTimer)
+                mBackgroundTimer.cancel();
+        }
+    }
+
+    @Override
+    public void onDestroyed() {
+
     }
 
     private class UpdateBackgroundTask extends TimerTask {

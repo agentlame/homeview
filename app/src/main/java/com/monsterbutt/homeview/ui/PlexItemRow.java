@@ -19,7 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchStatusListener {
+public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchStatusListener,
+                                                    UILifecycleManager.LifecycleListener {
 
     private class RowItem {
 
@@ -81,16 +82,25 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
         return false;
     }
 
-    public void resume() {
+    @Override
+    public void onResume() {
 
         if (watchedHandler != null)
-            watchedHandler.resume();
+            watchedHandler.onResume();
     }
 
-    public void pause() {
+    @Override
+    public void onPause() {
 
         if (watchedHandler != null)
-            watchedHandler.pause();
+            watchedHandler.onPause();
+    }
+
+    @Override
+    public void onDestroyed() {
+
+        if (watchedHandler != null)
+            watchedHandler.onDestroyed();
     }
 
     public WatchedStatusHandler.UpdateStatusList getItemsToCheck() {

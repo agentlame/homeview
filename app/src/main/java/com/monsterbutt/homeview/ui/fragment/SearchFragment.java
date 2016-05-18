@@ -18,39 +18,25 @@ import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
 import android.support.v17.leanback.widget.ObjectAdapter;
-import android.support.v17.leanback.widget.OnItemViewClickedListener;
-import android.support.v17.leanback.widget.OnItemViewSelectedListener;
-import android.support.v17.leanback.widget.Presenter;
-import android.support.v17.leanback.widget.Row;
-import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.SpeechRecognitionCallback;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.data.VideoContract;
-import com.monsterbutt.homeview.model.Video;
 import com.monsterbutt.homeview.model.VideoCursorMapper;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
-import com.monsterbutt.homeview.plex.media.Episode;
-import com.monsterbutt.homeview.plex.media.Movie;
-import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
-import com.monsterbutt.homeview.ui.activity.DetailsActivity;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
-import com.monsterbutt.homeview.ui.android.ImageCardView;
-import com.monsterbutt.homeview.ui.android.HomeViewActivity;
-import com.monsterbutt.homeview.ui.handler.MediaCardBackgroundHandler;
+import com.monsterbutt.homeview.ui.UILifecycleManager;
+import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 
 /*
  * This class demonstrates how to do in-app search
  */
 public class SearchFragment extends android.support.v17.leanback.app.SearchFragment
         implements android.support.v17.leanback.app.SearchFragment.SearchResultProvider,
-        LoaderManager.LoaderCallbacks<Cursor>, OnItemViewSelectedListener, OnItemViewClickedListener, HomeViewActivity.OnPlayKeyListener, CardPresenter.CardPresenterLongClickListener {
+        LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "SearchFragment";
 
     //private static final boolean FINISH_ON_RECOGNIZER_CANCELED = true;
@@ -62,27 +48,23 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
     private CursorObjectAdapter mVideoCursorAdapter;
 
     private int mSearchLoaderId = 1;
-    private PlexServer mServer;
 
-    private View mCurrentCardTransitionImage = null;
-    private CardObject mCurrentCard = null;
-    protected MediaCardBackgroundHandler mBackgroundHandler;
+    private UILifecycleManager mLifeCycleMgr = new UILifecycleManager();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mServer = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
-        mVideoCursorAdapter = new CursorObjectAdapter(new CardPresenter(mServer, this));
+        PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
         mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
         mVideoCursorAdapter.setMapper(new VideoCursorMapper());
 
-        mBackgroundHandler = new MediaCardBackgroundHandler(getActivity());
-        setSearchResultProvider(this);
-        setOnItemViewClickedListener(this);
+        CardSelectionHandler selectionHandler = new CardSelectionHandler(this, server);
+        mLifeCycleMgr.put(CardSelectionHandler.key, selectionHandler);
 
-        ((HomeViewActivity) getActivity()).setPlayKeyListener(this);
-        setOnItemViewSelectedListener(this);
+        mVideoCursorAdapter = new CursorObjectAdapter(new CardPresenter(server, selectionHandler));
+        setSearchResultProvider(this);
+
         if (!hasPermission(Manifest.permission.RECORD_AUDIO)) {
             // SpeechRecognitionCallback is not required and if not provided recognition will be
             // handled using internal speech recognizer, in which case you must have RECORD_AUDIO
@@ -104,13 +86,14 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
     public void onStop() {
 
         super.onStop();
-        mBackgroundHandler.cancel();
+        mLifeCycleMgr.destroyed();
     }
 
     @Override
     public void onPause() {
         mHandler.removeCallbacksAndMessages(null);
         super.onPause();
+        mLifeCycleMgr.paused();
     }
 
     @Override
@@ -207,63 +190,5 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         mVideoCursorAdapter.changeCursor(null);
-    }
-
-    @Override
-    public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
-                              RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        Activity act = getActivity();
-        if (item instanceof Video) {
-            Video video = (Video) item;
-            if (video.category != null && (video.category.equals(Movie.TYPE) || video.category.equals(Episode.TYPE))) {
-
-                Intent intent = new Intent(act, PlaybackActivity.class);
-                intent.putExtra(PlaybackActivity.KEY, video.videoUrl);
-
-                Bundle bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                        act,
-                        mCurrentCardTransitionImage,
-                        PlaybackActivity.SHARED_ELEMENT_NAME).toBundle();
-
-                act.startActivity(intent, bundle);
-                act.finish();
-            }
-            else {
-
-                Intent intent = new Intent(act, DetailsActivity.class);
-                intent.putExtra(DetailsActivity.KEY, video.videoUrl);
-
-                Bundle bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                        act,
-                        mCurrentCardTransitionImage,
-                        DetailsActivity.SHARED_ELEMENT_NAME).toBundle();
-
-                act.startActivity(intent, bundle);
-                act.finish();
-            }
-        }
-    }
-
-    @Override
-    public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item,
-                               RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        if (item instanceof CardObject) {
-            mCurrentCard = (CardObject) item;
-            mCurrentCardTransitionImage = ((ImageCardView) itemViewHolder.view).getMainImageView();
-            mBackgroundHandler.updateBackgroundTimed(mServer, (CardObject) item);
-        }
-    }
-
-    @Override
-    public boolean playKeyPressed() {
-
-        return mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, mCurrentCardTransitionImage);
-    }
-
-    @Override
-    public boolean longClickOccured() {
-        return playKeyPressed();
     }
 }
