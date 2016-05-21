@@ -52,7 +52,7 @@ public abstract class FfmpegTrackRenderer extends SampleSourceTrackRenderer {
     private static final int REINITIALIZATION_STATE_SIGNAL_END_OF_STREAM = 1;
     private static final int REINITIALIZATION_STATE_WAIT_END_OF_STREAM = 2;
 
-    private static final int NUM_BUFFERS = 32;
+    private static final int NUM_BUFFERS = 16;
     private static final int INITIAL_INPUT_BUFFER_SIZE = 768 * 1024; // Value based on cs/SoftVpx.cpp.
 
     public final CodecCounters codecCounters;
@@ -267,6 +267,7 @@ public abstract class FfmpegTrackRenderer extends SampleSourceTrackRenderer {
             notifyDecoderError(new FfmpegDecoderException(e.getMessage()));
             throw new ExoPlaybackException(e);
         }
+
         codecCounters.ensureUpdated();
     }
 
@@ -407,9 +408,8 @@ public abstract class FfmpegTrackRenderer extends SampleSourceTrackRenderer {
             catch (FfmpegDecoderException e) {
                 throw new ExoPlaybackException(e.getMessage());
             }
-            if (inputBuffer == null) {
+            if (inputBuffer == null)
                 return false;
-            }
         }
 
         if (codecReinitializationState == REINITIALIZATION_STATE_SIGNAL_END_OF_STREAM) {
@@ -435,6 +435,8 @@ public abstract class FfmpegTrackRenderer extends SampleSourceTrackRenderer {
             sourceState = SOURCE_STATE_READY_READ_MAY_FAIL;
         }
         if (result == SampleSource.NOTHING_READ) {
+            flushCodec();
+            inputBuffer = null;
             return false;
         }
         if (result == SampleSource.FORMAT_READ) {
