@@ -182,7 +182,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
         @Override
         protected MediaContainer doInBackground(String... params) {
 
-            if (mServer == null)
+            if (mServer == null || params == null || params.length == 0 || params[0] == null)
                 return null;
             return mServer.getSectionArts(params[0]);
         }

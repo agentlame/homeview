@@ -109,9 +109,10 @@ public class PosterCard extends CardObject {
 
     @Override
     public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
-        return item.onClicked(fragment, extras, transitionView); }
+        return item != null && item.onClicked(fragment, extras, transitionView);
+    }
 
     public boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView) {
-        return item.onPlayPressed(fragment, extras, transitionView);
+        return item != null && item.onPlayPressed(fragment, extras, transitionView);
     }
 }

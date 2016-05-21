@@ -455,6 +455,9 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         @Override
         protected void onPostExecute(List<MediaContainer> list) {
 
+            if (list == null)
+                return;
+
             Activity act = getActivity();
             for (MediaContainer mc : list) {
 

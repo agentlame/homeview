@@ -439,9 +439,9 @@ public class ContainerGridFragment extends VerticalGridFragment
         @Override
         protected MediaContainer doInBackground(String... params) {
 
-            if (params != null)
-                return mServer.getSectionFilter(params[0], params[1]);
-            return null;
+            if (params == null || params.length == 0 || params[0] == null)
+                return null;
+            return mServer.getSectionFilter(params[0], params[1]);
         }
 
         @Override
@@ -456,12 +456,16 @@ public class ContainerGridFragment extends VerticalGridFragment
 
         @Override
         protected MediaContainer doInBackground(String... params) {
+            if (params == null || params.length == 0 || params[0] == null)
+                return null;
             return mServer.getVideoMetadata(params[0]);
         }
 
         @Override
         protected void onPostExecute(MediaContainer container) {
 
+            if (container == null)
+                return;
 
             TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
             text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);

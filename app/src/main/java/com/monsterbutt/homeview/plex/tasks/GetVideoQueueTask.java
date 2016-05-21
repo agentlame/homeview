@@ -40,7 +40,7 @@ public class GetVideoQueueTask extends PlexServerTask {
             final long BAD_RATING_KEY = 0;
             long keyCheck = BAD_RATING_KEY;
             MediaContainer mc = server.getVideoMetadata(metadataKey);
-            if (mc.getDirectories() != null) {
+            if (mc != null && mc.getDirectories() != null) {
 
                 String viewGroup = mc.getViewGroup();
                 if (viewGroup.equals(Season.TYPE)) {

@@ -150,7 +150,7 @@
     <string name="preferences_checked_true">On</string>
     <string name="preferences_checked_false">Off</string>
 
-    <string name="queue_name">Media Queue</string>
+    <string name="queue_name">Playlist</string>
 
     <string name="start_filter">All</string>
     <string name="chapter">Chapter</string>

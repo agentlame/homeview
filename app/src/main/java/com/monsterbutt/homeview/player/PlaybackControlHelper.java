@@ -22,6 +22,7 @@ import android.view.View;
 import com.monsterbutt.homeview.model.Video;
 import com.monsterbutt.homeview.presenters.PlaybackDetailsPresenter;
 import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
+import com.monsterbutt.homeview.ui.handler.VideoPlayerHandler;
 
 
 public class PlaybackControlHelper extends PlaybackControlGlue {
@@ -32,6 +33,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     private boolean mIsPlaying;
     private int mSpeed;
     private PlaybackFragment mFragment;
+    private VideoPlayerHandler mPlaybackHandler;
     private MediaController.TransportControls mTransportControls;
     private PlaybackControlsRow.FastForwardAction mFastForwardAction;
     private PlaybackControlsRow.RewindAction mRewindAction;
@@ -42,13 +44,15 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     private ProgressUpdateCallback mProgressCallback;
 
     public interface ProgressUpdateCallback {
-        void progressUpdate(long timeInMs);
+        void progressUpdate(int playbackState, long timeInMs);
     }
 
     public PlaybackControlHelper(Context context, PlaybackFragment fragment, Video video, ProgressUpdateCallback callback) {
 
         super(context, fragment, SEEK_SPEEDS);
         mFragment = fragment;
+        mPlaybackHandler = fragment.getPlaybackHandler();
+        fragment.setInputEventHandler(mPlaybackHandler);
         mVideo = video;
         mProgressCallback = callback;
 
@@ -127,11 +131,11 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
                     int currentTime = getCurrentPosition();
                     getControlsRow().setCurrentTime(currentTime);
 
-                    int progress = (int) mFragment.getBufferedPosition();
+                    int progress = (int) mPlaybackHandler.getBufferedPosition();
                     getControlsRow().setBufferedProgress(progress);
 
                     if (mProgressCallback != null)
-                        mProgressCallback.progressUpdate(currentTime);
+                        mProgressCallback.progressUpdate(mPlaybackHandler.getPlaybackState(), currentTime);
 
                     if (totalTime > 0 && totalTime <= currentTime) {
                         stopProgressAnimation();
@@ -167,7 +171,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
     @Override
     public int getMediaDuration() {
-        return (int) mFragment.getDuration();
+        return (int) mPlaybackHandler.getDuration();
     }
 
     @Override
@@ -188,7 +192,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
     @Override
     public int getCurrentPosition() {
-        return (int) mFragment.getCurrentPosition();
+        return (int) mPlaybackHandler.getCurrentPosition();
     }
 
     @Override

@@ -29,7 +29,6 @@ public class ServerLibraryTask extends PlexServerTask {
         MediaContainer hubs = server.getHubs();
         MediaContainer sections = null;
         MediaContainer arts = null;
-        List<MediaContainer> libDirs = new ArrayList<>();
         if (library != null) {
 
             for (Directory dir : library.getDirectories()) {

@@ -20,6 +20,10 @@ import java.util.List;
 
 public class Chapter extends PlexLibraryItem implements Parcelable {
 
+    public interface OnClickListenerHandler {
+        void chapterSelected(Chapter chapter);
+    }
+
     final us.nineworlds.plex.rest.model.impl.Chapter mChapter;
     final String key;
     final PlexVideoItem mVideo;

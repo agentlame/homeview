@@ -66,14 +66,15 @@ public class MediaRowCreator {
         List<MediaRow> rows = new ArrayList<>();
         if (sections != null)
             rows.add(new MediaRow(sections.getTitle1(), "sections", sections.getDirectories(), sections.getVideos()));
-        for (Hub hub : hubs.getHubs()) {
+        if (hubs != null) {
+            for (Hub hub : hubs.getHubs()) {
 
-            if ((hub.getVideos() == null  || hub.getVideos().isEmpty())
-                    && (hub.getDirectories() == null || hub.getDirectories().isEmpty()))
-                continue;
-            rows.add(new MediaRow(hub.getTitle(), hub.getHubIdentifier(), hub.getDirectories(), hub.getVideos()));
+                if ((hub.getVideos() == null || hub.getVideos().isEmpty())
+                        && (hub.getDirectories() == null || hub.getDirectories().isEmpty()))
+                    continue;
+                rows.add(new MediaRow(hub.getTitle(), hub.getHubIdentifier(), hub.getDirectories(), hub.getVideos()));
+            }
         }
-
         return rows;
     }
 

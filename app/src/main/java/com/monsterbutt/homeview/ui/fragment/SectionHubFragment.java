@@ -74,6 +74,8 @@ public class SectionHubFragment extends BrowseFragment  {
         @Override
         protected MediaContainer doInBackground(String... params) {
 
+            if (params == null || params.length == 0 || params[0] == null)
+                return null;
             return  mServer.getHubForSection(params[0]);
         }
 

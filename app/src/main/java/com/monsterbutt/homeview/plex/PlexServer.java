@@ -384,7 +384,7 @@ public class PlexServer {
             try {
 
                 MediaContainer sections = mFactory.retrieveSections();
-                if (sections.getDirectories() != null) {
+                if (sections != null && sections.getDirectories() != null) {
 
                     for (Directory section : sections.getDirectories()) {
 
@@ -424,7 +424,7 @@ public class PlexServer {
             try {
 
                 MediaContainer sections = mFactory.retrieveSections();
-                if (sections.getDirectories() != null) {
+                if (sections != null && sections.getDirectories() != null) {
 
                     for (Directory dir : sections.getDirectories()) {
 

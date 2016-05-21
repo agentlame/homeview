@@ -19,6 +19,7 @@ import android.widget.ImageView;
 
 import com.monsterbutt.homeview.model.Video;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.media.Chapter;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.Movie;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
@@ -50,36 +51,45 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
     private PlexServer mServer;
     private final Fragment mFragment;
     private final CardSelectionListener mCardListener;
-    private final CodecCard.OnClickListenerHandler mCodecClickListener;
+
+    private CodecCard.OnClickListenerHandler mCodecClickListener = null;
+    private final Chapter.OnClickListenerHandler mChapterClickListener;
     private final boolean mUpdateBackgroundOnCardChange;
 
     public CardSelectionHandler(Fragment fragment) {
-        this(fragment, null, null, null, null, null, true);
+        this(fragment, null, null, null,  null, null, null, true);
     }
 
     public CardSelectionHandler(Fragment fragment, PlexServer server) {
-        this(fragment, null, null, server, null, null, true);
+        this(fragment, null, null, null, server, null, null, true);
+    }
+
+    public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener,
+                                Chapter.OnClickListenerHandler chapterListener, PlexServer server) {
+        this(fragment, cardListener, null, chapterListener, server, null, null, false);
     }
 
     public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener, PlexServer server) {
-        this(fragment, cardListener, null, server, null, null, true);
+        this(fragment, cardListener, null, null, server, null, null, true);
     }
 
     public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener,
                                  CodecCard.OnClickListenerHandler codecListener, PlexServer server,
                                  PlexLibraryItem mainItem, ImageView mainItemImage) {
-        this(fragment, cardListener, codecListener, server, mainItem, mainItemImage, false);
+        this(fragment, cardListener, codecListener, null, server, mainItem, mainItemImage, false);
     }
 
     private CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener,
-                                CodecCard.OnClickListenerHandler codecListener, PlexServer server,
+                                CodecCard.OnClickListenerHandler codecListener,
+                                Chapter.OnClickListenerHandler chapterListener, PlexServer server,
                                 PlexLibraryItem mainItem, ImageView mainItemImage,
                                 boolean updateBackgroundOnCardChange) {
 
         super(fragment.getActivity());
         mUpdateBackgroundOnCardChange = updateBackgroundOnCardChange;
-        mCodecClickListener = codecListener;
+        setCodecClickListener(codecListener);
         mCardListener = cardListener;
+        mChapterClickListener = chapterListener;
         mServer = server;
         mMainItem = mainItem;
         mMainItemImage = mainItemImage;
@@ -104,6 +114,10 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
         Activity act = fragment.getActivity();
         if (act instanceof HomeViewActivity)
             ((HomeViewActivity) act).setPlayKeyListener(this);
+    }
+
+    public void setCodecClickListener(CodecCard.OnClickListenerHandler codecListener) {
+        mCodecClickListener = codecListener;
     }
 
     public void setServer(PlexServer server) {
@@ -134,6 +148,8 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
         Bundle extra = mCardListener != null ? mCardListener.getPlaySelectionBundle(currIsScene) : null;
         if (mCurrentCard == null)
             return mMainItem != null && mMainItem.onPlayPressed(mFragment, extra, mMainItemImage);
+        else if (mCurrentCard instanceof SceneCard && ((SceneCard) mCurrentCard).getItem() instanceof Chapter && mChapterClickListener != null)
+            mChapterClickListener.chapterSelected((Chapter) ((SceneCard)mCurrentCard).getItem());
         return mCurrentCard.onPlayPressed(mFragment, extra, mCurrentCardTransitionImage);
     }
 
@@ -145,7 +161,10 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
             if (item instanceof CardObject) {
                 synchronized (this) {
                     mCurrentCard = (CardObject) item;
-                    mCurrentCardTransitionImage = ((ImageCardView) itemViewHolder.view).getMainImageView();
+                    if (itemViewHolder.view instanceof ImageCardView)
+                        mCurrentCardTransitionImage = ((ImageCardView) itemViewHolder.view).getMainImageView();
+                    else
+                        mCurrentCardTransitionImage = null;
                     if (mUpdateBackgroundOnCardChange)
                         updateBackgroundTimed(mServer, (CardObject) item);
                 }
@@ -189,8 +208,12 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
             }
             else if (!(item instanceof CodecCard)) {
 
-                Bundle extra = mCardListener != null ? mCardListener.getPlaySelectionBundle(item instanceof SceneCard) : null;
-                ((CardObject) item).onClicked(mFragment, extra, mCurrentCardTransitionImage);
+                if (item instanceof SceneCard && ((SceneCard) item).getItem() instanceof Chapter && mChapterClickListener != null)
+                    mChapterClickListener.chapterSelected((Chapter) ((SceneCard)item).getItem());
+                else {
+                    Bundle extra = mCardListener != null ? mCardListener.getPlaySelectionBundle(item instanceof SceneCard) : null;
+                    ((CardObject) item).onClicked(mFragment, extra, mCurrentCardTransitionImage);
+                }
             }
             else if (mCodecClickListener != null)
                 ((CodecCard) item).onCardClicked(act, mServer, mCodecClickListener);

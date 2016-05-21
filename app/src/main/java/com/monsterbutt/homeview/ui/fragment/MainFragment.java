@@ -142,7 +142,8 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         ServerLibraryTask libraryTask = (ServerLibraryTask) task;
         MediaContainer library = libraryTask.getLibrary();
-        setTitle(library.getTitle1());
+        if (library != null)
+            setTitle(library.getTitle1());
 
         if (null == mSelectionHandler.getSelection()) {
 
