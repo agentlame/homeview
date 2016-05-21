@@ -41,10 +41,10 @@ public class PlaybackFragment
                 (ImageView) activity.findViewById(R.id.imageSubtitles),
                 (TextView) activity.findViewById(R.id.textSubtitles));
         mMediaSessionHandler = new MediaSessionHandler(this);
-        mCurrentVideoHandler = new CurrentVideoHandler(this, server, mPlayerHandler,
-                                                        mMediaSessionHandler, subtitleHandler);
+        mCurrentVideoHandler = new CurrentVideoHandler(this, server, mMediaSessionHandler, subtitleHandler);
         mPlayerHandler = new VideoPlayerHandler(this, server, mMediaSessionHandler,
                                                 mCurrentVideoHandler, subtitleHandler, videoFrame);
+        mCurrentVideoHandler.setHandler(mPlayerHandler);
         PlaybackUIHandler playbackUIHandler = new PlaybackUIHandler(this, server, mCurrentVideoHandler);
         mPlayerHandler.setUIHandler(playbackUIHandler);
         mMediaSessionHandler.attach(mPlayerHandler, mCurrentVideoHandler, playbackUIHandler);

@@ -24,6 +24,8 @@ import com.monsterbutt.homeview.player.ExtractorRendererBuilder;
 import com.monsterbutt.homeview.player.StartPosition;
 import com.monsterbutt.homeview.player.VideoPlayer;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.media.Episode;
+import com.monsterbutt.homeview.plex.media.Movie;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
@@ -328,13 +330,10 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
                 break;
             case ExoPlayer.STATE_ENDED:
                 mIsMetadataSet = false;
-                if (SettingsManager.getInstance(mActivity.getApplicationContext())
-                        .getBoolean("preferences_playback_playnext")) {
-
+                if (mCurrentVideoHandler.hasNext() && shouldPlayNext())
                     mActivity.getMediaController().getTransportControls().skipToNext();
-                }
                 else
-                    mActivity.onBackPressed();
+                    mActivity.finish();
                 break;
             case ExoPlayer.STATE_IDLE:
                 // Do nothing.
@@ -392,6 +391,15 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
     public ListRow getExtrasRowForVideo() { return mCurrentVideoHandler.getExtrasRowForVideo(); }
 
     public void setUIHandler(PlaybackUIHandler playbackUIHandler) { mPlaybackUIHandler = playbackUIHandler; }
+
+    private boolean shouldPlayNext() {
+
+        PlexVideoItem current = mCurrentVideoHandler.getVideo();
+        String playNext = SettingsManager.getInstance(mActivity.getApplicationContext()).getString("preferences_playback_playnext");
+        return (playNext.equals("always")
+            || (playNext.equals("shows") && current instanceof Episode)
+            || (playNext.equals("movies") && current instanceof Movie));
+    }
 
     private class GetFullInfo extends AsyncTask<String, Void, MediaContainer> {
 

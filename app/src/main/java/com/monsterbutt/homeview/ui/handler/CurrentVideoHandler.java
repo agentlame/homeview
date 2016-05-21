@@ -56,7 +56,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
     private PlexVideoItem mSelectedVideo = null; // Video is the currently playing Video and its metadata.
     private MediaTrackSelector mSelectedVideoTracks = null;
     private final MediaSessionHandler mSessionHandler;
-    private final VideoPlayerHandler mVideoHandler;
+    private VideoPlayerHandler mVideoHandler;
     private final SubtitleHandler mSubtitleHandler;
     private final CardSelectionHandler mSelectionHandler;
     private final HomeViewActivity mActivity;
@@ -64,12 +64,10 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
     private StartPosition mStartPosition;
 
     public CurrentVideoHandler(PlaybackFragment fragment, PlexServer server,
-                               VideoPlayerHandler videoHandler,
                                MediaSessionHandler sessionHandler,
                                SubtitleHandler subtitleHandler) {
 
         mActivity = (HomeViewActivity) fragment.getActivity();
-        mVideoHandler = videoHandler;
         mSessionHandler = sessionHandler;
         mSubtitleHandler = subtitleHandler;
         mSubtitleHandler.setHandler(this);
@@ -365,6 +363,17 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
 
             if (mSelectedVideo != null)
                 ret = mSelectedVideo.getChildren(mActivity, mServer, mSelectionHandler);
+        }
+        return ret;
+    }
+
+    public void setHandler(VideoPlayerHandler videoHandler) { mVideoHandler = videoHandler; }
+
+    public boolean hasNext() {
+
+        boolean ret;
+        synchronized (this) {
+            ret = mQueue != null && mQueueIndex >= 0 && mQueueIndex+1 < mQueue.size();
         }
         return ret;
     }
