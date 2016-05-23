@@ -16,6 +16,7 @@ package com.monsterbutt.homeview.ui.activity;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.content.Intent;
 import android.graphics.Color;
 import android.media.session.MediaSession;
 import android.os.Bundle;
@@ -38,7 +39,7 @@ public class PlaybackActivity extends HomeViewActivity {
     public static final String FILTER = "filter";
     public static final String SHARED_ELEMENT_NAME = "hero";
 
-    private NextUpView mNextUp;
+    private NextUpView mNextUp = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,6 +54,12 @@ public class PlaybackActivity extends HomeViewActivity {
     protected void onStop() {
         super.onStop();
         finish();
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
     }
 
     @Override

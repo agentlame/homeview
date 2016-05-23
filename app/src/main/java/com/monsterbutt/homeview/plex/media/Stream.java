@@ -360,7 +360,7 @@ public class Stream extends PlexLibraryItem implements Parcelable {
 
             switch(stream.getTrackType()) {
                 case Subtitle_Stream:
-                    return context.getDrawable(R.drawable.ic_subtitles_white_48dp);
+                    return context.getDrawable(R.drawable.ic_speaker_notes_white_48dp);
                 case Video_Stream:
                     return context.getDrawable(R.drawable.ic_video_label_white_48dp);
                 case Audio_Stream:

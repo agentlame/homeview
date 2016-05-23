@@ -6,6 +6,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadata;
 import android.media.session.MediaController;
+import android.os.Build;
 import android.os.Handler;
 import android.support.v17.leanback.app.PlaybackControlGlue;
 import android.support.v17.leanback.widget.Action;
@@ -14,11 +15,14 @@ import android.support.v17.leanback.widget.ControlButtonPresenterSelector;
 import android.support.v17.leanback.widget.OnActionClickedListener;
 import android.support.v17.leanback.widget.PlaybackControlsRow;
 import android.support.v17.leanback.widget.PlaybackControlsRowPresenter;
+import android.support.v17.leanback.widget.PresenterSelector;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.SparseArrayObjectAdapter;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 
+import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.model.Video;
 import com.monsterbutt.homeview.presenters.PlaybackDetailsPresenter;
 import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
@@ -43,6 +47,8 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     private Video mVideo = null;
     private ProgressUpdateCallback mProgressCallback;
 
+    private PIPAction mPIPAction;
+
     public interface ProgressUpdateCallback {
         void progressUpdate(int playbackState, long timeInMs);
     }
@@ -50,6 +56,8 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     public PlaybackControlHelper(Context context, PlaybackFragment fragment, Video video, ProgressUpdateCallback callback) {
 
         super(context, fragment, SEEK_SPEEDS);
+
+        mPIPAction = new PIPAction(context);
         mFragment = fragment;
         mPlaybackHandler = fragment.getPlaybackHandler();
         fragment.setInputEventHandler(mPlaybackHandler);
@@ -89,14 +97,16 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
         mFastForwardAction = (PlaybackControlsRow.FastForwardAction) getPrimaryActionsAdapter()
                 .lookup(ACTION_FAST_FORWARD);
-
         mRewindAction = (PlaybackControlsRow.RewindAction) getPrimaryActionsAdapter()
                 .lookup(ACTION_REWIND);
 
         presenter.setOnActionClickedListener(new OnActionClickedListener() {
             @Override
             public void onActionClicked(Action action) {
-                dispatchAction(action);
+                if (action == mPIPAction)
+                    ;//mFragment.getActivity().enterPictureInPictureMode();
+                else
+                    dispatchAction(action);
             }
         });
 
@@ -182,7 +192,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     @Override
     public long getSupportedActions() {
         return ACTION_PLAY_PAUSE | ACTION_FAST_FORWARD | ACTION_REWIND | ACTION_SKIP_TO_PREVIOUS |
-                ACTION_SKIP_TO_NEXT;
+                ACTION_SKIP_TO_NEXT | ACTION_CUSTOM_LEFT_FIRST ;
     }
 
     @Override
@@ -287,5 +297,25 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
     private ArrayObjectAdapter getSecondaryActionsAdapter() {
         return (ArrayObjectAdapter) getControlsRow().getSecondaryActionsAdapter();
+    }
+
+    @Override
+    protected SparseArrayObjectAdapter createPrimaryActionsAdapter(
+            PresenterSelector presenterSelector) {
+        SparseArrayObjectAdapter adapter = new SparseArrayObjectAdapter(presenterSelector);
+        if (Build.VERSION.SDK_INT > 23 || Build.VERSION.CODENAME.equals("N"))
+            adapter.set(PlaybackControlGlue.ACTION_CUSTOM_LEFT_FIRST, mPIPAction);
+
+        return adapter;
+    }
+
+    public static class PIPAction extends Action {
+
+        public PIPAction(Context context) {
+            super(R.id.lb_pip);
+            setIcon(context.getDrawable(R.drawable.ic_picture_in_picture_white_48dp));
+            setLabel1(context.getString(R.string.pip));
+            addKeyCode(KeyEvent.KEYCODE_TAB);
+        }
     }
 }

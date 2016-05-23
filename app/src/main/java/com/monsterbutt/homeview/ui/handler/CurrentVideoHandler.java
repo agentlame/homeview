@@ -62,6 +62,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
     private final HomeViewActivity mActivity;
     private final PlexServer mServer;
     private StartPosition mStartPosition;
+    private long mPassedVideoKey = 0;
 
     public CurrentVideoHandler(PlaybackFragment fragment, PlexServer server,
                                MediaSessionHandler sessionHandler,
@@ -80,6 +81,14 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
 
         Intent intent = mActivity.getIntent();
         PlexVideoItem intentVideo = intent.getParcelableExtra(PlaybackActivity.VIDEO);
+        if (intentVideo != null)
+            mPassedVideoKey = intentVideo.getRatingKey();
+        readPassedVideo(intent, intentVideo);
+    }
+
+    private void readPassedVideo(Intent intent, PlexVideoItem intentVideo) {
+
+        mSelectedVideo = intentVideo;
         mSelectedVideoTracks = intent.getParcelableExtra(PlaybackActivity.TRACKS);
         setVideo(intentVideo, mSubtitleHandler);
         mStartPosition = new StartPosition(mActivity, intent, mSelectedVideo != null ?
@@ -88,6 +97,16 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
         String key = mSelectedVideo != null ? mSelectedVideo.getKey() : intent.getStringExtra(PlaybackActivity.KEY);
         if (mSelectedVideo == null || mSelectedVideo.shouldDiscoverQueue())
             new GetVideoQueueTask(this, mServer).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, key);
+    }
+
+    public boolean checkPassedVideo() {
+
+        Intent intent = mActivity.getIntent();
+        PlexVideoItem intentVideo = intent.getParcelableExtra(PlaybackActivity.VIDEO);
+        boolean changed = mPassedVideoKey != intentVideo.getRatingKey();
+        if (changed)
+            readPassedVideo(intent, intentVideo);
+        return changed;
     }
 
     @Override

@@ -160,6 +160,8 @@
     <string name="Default">Default</string>
     <string name="skip_forward_seconds">30</string>
     <string name="skip_back_seconds">30</string>
+    <string name="jump_forward_seconds">300</string>
+    <string name="jump_backward_seconds">300</string>
 
     <string name="nextup_poster">NextUp Poster</string>
     <string name="nextup_comingup">Coming Up Next</string>
@@ -220,4 +222,8 @@
     <string name="upnprequestfail">There was a problem communicating with the UPnP device</string>
     <string name="upnpbaditem">Unsupported UPnP item type</string>
     <string name="upnpbadpath">Bad file path for item</string>
+
+    <string name="pip">PIP</string>
+    <string name="jump">Jump</string>
+
 </resources>

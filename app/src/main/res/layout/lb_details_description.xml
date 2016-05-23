@@ -60,14 +60,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitStart"
-                tools:src="@drawable/ic_subtitles_white_48dp" />
+                tools:src="@drawable/ic_speaker_notes_white_48dp" />
 
             <ImageView
                 android:id="@+id/lb_details_description_rating"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="fitEnd"
-                tools:src="@drawable/ic_subtitles_white_48dp" />
+                tools:src="@drawable/ic_speaker_notes_white_48dp" />
 
 
         </FrameLayout>

@@ -40,6 +40,7 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
                                             PlaybackOverlayFragment.InputEventHandler {
 
     private static final int CHOOSER_TIMEOUT = 15 * 1000;
+    private static final int DOUBLE_CLICK_TIMEOUT = 400;
 
     public static final String AUTO_PLAY = "auto_play";
     private static final Bundle mAutoPlayExtras = new Bundle();
@@ -57,8 +58,12 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
     private final AspectRatioFrameLayout mVideoFrame;
     private VideoPlayer mPlayer;
 
+    private long mLastRewind = 0;
+    private long mLastForward = 0;
+
     private Surface mCacheSurface = null;
 
+    private boolean mCheckForPIPChanged = false;
     private boolean mGuiShowing = false;
     private boolean mIsMetadataSet = false;
 
@@ -101,31 +106,50 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
 
     public boolean rewind() {
 
-        if (mPlayer.getDuration() != ExoPlayer.UNKNOWN_TIME) {
-            int prevState = getPlaybackState();
-            mMediaSessionHandler.setPlaybackState(PlaybackState.STATE_REWINDING);
-
-            long curr = mPlayer.getCurrentPosition();
-            if (curr > 0) {
-                long loc = curr -
-                        (Long.valueOf(mActivity.getString(R.string.skip_back_seconds)) * 1000);
-                if (loc < 0)
-                    loc = 0;
-                setPosition(loc);
-                mMediaSessionHandler.setPlaybackState(prevState);
-                return true;
-            }
-        }
-        return false;
+        long time = System.currentTimeMillis();
+        long offset = Long.valueOf(mActivity.getString(R.string.skip_back_seconds));
+        long diff = time - mLastRewind;
+        if (diff < DOUBLE_CLICK_TIMEOUT)
+            offset = Long.valueOf(mActivity.getString(R.string.jump_backward_seconds));
+        mLastRewind = time;
+        return seekOffset(-offset);
     }
 
     public boolean fastForward() {
 
-        if (mPlayer.getDuration() != ExoPlayer.UNKNOWN_TIME) {
-            int prevState = getPlaybackState();
-            mMediaSessionHandler.setPlaybackState(PlaybackState.STATE_FAST_FORWARDING);
-            long loc =  mPlayer.getCurrentPosition() +(Long.valueOf(mActivity.getString(R.string.skip_forward_seconds)) * 1000);
+        long time = System.currentTimeMillis();
+        long offset = Long.valueOf(mActivity.getString(R.string.skip_forward_seconds));
+        long diff = time - mLastForward;
+        if (diff < DOUBLE_CLICK_TIMEOUT)
+            offset = Long.valueOf(mActivity.getString(R.string.jump_forward_seconds));
+        mLastForward = time;
+        return seekOffset(offset);
+    }
 
+    public boolean seekOffset(long offsetInSeconds) {
+
+        long duration = mPlayer.getDuration();
+        if (duration != ExoPlayer.UNKNOWN_TIME) {
+
+            long offsetInMilli = offsetInSeconds * 1000;
+            int direction = offsetInSeconds > 0 ? PlaybackState.STATE_FAST_FORWARDING : PlaybackState.STATE_REWINDING;
+            long position = mPlayer.getCurrentPosition();
+            long remaining = duration - position;
+            // cap the seek to nothing less then skip forward
+            if (direction == PlaybackState.STATE_FAST_FORWARDING) {
+
+                long stop = Long.valueOf(mActivity.getString(R.string.skip_forward_seconds)) * 1000;
+                while (remaining < offsetInMilli) {
+
+                    offsetInMilli /= 2;
+                    if (offsetInMilli < stop)
+                        return false;
+                }
+            }
+
+            int prevState = getPlaybackState();
+            mMediaSessionHandler.setPlaybackState(direction);
+            long loc =  position + offsetInMilli;
             if (loc < mPlayer.getDuration()) {
                 setPosition(loc);
                 mMediaSessionHandler.setPlaybackState(prevState);
@@ -134,6 +158,7 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
         }
         return false;
     }
+
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
@@ -157,17 +182,25 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
         }
     }
 
+    public void pipModeChanged(boolean isInPictureInPictureMode) {
+
+        if (!isInPictureInPictureMode)
+            mCheckForPIPChanged = true;
+    }
+
     @Override
     public void onResume() {
 
+        boolean forcePlay = mCheckForPIPChanged && mCurrentVideoHandler.checkPassedVideo();
         PlexVideoItem video = mCurrentVideoHandler.getVideo();
-        if (mPlayer == null && video != null) {
+        if ((mPlayer == null || forcePlay) && video != null) {
 
             if (video.selectedHasMissingData())
                 new GetFullInfo().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, video.getKey());
             else
                 playVideo(video, mAutoPlayExtras);
         }
+        mCheckForPIPChanged = false;
     }
 
     @Override

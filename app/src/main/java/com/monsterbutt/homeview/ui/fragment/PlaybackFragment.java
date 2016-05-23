@@ -32,7 +32,6 @@ public class PlaybackFragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Set up UI.
         Activity activity = getActivity();
         setBackgroundType(BACKGROUND_TYPE);
         PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
@@ -75,7 +74,9 @@ public class PlaybackFragment
     @Override
     public void onPause() {
         super.onPause();
-        mPlayerHandler.onPause();
+
+       // if ((Build.VERSION.SDK_INT <= 23 && !Build.VERSION.CODENAME.equals("N")) || !getActivity().isInPictureInPictureMode())
+            mPlayerHandler.onPause();
     }
 
     public VideoPlayerHandler getPlaybackHandler() { return mPlayerHandler; }
@@ -106,4 +107,12 @@ public class PlaybackFragment
         }
         return false;
     }
+
+    /*@Override
+    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+
+        mPlayerHandler.pipModeChanged(isInPictureInPictureMode);
+        if (!isInPictureInPictureMode)
+            tickle();
+    }*/
 }

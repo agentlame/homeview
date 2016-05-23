@@ -98,7 +98,7 @@ public class CodecCard extends PosterCard {
 
                 title = stream.getLanguage();
                 subtitle = stream.isForced() ? context != null ? context.getString(R.string.Forced) : "Forced" : "";
-                iconA = new CodecIconHolder("", stream.getCodec(), context != null ? context.getDrawable(R.drawable.ic_subtitles_white_48dp) : null);
+                iconA = new CodecIconHolder("", stream.getCodec(), context != null ? context.getDrawable(R.drawable.ic_speaker_notes_white_48dp) : null);
                 iconB = null;
                 break;
 

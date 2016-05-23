@@ -18,7 +18,7 @@
         android:maxWidth="@dimen/codec_choice_image_maxwidth"
         android:contentDescription="@string/codeccard_image_desc"
         android:scaleType="centerInside"
-        tools:src="@drawable/ic_subtitles_white_48dp" />
+        tools:src="@drawable/ic_speaker_notes_white_48dp" />
 
     <TextView
         android:id="@+id/resumedesc"
