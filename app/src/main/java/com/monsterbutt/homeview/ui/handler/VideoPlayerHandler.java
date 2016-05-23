@@ -58,8 +58,8 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
     private final AspectRatioFrameLayout mVideoFrame;
     private VideoPlayer mPlayer;
 
-    private long mLastRewind = 0;
-    private long mLastForward = 0;
+    private long mLastRewind;
+    private long mLastForward;
 
     private Surface mCacheSurface = null;
 
@@ -184,6 +184,7 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
 
     public void pipModeChanged(boolean isInPictureInPictureMode) {
 
+        mServer.isPIPActive(isInPictureInPictureMode);
         if (!isInPictureInPictureMode)
             mCheckForPIPChanged = true;
     }
@@ -393,6 +394,8 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
 
     private void playVideo(PlexVideoItem video, Bundle extras) {
 
+        mLastRewind = 0;
+        mLastForward = video.getDuration();
         mCurrentVideoHandler.setVideo(video, mSubtitleHandler);
         if (video.shouldUpdateStatusOnPlayback())
             mCurrentVideoHandler.updateProgressTask();

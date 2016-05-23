@@ -93,7 +93,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         setAdapter(mRowsAdapter);
         mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
         mLifeCycleMgr.put(ServerStatusHandler.key, new ServerStatusHandler(this, this));
-        mLifeCycleMgr.put(ThemeHandler.key, new ThemeHandler(getActivity(), false, true));
+        mLifeCycleMgr.put(ThemeHandler.key, new ThemeHandler(getActivity(), mServer, false, true));
     }
 
     @Override

@@ -161,7 +161,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
     @Override
     public boolean hasValidMedia() {
-        return mVideo != null && !TextUtils.isEmpty(mVideo.title);
+        return true; // hack for missing control rows
     }
 
     @Override

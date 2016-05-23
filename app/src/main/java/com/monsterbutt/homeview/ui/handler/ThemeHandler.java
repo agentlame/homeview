@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.services.ThemeService;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 
@@ -15,12 +16,14 @@ public class ThemeHandler implements UILifecycleManager.LifecycleListener {
     private final Activity mActivity;
     private final boolean mIsViewForShow;
     private final boolean mStopThemeOnResume;
+    private final PlexServer mServer;
     private boolean mThemeAlreadyRun;
     private boolean mContinueTheme = false;
 
-    public ThemeHandler(Activity activity, boolean isViewForShow, boolean stopThemeOnResume) {
+    public ThemeHandler(Activity activity, PlexServer server, boolean isViewForShow, boolean stopThemeOnResume) {
 
         mActivity = activity;
+        mServer = server;
         Intent intent = activity.getIntent();
         mIsViewForShow = isViewForShow;
         mStopThemeOnResume = stopThemeOnResume;
@@ -59,7 +62,7 @@ public class ThemeHandler implements UILifecycleManager.LifecycleListener {
 
     public void startTheme(String themeKey) {
 
-        if (!mThemeAlreadyRun)
+        if (!mThemeAlreadyRun && !mServer.isPIPActive())
             mThemeAlreadyRun = ThemeService.startTheme(mActivity, themeKey);
     }
 }

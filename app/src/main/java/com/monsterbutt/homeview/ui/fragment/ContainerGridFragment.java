@@ -201,7 +201,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         if (!mUseScene)
             mLifeCycleMgr.put(WatchedStatusHandler.key, new WatchedStatusHandler(mServer, this));
 
-        mThemeHandler = new ThemeHandler(act, mUseScene, !mUseScene);
+        mThemeHandler = new ThemeHandler(act, mServer, mUseScene, !mUseScene);
         mLifeCycleMgr.put(ThemeHandler.key, mThemeHandler);
         mSelectionHandler = new CardSelectionHandler(this, this, mServer);
         mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);

@@ -39,6 +39,7 @@ public class PlexServer {
     private  String mServerName;
     private Configuration mConfiguration = new Configuration();
     private PlexappFactory mFactory = null;
+    private boolean mIsPIPActive = false;
 
     public PlexServer(Context context) {
 
@@ -506,5 +507,13 @@ public class PlexServer {
         if (!TextUtils.isEmpty(theme))
             theme = makeServerURL(theme);
         return theme;
+    }
+
+    public boolean isPIPActive() {
+        return mIsPIPActive;
+    }
+
+    public void isPIPActive(boolean active) {
+        mIsPIPActive = active;
     }
 }
