@@ -26,6 +26,7 @@ import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.CodecCard;
+import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.ui.activity.DetailsActivity;
 import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
@@ -137,8 +138,19 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
     }
 
     @Override
-    public boolean longClickOccured() {
-        return playKeyPressed();
+    public boolean longClickOccured(CardObject obj, CardPresenter.LongClickWatchStatusCallback callback) {
+
+        if (obj != null) {
+            if (obj instanceof SceneCard && ((SceneCard) obj).getItem() instanceof Chapter)
+                return playKeyPressed();
+            else if (obj instanceof PosterCard) {
+
+                boolean currIsScene = obj instanceof SceneCard;
+                Bundle extra = mCardListener != null ? mCardListener.getPlaySelectionBundle(currIsScene) : null;
+                return obj.onLongClicked(mServer, mFragment, extra,mCurrentCardTransitionImage, callback);
+            }
+        }
+        return false;
     }
 
     @Override

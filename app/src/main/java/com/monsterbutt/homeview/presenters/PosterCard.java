@@ -112,7 +112,14 @@ public class PosterCard extends CardObject {
         return item != null && item.onClicked(fragment, extras, transitionView);
     }
 
+    @Override
     public boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView) {
         return item != null && item.onPlayPressed(fragment, extras, transitionView);
+    }
+
+    @Override
+    public boolean onLongClicked(PlexServer server, Fragment fragment, Bundle extras,
+                                 View transitionView, CardPresenter.LongClickWatchStatusCallback callback) {
+        return item != null && item.onLongClicked(this, server, fragment, extras, transitionView, callback);
     }
 }

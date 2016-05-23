@@ -40,9 +40,13 @@ import com.monsterbutt.homeview.ui.android.ImageCardView;
  */
 public class CardPresenter extends Presenter {
 
+    public interface LongClickWatchStatusCallback {
+        void resetSelected(CardObject card);
+    }
+
     public interface CardPresenterLongClickListener {
 
-        boolean longClickOccured();
+        boolean longClickOccured(CardObject card, LongClickWatchStatusCallback callback);
     }
 
     private int mSelectedBackgroundColor = -1;
@@ -50,11 +54,17 @@ public class CardPresenter extends Presenter {
 
     final private PlexServer mPlex;
     final private CardPresenterLongClickListener mListener;
+    private LongClickWatchStatusCallback mLongClickWatchStatusCallback;
 
     public CardPresenter(PlexServer plex, CardPresenterLongClickListener listener) {
 
         mPlex = plex;
         mListener = listener;
+        mLongClickWatchStatusCallback = null;
+    }
+
+    public void setLongClickWatchStatusCallback(LongClickWatchStatusCallback longClickWatchStatusCallback) {
+        mLongClickWatchStatusCallback = longClickWatchStatusCallback;
     }
 
     @Override
@@ -94,13 +104,13 @@ public class CardPresenter extends Presenter {
     @Override
     public void onBindViewHolder(Presenter.ViewHolder viewHolder, Object item) {
 
-        CardObject obj = (CardObject) item;
+        final CardObject obj = (CardObject) item;
         final ImageCardView cardView = (ImageCardView) viewHolder.view;
         cardView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
 
-                return mListener != null && mListener.longClickOccured();
+                return mListener != null && mListener.longClickOccured(obj, mLongClickWatchStatusCallback);
             }
         });
         Context context = cardView.getContext();

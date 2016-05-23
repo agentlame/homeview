@@ -80,33 +80,38 @@ public class MediaRowCreator {
 
     public static  PlexItemRow fillAdapterForWatchedRow(Context context, PlexServer server, MediaRow row,
                                                         String title, int hash, boolean useLandscape,
+                                                        PlexItemRow.RefreshAllCallback callback,
                                                         CardPresenter.CardPresenterLongClickListener listener) {
-        return MediaRowCreator.fillAdapterForRow(context, server, row, title, hash, useLandscape, true, listener);
+        return MediaRowCreator.fillAdapterForRow(context, server, row, title, hash, useLandscape, true, callback, listener);
     }
 
     public static  PlexItemRow fillAdapterForWatchedRow(Context context, PlexServer server,
                                                         MediaRow row, boolean useLandscape,
+                                                        PlexItemRow.RefreshAllCallback callback,
                                                         CardPresenter.CardPresenterLongClickListener listener) {
-        return MediaRowCreator.fillAdapterForRow(context, server, row, row.title, row.title.hashCode(), useLandscape, true, listener);
+        return MediaRowCreator.fillAdapterForRow(context, server, row, row.title, row.title.hashCode(), useLandscape, true, callback, listener);
     }
 
     public static  PlexItemRow fillAdapterForRow(Context context, PlexServer server, MediaRow row,
-                                                 boolean useLandscape, CardPresenter.CardPresenterLongClickListener listener) {
-        return MediaRowCreator.fillAdapterForRow(context, server, row, row.title, row.title.hashCode(), useLandscape, false, listener);
+                                                 boolean useLandscape, PlexItemRow.RefreshAllCallback callback,
+                                                 CardPresenter.CardPresenterLongClickListener listener) {
+        return MediaRowCreator.fillAdapterForRow(context, server, row, row.title, row.title.hashCode(), useLandscape, false, callback, listener);
     }
 
     public static  PlexItemRow fillAdapterForRow(Context context, PlexServer server, MediaRow row,
                                                  String title, int hash, boolean useLandscape,
+                                                 PlexItemRow.RefreshAllCallback callback,
                                                  CardPresenter.CardPresenterLongClickListener listener) {
-        return MediaRowCreator.fillAdapterForRow(context, server, row, title, hash, useLandscape, false, listener);
+        return MediaRowCreator.fillAdapterForRow(context, server, row, title, hash, useLandscape, false, callback, listener);
     }
 
     private static  PlexItemRow fillAdapterForRow(Context context, PlexServer server, MediaRow row,
                                                  String title, int hash, boolean useLandscape,
-                                                 boolean watched, CardPresenter.CardPresenterLongClickListener listener) {
+                                                 boolean watched, PlexItemRow.RefreshAllCallback callback,
+                                                 CardPresenter.CardPresenterLongClickListener listener) {
 
-        PlexItemRow gridRow = watched ? PlexItemRow.getWatchedStateRow(server, title, hash, listener)
-                                      : PlexItemRow.getRow(server, title, hash, listener);
+        PlexItemRow gridRow = watched ? PlexItemRow.getWatchedStateRow(server, title, hash, callback, listener)
+                                      : PlexItemRow.getRow(server, title, hash, callback, listener);
 
         Iterator<Directory> itDirs = row.directories != null ? row.directories.iterator() : null;
         Directory currDir = null;

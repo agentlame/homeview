@@ -26,7 +26,7 @@ import java.util.Map;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 
-public class SectionHubFragment extends BrowseFragment  {
+public class SectionHubFragment extends BrowseFragment implements PlexItemRow.RefreshAllCallback {
 
     private PlexServer mServer;
 
@@ -67,6 +67,11 @@ public class SectionHubFragment extends BrowseFragment  {
 
         super.onPause();
         mLifeCycleMgr.paused();
+    }
+
+    @Override
+    public void refresh() {
+        mLifeCycleMgr.resumed();
     }
 
     private class LoadMetadataTask extends AsyncTask<String, Void, MediaContainer>  {
@@ -113,7 +118,7 @@ public class SectionHubFragment extends BrowseFragment  {
                 for (MediaRowCreator.MediaRow row : newRows) {
 
                     PlexItemRow rowUpdate = MediaRowCreator.fillAdapterForWatchedRow(getActivity(),
-                                                            mServer, row, false, mSelectionHandler);
+                                                            mServer, row, false, SectionHubFragment.this, mSelectionHandler);
                     if (mRows.containsKey(row.title)) {
 
                         MediaRowCreator.RowData current = mRows.get(row.title);

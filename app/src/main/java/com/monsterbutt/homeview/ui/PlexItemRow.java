@@ -20,7 +20,12 @@ import java.util.List;
 import java.util.Map;
 
 public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchStatusListener,
-                                                    UILifecycleManager.LifecycleListener {
+                                                    UILifecycleManager.LifecycleListener,
+                                                    CardPresenter.LongClickWatchStatusCallback {
+
+    public interface RefreshAllCallback {
+        void refresh();
+    }
 
     private class RowItem {
 
@@ -33,38 +38,43 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
         }
     }
 
-    Map<String, RowItem> map = new HashMap<>();
-    ArrayObjectAdapter adapter = null;
+    final Map<String, RowItem> map = new HashMap<>();
+    final ArrayObjectAdapter adapter;
+    final RefreshAllCallback mRefreshCallback;
 
     private WatchedStatusHandler watchedHandler = null;
 
-    public static PlexItemRow getRow(PlexServer server, String header, CardPresenter.CardPresenterLongClickListener listener) {
-
-        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server, listener)), false);
+    public static PlexItemRow getRow(PlexServer server, String header, RefreshAllCallback callback,
+                                     CardPresenter.CardPresenterLongClickListener listener) {
+        return new PlexItemRow(server, header, callback, listener, false);
     }
 
-    public static PlexItemRow getWatchedStateRow(PlexServer server, String header, CardPresenter.CardPresenterLongClickListener listener) {
-
-        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server, listener)), true);
+    public static PlexItemRow getWatchedStateRow(PlexServer server, String header, RefreshAllCallback callback,
+                                                 CardPresenter.CardPresenterLongClickListener listener) {
+        return new PlexItemRow(server, header, callback, listener, true);
     }
 
-    public static PlexItemRow getRow(PlexServer server, String header, int hash, CardPresenter.CardPresenterLongClickListener listener) {
-
-        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server, listener)), hash, false);
+    public static PlexItemRow getRow(PlexServer server, String header, int hash,
+                                     RefreshAllCallback callback, CardPresenter.CardPresenterLongClickListener listener) {
+        return new PlexItemRow(server, header, new CardPresenter(server, listener), callback, hash, false);
     }
 
-    public static PlexItemRow getWatchedStateRow(PlexServer server, String header, int hash, CardPresenter.CardPresenterLongClickListener listener) {
-
-        return new PlexItemRow(server, header, new ArrayObjectAdapter(new CardPresenter(server, listener)), hash, true);
+    public static PlexItemRow getWatchedStateRow(PlexServer server, String header, int hash, RefreshAllCallback callback,
+                                                 CardPresenter.CardPresenterLongClickListener listener) {
+        return new PlexItemRow(server, header, new CardPresenter(server, listener), callback, hash, true);
     }
 
-    private PlexItemRow(PlexServer server, String header, ArrayObjectAdapter adapter, boolean useWatchedState) {
-        this(server, header, adapter, 0, useWatchedState);
+    private PlexItemRow(PlexServer server, String header, RefreshAllCallback callback,
+                        CardPresenter.CardPresenterLongClickListener listener, boolean useWatchedState) {
+        this(server, header, new CardPresenter(server, listener), callback, 0, useWatchedState);
     }
 
-    private PlexItemRow(PlexServer server, String header, ArrayObjectAdapter adapter, int hash, boolean useWatchedState) {
-        super(new HeaderItem(hash, header),adapter);
-        this.adapter = adapter;
+    private PlexItemRow(PlexServer server, String header, CardPresenter presenter,
+                        RefreshAllCallback callback, int hash, boolean useWatchedState) {
+        super(new HeaderItem(hash, header), new ArrayObjectAdapter(presenter));
+        presenter.setLongClickWatchStatusCallback(this);
+        this.adapter = (ArrayObjectAdapter) getAdapter();
+        this.mRefreshCallback = callback;
         if (useWatchedState)
             watchedHandler = new WatchedStatusHandler(server, this);
     }
@@ -192,5 +202,19 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
             }
             map.put(key, ri);
         }
+    }
+
+    @Override
+    public void resetSelected(CardObject obj) {
+
+        if (obj != null) {
+
+            int index = adapter.indexOf(obj);
+            if (index != -1)
+                adapter.notifyArrayItemRangeChanged(index, 1);
+        }
+
+        if (mRefreshCallback != null)
+            mRefreshCallback.refresh();
     }
 }

@@ -10,6 +10,7 @@ import com.google.android.exoplayer.AspectRatioFrameLayout;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
+import com.monsterbutt.homeview.services.ThemeService;
 import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.handler.CurrentVideoHandler;
@@ -68,6 +69,8 @@ public class PlaybackFragment
     @Override
     public void onResume() {
         super.onResume();
+
+        ThemeService.stopTheme(getActivity());
         mPlayerHandler.onResume();
     }
 

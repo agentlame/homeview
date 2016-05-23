@@ -14,9 +14,7 @@
 
 package com.monsterbutt.homeview;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Point;
 import android.text.TextUtils;
 import android.view.Display;

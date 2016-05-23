@@ -55,7 +55,7 @@ import com.monsterbutt.homeview.ui.handler.ThemeHandler;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 public class MainFragment extends BrowseFragment implements PlexServerTaskCaller,
-                                                            ServerStatusHandler.ServerStatusListener {
+                                                            ServerStatusHandler.ServerStatusListener, PlexItemRow.RefreshAllCallback {
 
     private static final String SETTINGS_ROW_KEY = "Settings";
 
@@ -214,7 +214,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         existing.currentIndex = index;
         if (existing.data instanceof PlexItemRow)
             ((PlexItemRow)existing.data).updateRow(MediaRowCreator.fillAdapterForRow(getActivity(),
-                        mServer, row, useLandscape, mSelectionHandler));
+                        mServer, row, useLandscape, this, mSelectionHandler));
     }
 
     private void addMainRow(MediaRowCreator.MediaRow row, boolean useLandscape, int index) {
@@ -225,9 +225,9 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
             header = header.replace(sub, "").trim();
         PlexItemRow updateRow = index != 0 ?
                 MediaRowCreator.fillAdapterForWatchedRow(getActivity(), mServer, row, header, hash,
-                                                         useLandscape, mSelectionHandler)
+                                                         useLandscape, this, mSelectionHandler)
                 : MediaRowCreator.fillAdapterForRow(getActivity(), mServer, row, header, hash,
-                                                    useLandscape, mSelectionHandler);
+                                                    useLandscape, this, mSelectionHandler);
         if (index != mRows.size()) {
             for(MediaRowCreator.RowData oldRow : mRows.values()) {
                 if (oldRow.currentIndex >= index)
@@ -287,5 +287,10 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         for (String token : tokens)
             map.put(token, index++);
         return map;
+    }
+
+    @Override
+    public void refresh() {
+        mLifeCycleMgr.resumed();
     }
 }

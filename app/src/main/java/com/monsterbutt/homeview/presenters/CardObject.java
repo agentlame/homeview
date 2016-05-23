@@ -1,6 +1,5 @@
 package com.monsterbutt.homeview.presenters;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -78,5 +77,10 @@ public abstract class CardObject {
     }
 
     public void setUpdateStatus(WatchedStatusHandler.UpdateStatus updateStatus) {
+    }
+
+    public boolean onLongClicked(PlexServer server, Fragment fragment, Bundle extras,
+                                 View transitionView, CardPresenter.LongClickWatchStatusCallback callback) {
+        return onClicked(fragment, extras, transitionView);
     }
 }

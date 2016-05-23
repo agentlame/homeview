@@ -7,7 +7,7 @@ import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 
 public class VideoProgressTask {
 
-    private final VideoId       id;
+    private final SetProgressTask.VideoId id;
     private final long          startedLimitEnd;
     private final long          finishedLimitStart;
 
@@ -27,7 +27,7 @@ public class VideoProgressTask {
 
     private VideoProgressTask(PlexServer server, PlexVideoItem video) {
 
-        id = new VideoId(server, video.getKey(), Long.toString(video.getRatingKey()));
+        id = new SetProgressTask.VideoId(server, video.getKey(), Long.toString(video.getRatingKey()));
         long durationMs = video.getDurationMs();
         startedLimitEnd = MAX_START_LIMIT;
         finishedLimitStart = calculateFinishedLimit(durationMs);
@@ -57,49 +57,5 @@ public class VideoProgressTask {
         if ((durationMs - threshold) < MIN_WATCHED_LIMIT)
             threshold = Math.max(0, durationMs - MIN_WATCHED_LIMIT);
         return threshold;
-    }
-
-    private class VideoId {
-
-        public final PlexServer server;
-        public final String     key;
-        public final String     ratingKey;
-
-        public VideoId(PlexServer server, String key, String ratingKey) {
-
-            this.server = server;
-            this.key = key;
-            this.ratingKey = ratingKey;
-        }
-    }
-
-    private static class SetProgressTask extends  AsyncTask<Long, Void, Boolean> {
-
-        public static long UNWATCHED = 0;
-        public static long WATCHED = -1;
-
-        private final VideoId id;
-
-        public SetProgressTask(VideoId id) {
-            this.id = id;
-        }
-
-        @Override
-        protected Boolean doInBackground(Long[] params) {
-
-            if (params == null || params.length == 0)
-                return false;
-
-            boolean ret;
-            long progressMs = params[0];
-            if (progressMs == WATCHED)
-                ret = id.server.setWatched(id.key, id.ratingKey);
-            else if (progressMs == UNWATCHED)
-                ret = id.server.setUnwatched(id.key, id.ratingKey);
-            else
-                ret = id.server.setProgress(id.key, id.ratingKey, progressMs);
-
-            return ret;
-        }
     }
 }

@@ -181,6 +181,7 @@
     <string name="playback_start_dialog_resume">From last viewed position</string>
 
     <string name="track_dialog">Select a track for playback</string>
+    <string name="action_dialog">Available actions</string>
 
     <string name="about_title">About - Licenses"</string>
 
@@ -225,5 +226,10 @@
 
     <string name="pip">PIP</string>
     <string name="jump">Jump</string>
+
+    <string name="action_choice_play">Play</string>
+    <string name="action_choice_details">Details</string>
+    <string name="action_choice_setwatched">Set watched</string>
+    <string name="action_choice_setunwatched">Set unwatched</string>
 
 </resources>

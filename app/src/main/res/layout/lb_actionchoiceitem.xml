@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/resumechoice_row_height"
+    android:paddingStart="@dimen/codec_choice_text_padding"
+    android:paddingEnd="@dimen/codec_choice_text_padding" >
+
+    <ImageView
+        android:id="@+id/actionimage"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingTop="@dimen/codec_choice_image_padding"
+        android:paddingBottom="@dimen/codec_choice_image_padding"
+        android:minWidth="@dimen/codec_choice_image_minwidth"
+        android:maxWidth="@dimen/codec_choice_image_maxwidth"
+        android:contentDescription="@string/codeccard_image_desc"
+        android:scaleType="centerInside"
+        tools:src="@drawable/ic_speaker_notes_white_48dp" />
+
+    <TextView
+        android:id="@+id/actiontext"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        tools:text="Codec information goes here with stuff"/>
+
+</LinearLayout>

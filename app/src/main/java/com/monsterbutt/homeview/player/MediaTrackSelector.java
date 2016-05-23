@@ -138,7 +138,7 @@ public class MediaTrackSelector implements Parcelable {
         private final PlexServer server;
 
         public StreamChoiceArrayAdapter(Context context, PlexServer server, List<Stream.StreamChoice> values) {
-            super(context, R.layout.lb_aboutitem, values);
+            super(context, R.layout.lb_streamchoiceitem, values);
             this.context = context;
             this.values = values;
             this.server = server;
