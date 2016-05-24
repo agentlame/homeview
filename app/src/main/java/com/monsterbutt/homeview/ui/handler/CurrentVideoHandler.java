@@ -128,8 +128,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
                     first = v;
 
                 // Set the queue index to the selected video.
-                if ( mSelectedVideo == null && v.shouldPlaybackFirst()) {
-
+                if (v.shouldPlaybackFirst()) {
                     if (mSelectedVideo == null)
                         setVideo(v, mSubtitleHandler);
                     mQueueIndex = mQueue.size();
