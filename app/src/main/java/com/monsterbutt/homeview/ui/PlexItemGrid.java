@@ -5,6 +5,7 @@ import android.support.v17.leanback.widget.ArrayObjectAdapter;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
+import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
@@ -18,7 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
-                                     UILifecycleManager.LifecycleListener {
+                                     UILifecycleManager.LifecycleListener,
+                                     CardPresenter.LongClickWatchStatusCallback {
 
     public enum ItemSort {
 
@@ -59,7 +61,10 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
     }
 
     private PlexItemGrid(PlexServer server, boolean useWatchedState, CardPresenter.CardPresenterLongClickListener listener) {
-        this.adapter = new ArrayObjectAdapter(new CardPresenter(server, listener));
+
+        CardPresenter presenter = new CardPresenter(server, listener);
+        presenter.setLongClickWatchStatusCallback(this);
+        this.adapter = new ArrayObjectAdapter(presenter);
         if (useWatchedState)
             watchedHandler = new WatchedStatusHandler(server, this);
     }
@@ -158,6 +163,16 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
             GridItem item = map.get(update.key);
             item.item.setStatus(update);
             adapter.notifyArrayItemRangeChanged(item.index, 1);
+        }
+    }
+
+    @Override
+    public void resetSelected(CardObject card) {
+        if (card != null) {
+
+            int index = adapter.indexOf(card);
+            if (index != -1)
+                adapter.notifyArrayItemRangeChanged(index, 1);
         }
     }
 
