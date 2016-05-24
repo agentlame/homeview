@@ -208,7 +208,6 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
             Toast.makeText(fragment.getActivity(), fragment.getString(R.string.upnpbaditem), Toast.LENGTH_LONG).show();
             return false;
         }
-
         if (TextUtils.isEmpty(mFilePath)) {
             Toast.makeText(fragment.getActivity(), fragment.getString(R.string.upnpbadpath), Toast.LENGTH_LONG).show();
             return false;
@@ -218,7 +217,6 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
         intent.putExtra(PlaybackActivity.VIDEO, this);
         if (extras != null)
             intent.putExtras(extras);
-
         Bundle bundle = null;
         if (transitionView != null) {
 

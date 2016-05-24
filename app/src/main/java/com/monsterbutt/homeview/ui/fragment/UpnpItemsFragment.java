@@ -9,11 +9,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v17.leanback.app.VerticalGridFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
-import android.support.v17.leanback.widget.OnItemViewClickedListener;
-import android.support.v17.leanback.widget.OnItemViewSelectedListener;
-import android.support.v17.leanback.widget.Presenter;
-import android.support.v17.leanback.widget.Row;
-import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.VerticalGridPresenter;
 import android.text.TextUtils;
 import android.view.View;
@@ -27,8 +22,7 @@ import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.UpnpCardPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.services.UpnpService;
-import com.monsterbutt.homeview.ui.android.HomeViewActivity;
-import com.monsterbutt.homeview.ui.android.ImageCardView;
+import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 
 import org.fourthline.cling.android.AndroidUpnpService;
 import org.fourthline.cling.model.action.ActionInvocation;
@@ -41,9 +35,10 @@ import org.fourthline.cling.support.model.DIDLContent;
 import org.fourthline.cling.support.model.container.Container;
 import org.fourthline.cling.support.model.item.Item;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class UpnpItemsFragment extends VerticalGridFragment implements OnItemViewSelectedListener, OnItemViewClickedListener, HomeViewActivity.OnPlayKeyListener, UpnpCardPresenter.UpnpCardPresenterLongClickListener {
+public class UpnpItemsFragment extends VerticalGridFragment implements CardSelectionHandler.CardSelectionListener {
 
     public static final String SHARED_ELEMENT_NAME = "SHARED";
     public static final String DEVICE_ID = "deviceID";
@@ -58,11 +53,10 @@ public class UpnpItemsFragment extends VerticalGridFragment implements OnItemVie
     private AndroidUpnpService upnpService;
 
     private String mPathId = "";
-    private String mPathName = "";
     private String mDeviceId = "";
     private Device mDevice = null;
-    private View mCurrentCardTransitionImage = null;
-    private CardObject mCurrentCard = null;
+    private String mPathName = "";
+    private CardSelectionHandler mSelectionHandler;
 
     private boolean transitioned = false;
 
@@ -70,11 +64,8 @@ public class UpnpItemsFragment extends VerticalGridFragment implements OnItemVie
 
         public void onServiceConnected(ComponentName className, IBinder service) {
             upnpService = (AndroidUpnpService) service;
-
-            // Clear the list
             adapter.clear();
 
-            // Now add all devices to the list we already know about
             for (Device device : upnpService.getRegistry().getDevices()) {
 
                 if (device.getIdentity().getUdn().getIdentifierString().equals(mDeviceId)) {
@@ -83,7 +74,6 @@ public class UpnpItemsFragment extends VerticalGridFragment implements OnItemVie
                     break;
                 }
             }
-
             if (mDevice != null && mDevice.getType().getType().equals("MediaServer")) {
                 for (Service remoteservice : mDevice.getServices()) {
                     if (remoteservice.getServiceType().getType().equals("ContentDirectory")) {
@@ -99,7 +89,6 @@ public class UpnpItemsFragment extends VerticalGridFragment implements OnItemVie
             upnpService = null;
         }
     };
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -119,16 +108,14 @@ public class UpnpItemsFragment extends VerticalGridFragment implements OnItemVie
             mPathName = ROOT_PATH_NAME;
 
         setTitle(mPathName);
-
+        mSelectionHandler = new CardSelectionHandler(this, this);
         VerticalGridPresenter gridPresenter = new VerticalGridPresenter();
         String colCount = act.getString(R.string.gridview_poster_columns);
 
         gridPresenter.setNumberOfColumns(Integer.valueOf(colCount));
         setGridPresenter(gridPresenter);
-        setOnItemViewSelectedListener(this);
-        setOnItemViewClickedListener(this);
 
-        adapter = new ArrayObjectAdapter(new UpnpCardPresenter(this));
+        adapter = new ArrayObjectAdapter(new UpnpCardPresenter());
         setAdapter(adapter);
 
         // This will start the UPnP service if it wasn't already started
@@ -144,45 +131,16 @@ public class UpnpItemsFragment extends VerticalGridFragment implements OnItemVie
         super.onResume();
         TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
         text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
-        ((HomeViewActivity) getActivity()).setPlayKeyListener(this);
     }
 
     @Override
-    public boolean longClickOccured() {
-        return playKeyPressed();
-    }
+    public Bundle getPlaySelectionBundle(boolean cardWasScene) {
 
-    @Override
-    public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        if (item instanceof CardObject) {
-
-            mCurrentCard = (CardObject) item;
-            mCurrentCardTransitionImage = ((ImageCardView) itemViewHolder.view).getMainImageView();
-        }
-        else {
-            mCurrentCard = null;
-            mCurrentCardTransitionImage = null;
-        }
-    }
-
-    @Override
-    public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        if (item instanceof CardObject)
-            playKeyPressed();
-    }
-
-    @Override
-    public boolean playKeyPressed() {
-
-        if (mCurrentCard != null) {
-            Bundle extras = new Bundle();
-            extras.putString(PATH_NAME, String.format("%s/%s", !mPathName.equals(ROOT_PATH_NAME) ? mPathName : "", mCurrentCard.getTitle()));
-            extras.putString(DEVICE_ID, mDevice.getIdentity().getUdn().getIdentifierString());
-            return mCurrentCard.onPlayPressed(this, extras, mCurrentCardTransitionImage);
-        }
-        return false;
+        Bundle extras = new Bundle();
+        extras.putString(PATH_NAME, String.format("%s/%s", !mPathName.equals(ROOT_PATH_NAME) ? mPathName : "",
+                                                    mSelectionHandler.getSelection().getTitle()));
+        extras.putString(DEVICE_ID, mDevice.getIdentity().getUdn().getIdentifierString());
+        return extras;
     }
 
     private class BrowseCallback extends Browse {
@@ -194,20 +152,22 @@ public class UpnpItemsFragment extends VerticalGridFragment implements OnItemVie
         @Override
         public void received(ActionInvocation actionInvocation, DIDLContent didl) {
 
+            adapter.clear();
+            List<CardObject> list = new ArrayList<>();
             Activity act = getActivity();
             List<Container> containers = didl.getContainers();
             if (containers != null && !containers.isEmpty()) {
 
                 for(Container container : containers)
-                    adapter.add(new PosterCard(act, new UpnpContainer(container)));
+                    list.add(new PosterCard(act, new UpnpContainer(container)));
             }
-
             List<Item> items = didl.getItems();
             if (items != null && !items.isEmpty()) {
 
                 for (Item item : items)
-                    adapter.add(new PosterCard(act, new UpnpItem(item)));
+                    list.add(new PosterCard(act, new UpnpItem(item)));
             }
+            adapter.addAll(0, list);
 
             synchronized (UpnpItemsFragment.this) {
                 if (!transitioned) {

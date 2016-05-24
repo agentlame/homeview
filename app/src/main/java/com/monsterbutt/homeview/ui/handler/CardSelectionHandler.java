@@ -61,6 +61,10 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
         this(fragment, null, null, null,  null, null, null, true);
     }
 
+    public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener) {
+        this(fragment, cardListener, null, null,  null, null, null, true);
+    }
+
     public CardSelectionHandler(Fragment fragment, PlexServer server) {
         this(fragment, null, null, null, server, null, null, true);
     }

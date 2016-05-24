@@ -1,6 +1,9 @@
 package com.monsterbutt.homeview.ui.fragment;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -11,17 +14,18 @@ import android.support.v17.leanback.widget.TitleView;
 import android.support.v17.leanback.widget.VerticalGridPresenter;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.ui.PlexItemGrid;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
-import com.monsterbutt.homeview.ui.activity.FilterChoiceActivity;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 import com.monsterbutt.homeview.R;
@@ -45,9 +49,6 @@ import us.nineworlds.plex.rest.model.impl.Video;
 public class ContainerGridFragment extends VerticalGridFragment
         implements  WatchedStatusHandler.WatchStatusListener, CardSelectionHandler.CardSelectionListener {
 
-    private static final int RESULT_FILTER = 1;
-    private static final int RESULT_SORT = 2;
-
     private PlexServer mServer = null;
     private MediaContainer mContainer = null;
     private boolean mUseScene = false;
@@ -56,11 +57,8 @@ public class ContainerGridFragment extends VerticalGridFragment
 
     private final SectionFilter mAllFilter = new SectionFilter("All", PlexContainerItem.ALL);
 
-    private ArrayList<SectionFilter> mFilters = new ArrayList<>();
-    private ArrayList<SectionSort> mSorts = new ArrayList<>();
-    private SectionFilter mCurrentFilter = null;
-    private SectionSort mCurrentSort = null;
-
+    private SectionFilterArrayAdapter mFilters;
+    private SectionFilterArrayAdapter mSorts;
 
     private UILifecycleManager mLifeCycleMgr = new UILifecycleManager();
     private CardSelectionHandler mSelectionHandler;
@@ -187,13 +185,14 @@ public class ContainerGridFragment extends VerticalGridFragment
             prepareEntranceTransition();
 
         Activity act = getActivity();
-        mSorts.add(new SectionSort(act.getString(R.string.sort_DateAdded), PlexItemGrid.ItemSort.DateAdded));
-        mSorts.add(new SectionSort(act.getString(R.string.sort_Duration), PlexItemGrid.ItemSort.Duration));
-        mSorts.add(new SectionSort(act.getString(R.string.sort_LastViewed), PlexItemGrid.ItemSort.LastViewed));
-        mSorts.add(new SectionSort(act.getString(R.string.sort_Rating), PlexItemGrid.ItemSort.Rating));
-        mSorts.add(new SectionSort(act.getString(R.string.sort_ReleaseDate), PlexItemGrid.ItemSort.ReleaseDate));
-        mSorts.add(new SectionSort(act.getString(R.string.sort_Title), PlexItemGrid.ItemSort.Title));
-        mCurrentSort = mSorts.get(mSorts.size()-1);
+        List<SectionFilter> list = new ArrayList<>();
+        list.add(new SectionSort(act.getString(R.string.sort_DateAdded), PlexItemGrid.ItemSort.DateAdded));
+        list.add(new SectionSort(act.getString(R.string.sort_Duration), PlexItemGrid.ItemSort.Duration));
+        list.add(new SectionSort(act.getString(R.string.sort_LastViewed), PlexItemGrid.ItemSort.LastViewed));
+        list.add(new SectionSort(act.getString(R.string.sort_Rating), PlexItemGrid.ItemSort.Rating));
+        list.add(new SectionSort(act.getString(R.string.sort_ReleaseDate), PlexItemGrid.ItemSort.ReleaseDate));
+        list.add(new SectionSort(act.getString(R.string.sort_Title), PlexItemGrid.ItemSort.Title));
+        mSorts = new SectionFilterArrayAdapter(act, list, list.get(list.size()-1));
 
 
         mServer = PlexServerManager.getInstance(act.getApplicationContext()).getSelectedServer();
@@ -232,12 +231,12 @@ public class ContainerGridFragment extends VerticalGridFragment
         mLifeCycleMgr.paused();
     }
 
-    private void updateAdapter(MediaContainer container) {
+    private List<ContainerActivity.QuickJumpRow> updateAdapter(MediaContainer container) {
 
         if (mServer == null) {
 
-            setAdapter(null);
-            return;
+            mGrid = null;
+            return null;
         }
 
         List<ContainerActivity.QuickJumpRow> quickjumpList = new ArrayList<>();
@@ -307,25 +306,7 @@ public class ContainerGridFragment extends VerticalGridFragment
                 }
             }
         }
-
-        if (!mUseScene)
-            ((ContainerActivity) getActivity()).setQuickJumpList(quickjumpList);
-        setAdapter(mGrid.getAdapter());
-        setSelectedPosition(0);
-        startEntranceTransition();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        Intent intent = new Intent(getActivity(), PlaybackActivity.class);
-        String key = getActivity().getIntent().getStringExtra(ContainerActivity.KEY);
-        intent.putExtra(PlaybackActivity.KEY, key);
-        if (mCurrentFilter != null)
-            intent.putExtra(PlaybackActivity.FILTER, mCurrentFilter.key);
-        startActivity(intent);
-
-      return true;
+        return quickjumpList;
     }
 
     public void hubButtonClicked() {
@@ -338,21 +319,50 @@ public class ContainerGridFragment extends VerticalGridFragment
 
     public void filterButtonClicked() {
 
-        Intent intent = new Intent(getActivity(), FilterChoiceActivity.class);
-        intent.putParcelableArrayListExtra(FilterChoiceActivity.FILTERS, mFilters);
-        intent.putExtra(FilterChoiceActivity.CURRENT_INDEX, mFilters.indexOf(mCurrentFilter));
-        intent.putExtra(FilterChoiceActivity.TITLE, mContainer.getLibrarySectionTitle());
-        startActivityForResult(intent, RESULT_FILTER);
+        new AlertDialog.Builder(getActivity(), R.style.AlertDialogStyle)
+                .setIcon(R.drawable.launcher)
+                .setTitle(R.string.filter_title)
+                .setAdapter(mFilters, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        SectionFilter selected = mFilters.selected(which);
+                        mFilterText.setText(selected.name);
+                        new LoadSectionFilterTask().execute(mContainer.getLibrarySectionID(), selected.key);
+                        dialog.dismiss();
+                    }
+                })
+                .create()
+                .show();
     }
 
     public void sortButtonClicked() {
 
-        Intent intent = new Intent(getActivity(), FilterChoiceActivity.class);
-        intent.putParcelableArrayListExtra(FilterChoiceActivity.FILTERS, mSorts);
-        intent.putExtra(FilterChoiceActivity.CURRENT_INDEX, mSorts.indexOf(mCurrentSort));
-        intent.putExtra(FilterChoiceActivity.TITLE, mContainer.getLibrarySectionTitle());
-        intent.putExtra(FilterChoiceActivity.SORT, true);
-        startActivityForResult(intent, RESULT_SORT);
+        new AlertDialog.Builder(getActivity(), R.style.AlertDialogStyle)
+                .setIcon(R.drawable.launcher)
+                .setTitle(R.string.sort_title)
+                .setAdapter(mSorts, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        SectionSort oldSelected = (SectionSort) mSorts.selected();
+                        boolean isAscending = oldSelected.isAscending;
+                        PlexItemGrid.ItemSort lastSort = oldSelected.id;
+                        SectionSort selected = (SectionSort) mSorts.selected(which);
+                        ((ContainerActivity)getActivity()).setQuickListVisible(selected.id == PlexItemGrid.ItemSort.Title);
+                        if (lastSort == selected.id) {
+
+                            isAscending = !isAscending;
+                            selected.isAscending = isAscending;
+                        }
+
+                        mSortText.setText(selected.name);
+                        mGrid.sort(getActivity(), selected.id, isAscending);
+                        dialog.dismiss();
+                    }
+                })
+                .create()
+                .show();
     }
 
     @Override
@@ -386,7 +396,7 @@ public class ContainerGridFragment extends VerticalGridFragment
             }
         });
         mSortText = (TextView) view.findViewById(R.id.sortText);
-        mSortText.setText(mCurrentSort.name);
+        mSortText.setText(mSorts.selected().name);
 
         if (mUseScene) {
 
@@ -403,111 +413,131 @@ public class ContainerGridFragment extends VerticalGridFragment
         return mThemeHandler.getPlaySelectionBundle(null);
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        if (resultCode != FilterChoiceActivity.CANCEL) {
-            switch (requestCode) {
-
-                case RESULT_FILTER:
-                    mCurrentFilter = mFilters.get(resultCode);
-                    mFilterText.setText(mCurrentFilter.name);
-                    new LoadSectionFilterTask().execute(mContainer.getLibrarySectionID(), mCurrentFilter.key);
-                    break;
-                case RESULT_SORT:
-                    boolean isAscending = mCurrentSort.isAscending;
-                    PlexItemGrid.ItemSort lastSort = mCurrentSort.id;
-                    mCurrentSort = mSorts.get(resultCode);
-                    ((ContainerActivity)getActivity()).setQuickListVisible(mCurrentSort.id == PlexItemGrid.ItemSort.Title);
-                    if (lastSort == mCurrentSort.id) {
-
-                        isAscending = !isAscending;
-                        mCurrentSort.isAscending = isAscending;
-                    }
-
-                    mSortText.setText(mCurrentSort.name);
-                    mGrid.sort(getActivity(), mCurrentSort.id, isAscending);
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    private class LoadSectionFilterTask extends AsyncTask<String, Void, MediaContainer> {
+    private class LoadSectionFilterTask extends AsyncTask<String, Void, List<ContainerActivity.QuickJumpRow>> {
 
         @Override
-        protected MediaContainer doInBackground(String... params) {
+        protected List<ContainerActivity.QuickJumpRow> doInBackground(String... params) {
 
             if (params == null || params.length == 0 || params[0] == null)
                 return null;
-            return mServer.getSectionFilter(params[0], params[1]);
+            return updateAdapter(mServer.getSectionFilter(params[0], params[1]));
         }
 
         @Override
-        protected void onPostExecute(MediaContainer container) {
+        protected void onPostExecute(List<ContainerActivity.QuickJumpRow> quickjumpList) {
 
-            mFilterText.setText(mCurrentFilter.name);
-            updateAdapter(container);
+            if (mFilters.selected() != null)
+               mFilterText.setText(mFilters.selected().name);
+            if (!mUseScene)
+                ((ContainerActivity) getActivity()).setQuickJumpList(quickjumpList);
+            setAdapter(mGrid != null ? mGrid.getAdapter() : null);
+            setSelectedPosition(0);
+            startEntranceTransition();
         }
     }
 
-    private class GetContainerTask extends AsyncTask<String, Void, MediaContainer> {
+    private class GetContainerTask extends AsyncTask<String, Void, Void> {
 
         @Override
-        protected MediaContainer doInBackground(String... params) {
+        protected Void doInBackground(String... params) {
             if (params == null || params.length == 0 || params[0] == null)
                 return null;
-            return mServer.getVideoMetadata(params[0]);
-        }
 
-        @Override
-        protected void onPostExecute(MediaContainer container) {
+            mContainer = mServer.getVideoMetadata(params[0]);
+            if (mContainer.getDirectories() != null && !mContainer.getDirectories().isEmpty()) {
 
-            if (container == null)
-                return;
-
-            TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
-            text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
-            if (mUseScene) {
-                setTitle(String.format("%s %s %s",
-                                container.getTitle1(),
-                                getString(R.string.mid_dot),
-                                container.getTitle2()));
-            }
-            else
-                setTitle(container.getTitle1());
-            mCurrentFilter = null;
-            mFilters.clear();
-            mContainer = container;
-            if (container.getDirectories() != null && !container.getDirectories().isEmpty()) {
-
-                for(Directory dir : container.getDirectories()) {
+                SectionFilter current = null;
+                List<SectionFilter> filters = new ArrayList<>();
+                for(Directory dir : mContainer.getDirectories()) {
 
                     if (dir.getSecondary() > 0 || (dir.getPrompt() != null && !dir.getPrompt().isEmpty()))
                         continue;
 
                     SectionFilter filter = new SectionFilter(dir.getTitle(), dir.getKey());
                     if (filter.key.equals(PlexContainerItem.ALL)) {
-                        filter.name = filter.name.replace(container.getTitle1(), "").trim();
-                        mCurrentFilter = filter;
+                        filter.name = filter.name.replace(mContainer.getTitle1(), "").trim();
+                        current = filter;
                     }
-                    mFilters.add(filter);
+                    filters.add(filter);
                 }
 
-                if (mCurrentFilter == null)
-                    mCurrentFilter = mAllFilter;
-                new LoadSectionFilterTask().execute(container.getLibrarySectionID(), mCurrentFilter.key);
+                if (current == null)
+                    current = mAllFilter;
+                mFilters = new SectionFilterArrayAdapter(getActivity(), filters, current);
             }
+            else
+                updateAdapter(mContainer);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void param) {
+
+            if (mContainer == null)
+                return;
+
+            TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
+            text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
+            if (mUseScene) {
+                setTitle(String.format("%s %s %s",
+                        mContainer.getTitle1(),
+                                getString(R.string.mid_dot),
+                        mContainer.getTitle2()));
+            }
+            else
+                setTitle(mContainer.getTitle1());
+
+            if (mContainer.getDirectories() != null && !mContainer.getDirectories().isEmpty())
+                new LoadSectionFilterTask().execute(mContainer.getLibrarySectionID(), mFilters.selected().key);
             else {
 
-                String art = container.getArt();
+                String art = mContainer.getArt();
                 if (art != null && !art.isEmpty())
                     mSelectionHandler.updateBackground(mServer.makeServerURL(art), true);
-                updateAdapter(container);
+                setAdapter(mGrid != null ? mGrid.getAdapter() : null);
+                setSelectedPosition(0);
+                startEntranceTransition();
             }
 
             mThemeHandler.startTheme(mServer.getThemeURL(mContainer));
+        }
+    }
+
+    private static class SectionFilterArrayAdapter extends ArrayAdapter<SectionFilter> {
+
+        private final List<SectionFilter> values;
+        private final Context context;
+        private SectionFilter selected;
+
+        public SectionFilterArrayAdapter(Context context, List<SectionFilter> values, SectionFilter selected) {
+            super(context, R.layout.lb_aboutitem, values);
+            this.context = context;
+            this.values = values;
+            this.selected = selected;
+        }
+
+        public SectionFilter selected() { return selected; }
+
+        public SectionFilter selected(int selected) {
+            this.selected = values.get(selected);
+            return selected();
+        }
+
+        @Override
+        public View getView(int position, View row, ViewGroup parent) {
+
+            View rowView = row;
+            if (rowView == null) {
+                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                rowView = inflater.inflate(R.layout.lb_filterchoice, parent, false);
+            }
+            final SectionFilter item = values.get(position);
+            ImageView image = (ImageView) rowView.findViewById(R.id.directionImage);
+            image.setVisibility(item instanceof SectionSort && !((SectionSort)item).isAscending ? View.VISIBLE: View.INVISIBLE);
+            CheckBox name = (CheckBox) rowView.findViewById(R.id.name);
+            name.setText(item.name);
+            name.setChecked(item == selected);
+            return rowView;
         }
     }
 }

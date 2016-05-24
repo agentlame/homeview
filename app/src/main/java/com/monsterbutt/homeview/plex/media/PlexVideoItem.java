@@ -280,6 +280,8 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     @Override
     public String getBackgroundImageURL() {
 
+        if (mVideo == null)
+            return "";
         String art = mVideo.getBackgroundImageKey();
         if (art != null && !art.isEmpty())
             return art;

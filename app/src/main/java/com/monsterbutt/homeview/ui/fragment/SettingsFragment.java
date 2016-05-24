@@ -60,6 +60,7 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewClicke
         super.onActivityCreated(savedInstanceState);
         mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
 
+        setHeadersTransitionOnBackEnabled(false);
         Context context = getActivity();
         SettingsManager mgr = SettingsManager.getInstance(getActivity());
         List<SettingsManager.SettingsSection> sections = mgr.getSettingsLayout();

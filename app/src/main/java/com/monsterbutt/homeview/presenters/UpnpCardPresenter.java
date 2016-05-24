@@ -19,21 +19,10 @@ import com.monsterbutt.homeview.ui.android.ImageCardView;
 
 public class UpnpCardPresenter extends Presenter {
 
-
-    public interface UpnpCardPresenterLongClickListener {
-
-        boolean longClickOccured();
-    }
-
     private int mSelectedBackgroundColor = -1;
     private int mDefaultBackgroundColor = -1;
 
-    final private UpnpCardPresenterLongClickListener mListener;
-
-    public UpnpCardPresenter(UpnpCardPresenterLongClickListener listener) {
-
-        mListener = listener;
-    }
+    public UpnpCardPresenter() {}
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent) {
@@ -75,13 +64,6 @@ public class UpnpCardPresenter extends Presenter {
 
         CardObject obj = (CardObject) item;
         final ImageCardView cardView = (ImageCardView) viewHolder.view;
-        cardView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-
-                return mListener != null && mListener.longClickOccured();
-            }
-        });
         Context context = cardView.getContext();
         cardView.setTitleText(obj.getTitle());
         cardView.setContentText(obj.getContent());
@@ -113,14 +95,12 @@ public class UpnpCardPresenter extends Presenter {
         else {
 
             cardView.setTarget(new SimpleTarget<GlideDrawable>(width, height) {
-
                 @Override
                 public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
                     cardView.setMainImage(resource, true);
                     cardView.setTarget(null);
                 }
             });
-
             Glide.with(context)
                     .load(imageURL)
                     .into(cardView.getTarget());

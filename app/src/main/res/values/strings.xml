@@ -232,4 +232,7 @@
     <string name="action_choice_setwatched">Set watched</string>
     <string name="action_choice_setunwatched">Set unwatched</string>
 
+    <string name="filter_title">Filter Options</string>
+    <string name="sort_title">Sort Options</string>
+
 </resources>
