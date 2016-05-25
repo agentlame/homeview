@@ -16,6 +16,7 @@ import com.google.android.exoplayer.ExoPlayer;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.StartPosition;
 import com.monsterbutt.homeview.player.VideoPlayer;
+import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,8 +65,9 @@ public class ResumeChoiceHandler {
         }
     }
 
-    public static void askUser(final Activity activity, final VideoPlayer player, final long lastVideoOffset, int timeout) {
+    public static void askUser(final PlaybackFragment fragment, final VideoPlayer player, final long lastVideoOffset, int timeout) {
 
+        final Activity activity = fragment.getActivity();
         final AlertDialog alert = new AlertDialog.Builder(activity, R.style.AlertDialogStyle)
                 .setIcon(R.drawable.launcher)
                 .setTitle(R.string.playback_start_dialog)
@@ -89,6 +91,7 @@ public class ResumeChoiceHandler {
                                     case ExoPlayer.STATE_PREPARING:
 
                                         player.seekTo(lastVideoOffset);
+                                        fragment.tickle();
                                         break;
                                     default:
                                         break;

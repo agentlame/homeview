@@ -54,6 +54,7 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
     private PlaybackUIHandler mPlaybackUIHandler;
     private final SubtitleHandler mSubtitleHandler;
     private final HomeViewActivity mActivity;
+    private final PlaybackFragment mFragment;
     private final PlexServer mServer;
     private final AspectRatioFrameLayout mVideoFrame;
     private VideoPlayer mPlayer;
@@ -73,6 +74,7 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
                               SubtitleHandler subtitleHandler,
                               AspectRatioFrameLayout videoFrame) {
 
+        mFragment = fragment;
         mActivity = (HomeViewActivity) fragment.getActivity();
         mServer = server;
         mMediaSessionHandler = mediaSessionHandler;
@@ -299,7 +301,7 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
         mPlayer.prepare(mCurrentVideoHandler.getVideo());
 
         if (mCurrentVideoHandler.getPlaybackStartType() == StartPosition.PlaybackStartType.Ask)
-            ResumeChoiceHandler.askUser(mActivity, mPlayer, mCurrentVideoHandler.getLastViewedPosition(), CHOOSER_TIMEOUT);
+            ResumeChoiceHandler.askUser(mFragment, mPlayer, mCurrentVideoHandler.getLastViewedPosition(), CHOOSER_TIMEOUT);
         mPlayer.setPlayWhenReady(playWhenReady);
     }
 
