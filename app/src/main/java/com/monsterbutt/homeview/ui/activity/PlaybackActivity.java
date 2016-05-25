@@ -14,17 +14,12 @@
 
 package com.monsterbutt.homeview.ui.activity;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.graphics.Color;
-import android.media.session.MediaSession;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.View;
 
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.ui.android.NextUpView;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 
 /**
@@ -39,15 +34,12 @@ public class PlaybackActivity extends HomeViewActivity {
     public static final String FILTER = "filter";
     public static final String SHARED_ELEMENT_NAME = "hero";
 
-    private NextUpView mNextUp = null;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_playback);
         getWindow().getDecorView().setBackgroundColor(Color.BLACK);
-        mNextUp = (NextUpView) findViewById(R.id.nextup_view);
     }
 
     @Override
@@ -79,40 +71,5 @@ public class PlaybackActivity extends HomeViewActivity {
         }
 
         return super.onKeyDown(keyCode, event);
-    }
-
-    public void fillNextUp(MediaSession.QueueItem item) {
-
-        mNextUp.setVideo(item);
-    }
-    public boolean getNextUpVisible() {
-
-        return View.VISIBLE == mNextUp.getVisibility();
-    }
-    public void setNextUpVisible(boolean visible) {
-
-        int margin = getResources().getDimensionPixelOffset(R.dimen.nextup_view_margin);
-        boolean currentVis = getNextUpVisible();
-        if (visible && !currentVis) {
-
-            mNextUp.setVisibility(View.VISIBLE);
-            mNextUp.setAlpha(0.0f);
-            mNextUp.animate()
-                    .translationX(-(margin + mNextUp.getWidth()))
-                    .alpha(1.0f);
-        }
-        else if(!visible && currentVis) {
-
-            mNextUp.animate()
-                    .translationX(margin + mNextUp.getWidth())
-                    .alpha(0.0f)
-                    .setListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            super.onAnimationEnd(animation);
-                            mNextUp.setVisibility(View.GONE);
-                        }
-                    });
-        }
     }
 }

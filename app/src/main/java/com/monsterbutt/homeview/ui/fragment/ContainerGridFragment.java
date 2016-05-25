@@ -428,7 +428,7 @@ public class ContainerGridFragment extends VerticalGridFragment
 
             if (mFilters.selected() != null)
                mFilterText.setText(mFilters.selected().name);
-            if (!mUseScene)
+            if (!mUseScene && getActivity() != null)
                 ((ContainerActivity) getActivity()).setQuickJumpList(quickjumpList);
             setAdapter(mGrid != null ? mGrid.getAdapter() : null);
             setSelectedPosition(0);

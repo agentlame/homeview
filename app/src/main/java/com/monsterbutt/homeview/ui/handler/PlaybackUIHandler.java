@@ -39,6 +39,7 @@ public class PlaybackUIHandler extends MediaController.Callback {
 
     private ListRow mCodecRow = null;
     private ListRow mExtrasRow = null;
+    private boolean skipFirstPlaybackTickle = true;
 
     public PlaybackUIHandler(PlaybackFragment fragment, PlexServer server, CurrentVideoHandler currentVideoHandler) {
 
@@ -143,6 +144,10 @@ public class PlaybackUIHandler extends MediaController.Callback {
                     public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
                         metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ART, bitmap);
                         mFragment.getPlaybackHandler().setMetadata(metadataBuilder.build());
+                        if (skipFirstPlaybackTickle)
+                            skipFirstPlaybackTickle = false;
+                        else
+                            mFragment.tickle();
                     }
                 });
     }

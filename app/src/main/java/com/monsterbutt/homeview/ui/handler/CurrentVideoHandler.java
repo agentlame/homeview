@@ -59,6 +59,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
     private VideoPlayerHandler mVideoHandler;
     private final SubtitleHandler mSubtitleHandler;
     private final CardSelectionHandler mSelectionHandler;
+    private final NextUpHandler mNextUpHandler;
     private final HomeViewActivity mActivity;
     private final PlexServer mServer;
     private StartPosition mStartPosition;
@@ -69,6 +70,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
                                SubtitleHandler subtitleHandler) {
 
         mActivity = (HomeViewActivity) fragment.getActivity();
+        mNextUpHandler = new NextUpHandler(mActivity);
         mSessionHandler = sessionHandler;
         mSubtitleHandler = subtitleHandler;
         mSubtitleHandler.setHandler(this);
@@ -156,7 +158,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
                     synchronized (mProgressLock) {
                         mNextUpThreshold = pair.first;
                     }
-                    ((PlaybackActivity) mActivity).fillNextUp(pair.second);
+                    mNextUpHandler.fillNextUp(pair.second);
                 }
             }
             mSessionHandler.setQueue(mQueue, mActivity.getString(R.string.queue_name));
@@ -183,6 +185,8 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
         return ret;
     }
 
+    public NextUpHandler getNextUpHandler() { return mNextUpHandler; }
+
     public long getStartPosition() { return mStartPosition.getStartPosition(); }
 
     public long getLastViewedPosition() { return mStartPosition.getVideoOffset(); }
@@ -190,6 +194,9 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
     public StartPosition.PlaybackStartType getPlaybackStartType() { return mStartPosition.getStartType(); }
 
     public void setVideo(PlexVideoItem video, SubtitleHandler subtitleHandler) {
+
+        if (mNextUpHandler.getNextUpVisible())
+            mNextUpHandler.setNextUpVisible(false);
 
         mSelectedVideo = video;
         if (mSelectedVideo != null) {
@@ -323,7 +330,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
             Pair<Long, MediaSession.QueueItem> pair = getNextVideoInQueue();
             if (pair != null) {
                 mNextUpThreshold = pair.first;
-                ((PlaybackActivity) mActivity).fillNextUp(pair.second);
+                mNextUpHandler.fillNextUp(pair.second);
             }
             else
                 mNextUpThreshold = PlexVideoItem.NEXTUP_DISABLED;
@@ -337,7 +344,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
 
             if (mNextUpThreshold != PlexVideoItem.NEXTUP_DISABLED &&
                     timeInMs >= mNextUpThreshold) {
-                ((PlaybackActivity) mActivity).setNextUpVisible(true);
+                mNextUpHandler.setNextUpVisible(true);
                 mNextUpThreshold = -1;
             }
 

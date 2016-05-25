@@ -15,6 +15,7 @@ import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.handler.CurrentVideoHandler;
 import com.monsterbutt.homeview.ui.handler.MediaSessionHandler;
+import com.monsterbutt.homeview.ui.handler.NextUpHandler;
 import com.monsterbutt.homeview.ui.handler.PlaybackUIHandler;
 import com.monsterbutt.homeview.ui.handler.SubtitleHandler;
 import com.monsterbutt.homeview.ui.handler.VideoPlayerHandler;
@@ -94,18 +95,16 @@ public class PlaybackFragment
     @Override
     public void tickle() {
 
-        PlaybackActivity act = (PlaybackActivity) getActivity();
-        if (act.getNextUpVisible())
-            act.setNextUpVisible(false);
+        mCurrentVideoHandler.getNextUpHandler().setNextUpVisible(false);
         super.tickle();
     }
 
     @Override
     public boolean backPressed() {
 
-        PlaybackActivity act = (PlaybackActivity) getActivity();
-        if (act.getNextUpVisible()) {
-            act.setNextUpVisible(false);
+        NextUpHandler handler = mCurrentVideoHandler.getNextUpHandler();
+        if (handler.getNextUpVisible()) {
+            handler.setNextUpVisible(false);
             return true;
         }
         return false;
