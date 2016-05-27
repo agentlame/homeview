@@ -67,6 +67,8 @@ public class ContainerGridFragment extends VerticalGridFragment
     private TextView mFilterText;
     private TextView mSortText;
 
+    private String mPassedSelectedKey;
+
     @Override
     public WatchedStatusHandler.UpdateStatusList getItemsToCheck() {
 
@@ -204,6 +206,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         mLifeCycleMgr.put(ThemeHandler.key, mThemeHandler);
         mSelectionHandler = new CardSelectionHandler(this, this, mServer);
         mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
+        mPassedSelectedKey = act.getIntent().getStringExtra(ContainerActivity.SELECTED);
         String background = act.getIntent().getStringExtra(ContainerActivity.BACKGROUND);
         if (!TextUtils.isEmpty(background))
             mSelectionHandler.updateBackground(background, true);
@@ -495,7 +498,8 @@ public class ContainerGridFragment extends VerticalGridFragment
                 if (art != null && !art.isEmpty())
                     mSelectionHandler.updateBackground(mServer.makeServerURL(art), true);
                 setAdapter(mGrid != null ? mGrid.getAdapter() : null);
-                setSelectedPosition(0);
+                setSelectedPosition(mGrid.getIndexForKey(mPassedSelectedKey));
+                mPassedSelectedKey = "";
                 startEntranceTransition();
             }
 

@@ -164,7 +164,8 @@
     <string name="jump_backward_seconds">300</string>
 
     <string name="nextup_poster">NextUp Poster</string>
-    <string name="nextup_comingup">Coming Up Next</string>
+    <string name="nextup_comingup">Playing in</string>
+    <string name="nextup_comingup_seconds">seconds</string>>
     <string name="codeccard_image_desc"></string>
 
     <string name="section_toolbar_hub">Hub</string>

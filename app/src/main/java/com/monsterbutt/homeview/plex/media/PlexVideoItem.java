@@ -37,6 +37,7 @@ import us.nineworlds.plex.rest.model.impl.Video;
 public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelable {
 
     static private final long MillisecondInMinutes = 1000*60;
+    static public String RatingKeyToKey(String key) { return "/library/metadata/" + key; }
 
     public static long NEXTUP_DISABLED = -1;
     private static final long MIN_MINUTES_FOR_NEXTUP = 5 * 1000;
@@ -496,7 +497,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return (mVideo != null && mVideo.getChapters() != null && !mVideo.getChapters().isEmpty());
     }
 
-    private static long START_CHAPTER_THRESHOLD = 5000;
+    public static long START_CHAPTER_THRESHOLD = 5000;
     public static long BAD_CHAPTER_START = -1;
     public long getPreviousChapterStart(long position) {
 

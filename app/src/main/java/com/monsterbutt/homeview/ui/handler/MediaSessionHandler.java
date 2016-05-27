@@ -94,7 +94,7 @@ public class MediaSessionHandler {
         // This method should play any media item regardless of the Queue.
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
 
-            mCurrentVideoHandler.createQueue("/library/metadata/" + mediaId);
+            mCurrentVideoHandler.createQueue(PlexVideoItem.RatingKeyToKey(mediaId));
         }
 
         @Override
@@ -138,6 +138,15 @@ public class MediaSessionHandler {
                     return;
                 }
             }
+            else if (PlexVideoItem.START_CHAPTER_THRESHOLD < mVideoPlayerHandler.getCurrentPosition()) {
+
+                int prevState = getPlaybackState();
+                setPlaybackState(PlaybackState.STATE_REWINDING);
+                mVideoPlayerHandler.setPosition(0);
+                setPlaybackState(prevState);
+                return;
+            }
+
             mCurrentVideoHandler.playPreviousInQueue(getActivity());
         }
 

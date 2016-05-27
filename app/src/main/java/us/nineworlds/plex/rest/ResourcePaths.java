@@ -109,7 +109,10 @@ public class ResourcePaths {
 		if (key.contains("?"))
 			mark = "&";
 
-		return getHostPort() + key + mark + "includeChapters=1&checkFiles=1&includeExtras=1&includeRelated=1&includeRelatedCount=0";
+		String ret = getHostPort() + key + mark + "includeChapters=1&checkFiles=1&includeExtras=1&includeRelated=1&includeRelatedCount=0";
+		if (key.endsWith("all") && key.startsWith("/library/sections/"))
+			ret = ret.replace("&checkFiles=1", "");
+		return ret;
 	}
 	
 	

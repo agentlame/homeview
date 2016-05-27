@@ -18,7 +18,6 @@ import android.support.v17.leanback.widget.PlaybackControlsRowPresenter;
 import android.support.v17.leanback.widget.PresenterSelector;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.SparseArrayObjectAdapter;
-import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 

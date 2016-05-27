@@ -11,7 +11,6 @@ import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.services.ThemeService;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.handler.CurrentVideoHandler;
 import com.monsterbutt.homeview.ui.handler.MediaSessionHandler;
@@ -42,10 +41,11 @@ public class PlaybackFragment
                 (ImageView) activity.findViewById(R.id.imageSubtitles),
                 (TextView) activity.findViewById(R.id.textSubtitles));
         mMediaSessionHandler = new MediaSessionHandler(this);
+
         mCurrentVideoHandler = new CurrentVideoHandler(this, server, mMediaSessionHandler, subtitleHandler);
         mPlayerHandler = new VideoPlayerHandler(this, server, mMediaSessionHandler,
                                                 mCurrentVideoHandler, subtitleHandler, videoFrame);
-        mCurrentVideoHandler.setHandler(mPlayerHandler);
+        mCurrentVideoHandler.setHandler(mPlayerHandler, new NextUpHandler(activity, mPlayerHandler));
         PlaybackUIHandler playbackUIHandler = new PlaybackUIHandler(this, server, mCurrentVideoHandler);
         mPlayerHandler.setUIHandler(playbackUIHandler);
         mMediaSessionHandler.attach(mPlayerHandler, mCurrentVideoHandler, playbackUIHandler);
@@ -95,19 +95,13 @@ public class PlaybackFragment
     @Override
     public void tickle() {
 
-        mCurrentVideoHandler.getNextUpHandler().setNextUpVisible(false);
+        mCurrentVideoHandler.getNextUpHandler().dismiss();
         super.tickle();
     }
 
     @Override
     public boolean backPressed() {
-
-        NextUpHandler handler = mCurrentVideoHandler.getNextUpHandler();
-        if (handler.getNextUpVisible()) {
-            handler.setNextUpVisible(false);
-            return true;
-        }
-        return false;
+        return mCurrentVideoHandler.getNextUpHandler().dismiss();
     }
 
     /*@Override

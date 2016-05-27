@@ -1,5 +1,6 @@
 package com.monsterbutt.homeview.ui.handler;
 
+import android.content.Intent;
 import android.media.MediaMetadata;
 import android.media.session.PlaybackState;
 import android.net.Uri;
@@ -27,8 +28,10 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.Movie;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
+import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
+import com.monsterbutt.homeview.ui.activity.ContainerActivity;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
 
@@ -67,6 +70,8 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
     private boolean mCheckForPIPChanged = false;
     private boolean mGuiShowing = false;
     private boolean mIsMetadataSet = false;
+
+    private boolean mAllowNextTrack = true;
 
     public VideoPlayerHandler(PlaybackFragment fragment, PlexServer server,
                               MediaSessionHandler mediaSessionHandler,
@@ -343,19 +348,32 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
         if (isGuiShowing() || !(event instanceof KeyEvent))
             return false;
 
-        switch (((KeyEvent) event).getKeyCode()) {
+        KeyEvent key = (KeyEvent) event;
+        switch (key.getKeyCode()) {
 
             case KeyEvent.KEYCODE_DPAD_LEFT:
-                rewind();
-                break;
+                if (KeyEvent.ACTION_DOWN == key.getAction())
+                    rewind();
+                return true;
             case KeyEvent.KEYCODE_DPAD_RIGHT:
-                fastForward();
-                break;
+
+                if (KeyEvent.ACTION_DOWN == key.getAction())
+                    fastForward();
+                return true;
             default:
                 break;
         }
 
         return false;
+    }
+
+    public boolean skipToNext() {
+
+        if (mCurrentVideoHandler.hasNext() && shouldPlayNext())
+            mActivity.getMediaController().getTransportControls().skipToNext();
+        else
+            return false;
+        return true;
     }
 
     @Override
@@ -366,9 +384,7 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
                 break;
             case ExoPlayer.STATE_ENDED:
                 mIsMetadataSet = false;
-                if (mCurrentVideoHandler.hasNext() && shouldPlayNext())
-                    mActivity.getMediaController().getTransportControls().skipToNext();
-                else
+                if (!skipToNext())
                     mActivity.finish();
                 break;
             case ExoPlayer.STATE_IDLE:
@@ -434,9 +450,32 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
 
         PlexVideoItem current = mCurrentVideoHandler.getVideo();
         String playNext = SettingsManager.getInstance(mActivity.getApplicationContext()).getString("preferences_playback_playnext");
-        return (playNext.equals("always")
+        return (mAllowNextTrack && playNext.equals("always")
             || (playNext.equals("shows") && current instanceof Episode)
             || (playNext.equals("movies") && current instanceof Movie));
+    }
+
+    public void enableNextTrack(boolean enable) {
+        mAllowNextTrack = enable;
+    }
+
+    public void browseNextTrackParent() {
+
+        PlexVideoItem item = mCurrentVideoHandler.getVideo();
+        if (item != null) {
+
+            Intent intent = new Intent(mActivity, ContainerActivity.class);
+            String key = String.format("/library/sections/%s/all", item.getSectionId());
+            if (item instanceof Episode) {
+                key = String.format("%s/%s", ((Episode) item).getShowKey(), Season.ALL_SEASONS);
+                intent.putExtra(ContainerActivity.USE_SCENE, true);
+            }
+            intent.putExtra(ContainerActivity.KEY, key);
+            intent.putExtra(ContainerActivity.BACKGROUND, item.getBackgroundImageURL());
+            intent.putExtra(ContainerActivity.SELECTED, mCurrentVideoHandler.getNextVideoInQueueKey());
+            mFragment.startActivity(intent, null);
+            mActivity.finish();
+        }
     }
 
     private class GetFullInfo extends AsyncTask<String, Void, MediaContainer> {

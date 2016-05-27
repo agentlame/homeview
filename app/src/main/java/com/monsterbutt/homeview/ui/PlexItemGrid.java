@@ -2,9 +2,11 @@ package com.monsterbutt.homeview.ui;
 
 import android.content.Context;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
+import android.text.TextUtils;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
+import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
@@ -155,6 +157,16 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
     }
 
     public ArrayObjectAdapter getAdapter() { return adapter; }
+
+
+    public int getIndexForKey(String key) {
+
+        if (TextUtils.isEmpty(key))
+            return 0;
+
+        GridItem item = map.get(key);
+        return item != null ? item.index : 0;
+    }
 
     public void updateItem(WatchedStatusHandler.UpdateStatus update) {
 

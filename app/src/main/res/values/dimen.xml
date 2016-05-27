@@ -46,15 +46,17 @@
     <dimen name="flag_text_size">11sp</dimen>
     <dimen name="caption_text_size_secondary">10sp</dimen>
 
-    <dimen name="nextup_poster_height">179dp</dimen>
-    <dimen name="nextup_poster_width">124dp</dimen>
-    <dimen name="nextup_text_width">190dp</dimen>
+    <dimen name="nextup_poster_height">90dp</dimen>
+    <dimen name="nextup_poster_width">165dp</dimen>
+    <dimen name="nextup_text_width">124dp</dimen>
     <dimen name="nextup_view_margin">30dp</dimen>
     <dimen name="nextup_view_padding">8dp</dimen>
 
     <dimen name="nextup_view_padding_small">4dp</dimen>
     <dimen name="nextup_view_textsize_main">12sp</dimen>
     <dimen name="nextup_view_textsize_secondary">10sp</dimen>
+    <dimen name="nextup_view_textsize_tiertiery">8sp</dimen>
+    <dimen name="nextup_btn_height">20dp</dimen>
 
     <dimen name="detail_side_padding">20dp</dimen>
     <dimen name="detail_text_padding">4dp</dimen>
