@@ -347,7 +347,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
 
                     if (mProgressTask != null) {
 
-                        mProgressTask.setProgress(timeInMs);
+                        mProgressTask.setProgress(mActivity.isFinishing() || mActivity.isDestroyed(), timeInMs);
                         mProgressTaskLastUpdate = timeInMs;
                     }
                 }
