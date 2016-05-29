@@ -36,9 +36,6 @@ android {
     compileSdkVersion 23
     buildToolsVersion '24.0.0-rc3'
 
-    lintOptions {
-        abortOnError false
-    }
     defaultConfig {
         applicationId "com.monsterbutt.homeview"
         minSdkVersion 23

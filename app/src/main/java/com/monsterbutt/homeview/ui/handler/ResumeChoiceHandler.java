@@ -21,7 +21,10 @@ import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResumeChoiceHandler {
+public class ResumeChoiceHandler implements DialogInterface.OnClickListener,
+                                            DialogInterface.OnDismissListener,
+                                            DialogInterface.OnCancelListener,
+                                            Runnable {
 
     private static class ResumeChoice {
 
@@ -65,61 +68,9 @@ public class ResumeChoiceHandler {
         }
     }
 
-    public static void askUser(final PlaybackFragment fragment, final VideoPlayer player, final long lastVideoOffset, int timeout) {
+    public static void askUser(PlaybackFragment fragment, VideoPlayer player, long lastVideoOffset, int timeout) {
 
-        final Activity activity = fragment.getActivity();
-        final AlertDialog alert = new AlertDialog.Builder(activity, R.style.AlertDialogStyle)
-                .setIcon(R.drawable.launcher)
-                .setTitle(R.string.playback_start_dialog)
-                .setAdapter(getResumeChoiceAdapter(activity), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                        final StartPosition.PlaybackStartType val = StartPosition.PlaybackStartType.values()[which];
-                        if (val == StartPosition.PlaybackStartType.Begining)
-                            return;
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-
-                                switch (player.getPlaybackState()) {
-
-                                    case ExoPlayer.STATE_READY:
-                                    case ExoPlayer.STATE_ENDED:
-                                    case ExoPlayer.STATE_BUFFERING:
-                                    case ExoPlayer.STATE_IDLE:
-                                    case ExoPlayer.STATE_PREPARING:
-
-                                        player.seekTo(lastVideoOffset);
-                                        fragment.tickle();
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                        });
-                        dialog.dismiss();
-                    }
-                })
-                .create();
-        // Hide after some seconds
-        final Handler handler  = new Handler();
-        final Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                if (alert.isShowing()) {
-                    alert.dismiss();
-                }
-            }
-        };
-        alert.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                handler.removeCallbacks(runnable);
-            }});
-        alert.show();
-
-        handler.postDelayed(runnable, timeout);
+        new ResumeChoiceHandler(fragment, player, lastVideoOffset, timeout);
     }
 
     private static ResumeChoiceArrayAdapter getResumeChoiceAdapter(Activity activity) {
@@ -128,5 +79,79 @@ public class ResumeChoiceHandler {
         list.add(new ResumeChoice(0, R.drawable.ic_slow_motion_video_white_48dp, activity.getString(R.string.playback_start_dialog_resume)));
         list.add(new ResumeChoice(1, R.drawable.ic_play_circle_outline_white_48dp, activity.getString(R.string.playback_start_dialog_begin)));
         return new ResumeChoiceArrayAdapter(activity, list);
+    }
+
+
+    private PlaybackFragment fragment;
+    private Handler handler  = new Handler();
+    private AlertDialog alert;
+    private VideoPlayer player;
+    private long lastVideoOffset;
+
+    private ResumeChoiceHandler(PlaybackFragment fragment, VideoPlayer player, long lastVideoOffset, int timeout) {
+
+        this.fragment = fragment;
+        this.player = player;
+        this.lastVideoOffset = lastVideoOffset;
+        Activity activity = fragment.getActivity();
+        alert = new AlertDialog.Builder(activity, R.style.AlertDialogStyle)
+                .setIcon(R.drawable.launcher)
+                .setTitle(R.string.playback_start_dialog)
+                .setAdapter(getResumeChoiceAdapter(activity), this)
+                .setOnDismissListener(this)
+                .create();
+        alert.show();
+        handler.postDelayed(this, timeout);
+    }
+
+    @Override
+    public void onClick(DialogInterface dialog, int which) {
+
+        synchronized (this) {
+            final StartPosition.PlaybackStartType val = StartPosition.PlaybackStartType.values()[which];
+            if (val == StartPosition.PlaybackStartType.Begining)
+                return;
+            fragment.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    switch (player.getPlaybackState()) {
+
+                        case ExoPlayer.STATE_READY:
+                        case ExoPlayer.STATE_ENDED:
+                        case ExoPlayer.STATE_BUFFERING:
+                        case ExoPlayer.STATE_IDLE:
+                        case ExoPlayer.STATE_PREPARING:
+
+                            player.seekTo(lastVideoOffset);
+                            fragment.tickle();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onDismiss(DialogInterface dialog) {
+        synchronized (this) {
+            handler.removeCallbacks(this);
+            alert = null;
+        }
+    }
+
+    @Override
+    public void onCancel(DialogInterface dialog) {
+        onDismiss(dialog);
+    }
+
+    @Override
+    public void run() {
+        synchronized (this) {
+            if (alert != null && alert.isShowing())
+                alert.dismiss();
+        }
     }
 }
