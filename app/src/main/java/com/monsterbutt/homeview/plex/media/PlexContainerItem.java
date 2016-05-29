@@ -357,7 +357,17 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
 
         if (null == mDirectory || null == mDirectory.getLeafCount() || null == mDirectory.getViewedLeafCount())
             return;
-        mDirectory.setViewedLeafCount(Long.toString(status.viewedOffset));
+        switch(status.state) {
+            case Watched:
+                mDirectory.setViewedLeafCount(mDirectory.getLeafCount());
+                break;
+            case Unwatched:
+                mDirectory.setViewedLeafCount("0");
+                break;
+            default:
+                mDirectory.setViewedLeafCount(Long.toString(status.viewedOffset));
+                break;
+        }
     }
 
     @Override
