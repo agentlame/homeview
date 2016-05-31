@@ -100,7 +100,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
             SceneCard card = (SceneCard) item;
             if (!card.useItemBackgroundArt()) {
 
-                new GetRandomArtForSectionTask(server).execute(card.getSectionId());
+                new GetRandomArtForSectionTask(server).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, card.getSectionId());
                 return;
             }
             else

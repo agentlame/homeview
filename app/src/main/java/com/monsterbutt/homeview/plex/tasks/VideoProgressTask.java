@@ -39,15 +39,15 @@ public class VideoProgressTask {
         if (progressMs > finishedLimitStart) {
 
             if (previousProgressMs < finishedLimitStart)
-                new SetProgressTask(id).execute(SetProgressTask.WATCHED);
+                new SetProgressTask(id).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.WATCHED);
         }
         else if (progressMs < startedLimitEnd) {
 
             if (!isFinished && progressMs < previousProgressMs && previousProgressMs > startedLimitEnd)
-                new SetProgressTask(id).execute(SetProgressTask.UNWATCHED);
+                new SetProgressTask(id).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.UNWATCHED);
         }
         else
-            new SetProgressTask(id).execute(progressMs);
+            new SetProgressTask(id).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, progressMs);
 
         previousProgressMs = progressMs;
     }

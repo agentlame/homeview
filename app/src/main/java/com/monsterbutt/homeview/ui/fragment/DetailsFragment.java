@@ -128,7 +128,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         if (mItem != null)
             setupDetailsOverviewRow();
-        new LoadMetadataTask(mServer).execute(key);
+        new LoadMetadataTask(mServer).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, key);
     }
 
     @Override
@@ -190,7 +190,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     private void toggleWatched() {
 
         boolean isWatched = !(mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched);
-        new ToggleWatchedStateTask(mItem).execute(mServer);
+        new ToggleWatchedStateTask(mItem).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mServer);
 
         DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
         setActions((SparseArrayObjectAdapter) row.getActionsAdapter(), isWatched);
@@ -416,7 +416,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                 mAdapter.add(extras);
 
             HubList list = new HubList(mItem.getRelated());
-            new LoadRelatedTask().execute(list);
+            new LoadRelatedTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, list);
 
             mThemeHandler.startTheme(mItem.getThemeKey(mServer));
         }

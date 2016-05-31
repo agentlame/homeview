@@ -218,7 +218,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         gridPresenter.setNumberOfColumns(Integer.valueOf(colCount));
         setGridPresenter(gridPresenter);
         String key = act.getIntent().getStringExtra(ContainerActivity.KEY);
-        new GetContainerTask().execute(key);
+        new GetContainerTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, key);
     }
 
     @Override
@@ -331,7 +331,7 @@ public class ContainerGridFragment extends VerticalGridFragment
 
                         SectionFilter selected = mFilters.selected(which);
                         mFilterText.setText(selected.name);
-                        new LoadSectionFilterTask().execute(mContainer.getLibrarySectionID(), selected.key);
+                        new LoadSectionFilterTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mContainer.getLibrarySectionID(), selected.key);
                         dialog.dismiss();
                     }
                 })
@@ -491,7 +491,7 @@ public class ContainerGridFragment extends VerticalGridFragment
                 setTitle(mContainer.getTitle1());
 
             if (mContainer.getDirectories() != null && !mContainer.getDirectories().isEmpty())
-                new LoadSectionFilterTask().execute(mContainer.getLibrarySectionID(), mFilters.selected().key);
+                new LoadSectionFilterTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mContainer.getLibrarySectionID(), mFilters.selected().key);
             else {
 
                 String art = mContainer.getArt();

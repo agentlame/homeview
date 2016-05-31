@@ -110,7 +110,7 @@ public class ServerChoiceActivity extends Activity {
                 List<PlexServer> servers = mMgr.getDiscoveredServers();
                 PlexServer server = servers.get((int) action.getId());
                 if (server != null)
-                    new ServerCheckTask(getActivity()).execute(server);
+                    new ServerCheckTask(getActivity()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, server);
             }
         }
     }
@@ -149,7 +149,7 @@ public class ServerChoiceActivity extends Activity {
         public void onGuidedActionClicked(GuidedAction action) {
 
             if (action.getId() == DONE)
-                new ServerCheckTask(getActivity()).execute(new PlexServer("manual", String.format("%s:%s", host, port)));
+                new ServerCheckTask(getActivity()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new PlexServer("manual", String.format("%s:%s", host, port)));
             else if (action.getId() == CANCEL)
                 getActivity().finishAfterTransition();
             else if (action.getId() == BACK)

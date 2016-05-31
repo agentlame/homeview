@@ -42,7 +42,7 @@ public class MainActivity extends HomeViewActivity {
 
         super.onResume();
         mMgr = PlexServerManager.getInstance(this);
-        new NotificationTask().execute();
+        new NotificationTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private class NotificationTask extends AsyncTask<Void, Void, Void> {

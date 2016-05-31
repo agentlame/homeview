@@ -79,7 +79,7 @@ public class PlexServerManager implements GDMReceiver.ReceiverFinishedCallback {
     public void receiverDone() {
 
         if (mSelectedServer == null && mServers.size() == 1)
-            new ServerCheckTask().execute(mServers.values().iterator().next());
+            new ServerCheckTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mServers.values().iterator().next());
         else {
             synchronized (this) {
                 gotReceiverCallback = true;

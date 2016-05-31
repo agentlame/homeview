@@ -59,7 +59,7 @@ public class SectionHubFragment extends BrowseFragment implements PlexItemRow.Re
 
         super.onResume();
         mLifeCycleMgr.resumed();
-        new LoadMetadataTask().execute(getActivity().getIntent().getStringExtra(SectionHubActivity.SECTIONID));
+        new LoadMetadataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, getActivity().getIntent().getStringExtra(SectionHubActivity.SECTIONID));
     }
 
     @Override

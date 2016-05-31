@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.MatrixCursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.HeaderItem;
@@ -270,7 +271,7 @@ public abstract class PlexLibraryItem {
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
             new SetProgressTask(new SetProgressTask.VideoId(server, PlexLibraryItem.this.getKey(),
-                    Long.toString(PlexLibraryItem.this.getRatingKey()))).execute(SetProgressTask.UNWATCHED);
+                    Long.toString(PlexLibraryItem.this.getRatingKey()))).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.UNWATCHED);
             setStatus(new WatchedStatusHandler.UpdateStatus(getKey(), 0, WatchedState.Unwatched));
             if (callback != null)
                 callback.resetSelected(obj);
@@ -291,7 +292,7 @@ public abstract class PlexLibraryItem {
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
             new SetProgressTask(new SetProgressTask.VideoId(server, PlexLibraryItem.this.getKey(),
-                    Long.toString(PlexLibraryItem.this.getRatingKey()))).execute(SetProgressTask.WATCHED);
+                    Long.toString(PlexLibraryItem.this.getRatingKey()))).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.WATCHED);
             setStatus(new WatchedStatusHandler.UpdateStatus(getKey(), 0, WatchedState.Watched));
             if (callback != null)
                 callback.resetSelected(obj);

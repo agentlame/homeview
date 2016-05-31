@@ -1,6 +1,7 @@
 package com.monsterbutt.homeview.ui.handler;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
@@ -66,7 +67,7 @@ public class ServerStatusHandler implements UILifecycleManager.LifecycleListener
 
             if (mListener != null)
                 mListener.setSelectedServer(selected);
-            new ServerLibraryTask(mFragment, selected).execute();
+            new ServerLibraryTask(mFragment, selected).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
         else if (!mForcedServerSelectOnce) {
 

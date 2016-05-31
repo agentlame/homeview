@@ -129,7 +129,7 @@ public class WatchedStatusHandler implements UILifecycleManager.LifecycleListene
         public void checkStatus() {
 
             if (mListener != null)
-                new Task().execute(mListener.getItemsToCheck());
+                new Task().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mListener.getItemsToCheck());
         }
 
         private class Task extends AsyncTask<UpdateStatusList, Void, UpdateStatusList> {
