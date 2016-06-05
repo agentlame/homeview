@@ -1,6 +1,7 @@
 package com.monsterbutt.homeview.player.renderers;
 
 import android.content.Context;
+import android.media.AudioFormat;
 import android.media.AudioManager;
 
 import com.google.android.exoplayer.ExoPlaybackException;
@@ -9,6 +10,7 @@ import com.google.android.exoplayer.MediaCodecSelector;
 import com.google.android.exoplayer.MediaFormat;
 import com.google.android.exoplayer.MediaFormatHolder;
 import com.google.android.exoplayer.SampleSource;
+import com.google.android.exoplayer.audio.AudioCapabilities;
 import com.google.android.exoplayer.util.MimeTypes;
 import com.monsterbutt.homeview.player.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.VideoPlayer;
@@ -18,6 +20,7 @@ import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 public class DeviceAudioTrackRenderer extends MediaCodecAudioTrackRenderer {
 
     private final PlexVideoItem mItem;
+    private final AudioCapabilities mCaps;
 
     public static DeviceAudioTrackRenderer getRenderer(Context context, VideoPlayer player, SampleSource sampleSource) {
 
@@ -30,13 +33,15 @@ public class DeviceAudioTrackRenderer extends MediaCodecAudioTrackRenderer {
                 mcc.usePassthroughAudioIfAvailable() ? mcc.getSystemAudioCapabilities() : null
                 , AudioManager.STREAM_MUSIC);
         mItem = player.getPreparedVideo();
+        mCaps = mcc.getSystemAudioCapabilities();
     }
 
     @Override
     protected void onInputFormatChanged(MediaFormatHolder holder) throws ExoPlaybackException {
 
         MediaFormat format = holder.format;
-        if (format.mimeType.equals(MimeTypes.AUDIO_DTS) && mItem.trackIsDtsHd(format.trackId)) {
+        if (format.mimeType.equals(MimeTypes.AUDIO_DTS) && mItem.trackIsDtsHd(format.trackId)
+                && mCaps.supportsEncoding(AudioFormat.ENCODING_DTS_HD)) {
 
             holder.format = MediaFormat.createAudioFormat(format.trackId, MimeTypes.AUDIO_DTS_HD,
                                             format.bitrate, format.maxInputSize, format.durationUs,

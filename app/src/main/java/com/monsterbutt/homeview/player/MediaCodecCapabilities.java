@@ -118,20 +118,30 @@ public class MediaCodecCapabilities {
         list.add(codec);
     }
 
-    private static int hasPassthroughForAudio(String mimeType, long bitDepth) {
+    private int hasPassthroughForAudio(String mimeType, long bitDepth) {
 
         switch (mimeType) {
             case MimeTypes.AUDIO_AC3:
-                return AudioFormat.ENCODING_AC3;
+                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_AC3))
+                    return AudioFormat.ENCODING_AC3;
+                break;
             case MimeTypes.AUDIO_E_AC3:
-                return AudioFormat.ENCODING_E_AC3;
+                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_E_AC3))
+                    return AudioFormat.ENCODING_E_AC3;
+                break;
             case MimeTypes.AUDIO_DTS:
-                return AudioFormat.ENCODING_DTS;
+                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DTS))
+                    return AudioFormat.ENCODING_DTS;
+                break;
             case MimeTypes.AUDIO_DTS_HD:
-                return AudioFormat.ENCODING_DTS_HD;
+                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DTS_HD))
+                    return AudioFormat.ENCODING_DTS_HD;
+                break;
             case MimeTypes.AUDIO_TRUEHD:
                 /*
-                return C.ENCODING_TRUEHD;*/
+                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_TRUEHD))
+                    return C.ENCODING_TRUEHD;
+                break;    */
                 return NO_ENCODING;
             case MimeTypes.AUDIO_RAW:
                 if (bitDepth == 16)
@@ -139,6 +149,7 @@ public class MediaCodecCapabilities {
             default:
                 return NO_ENCODING;
         }
+        return NO_ENCODING;
     }
 
     public boolean usePassthroughAudioIfAvailable() {
