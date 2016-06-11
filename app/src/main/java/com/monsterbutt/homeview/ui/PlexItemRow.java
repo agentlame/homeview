@@ -133,19 +133,21 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
     public void updatedItemsCallback(WatchedStatusHandler.UpdateStatusList items) {
 
         List<Integer> indexList = new ArrayList<>();
-        for(WatchedStatusHandler.UpdateStatus update : items) {
+        if (items != null) {
+            for (WatchedStatusHandler.UpdateStatus update : items) {
 
-            if (!map.containsKey(update.key))
-                continue;
+                if (!map.containsKey(update.key))
+                    continue;
 
-            RowItem rowItem = map.get(update.key);
-            if (rowItem != null) {
+                RowItem rowItem = map.get(update.key);
+                if (rowItem != null) {
 
-                Object obj = adapter.get(rowItem.index);
-                if (obj != null && obj instanceof  PosterCard && ((PosterCard) obj).getRatingsKey().equals(update.key)) {
-                    ((PosterCard) obj).setUpdateStatus(update);
-                    rowItem.item.setStatus(update);
-                    indexList.add(rowItem.index);
+                    Object obj = adapter.get(rowItem.index);
+                    if (obj != null && obj instanceof PosterCard && ((PosterCard) obj).getRatingsKey().equals(update.key)) {
+                        ((PosterCard) obj).setUpdateStatus(update);
+                        rowItem.item.setStatus(update);
+                        indexList.add(rowItem.index);
+                    }
                 }
             }
         }

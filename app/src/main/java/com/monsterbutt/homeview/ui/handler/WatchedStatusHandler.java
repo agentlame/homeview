@@ -137,7 +137,7 @@ public class WatchedStatusHandler implements UILifecycleManager.LifecycleListene
             @Override
             protected UpdateStatusList doInBackground(UpdateStatusList... params) {
 
-                if (params != null && params.length > 0) {
+                if (params != null && params.length > 0 && params[0] != null) {
 
                     String keys = "";
                     Map<String, UpdateStatus> map = new HashMap<>();
