@@ -97,7 +97,6 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewClicke
         setTitle(mgr.title());
 
         setHeadersState(HEADERS_ENABLED);
-        setHeadersTransitionOnBackEnabled(true);
         setOnItemViewClickedListener(this);
         setOnItemViewSelectedListener(this);
         ((HomeViewActivity) getActivity()).setPlayKeyListener(this);
