@@ -1,7 +1,9 @@
 package com.monsterbutt.homeview.ui.fragment;
 
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -75,11 +77,13 @@ public class PlaybackFragment
         mPlayerHandler.onResume();
     }
 
+    @TargetApi(24)
     @Override
     public void onPause() {
+
         super.onPause();
 
-       // if ((Build.VERSION.SDK_INT <= 23 && !Build.VERSION.CODENAME.equals("N")) || !getActivity().isInPictureInPictureMode())
+        if (Build.VERSION.SDK_INT <= 23 || !getActivity().isInPictureInPictureMode())
             mPlayerHandler.onPause();
     }
 

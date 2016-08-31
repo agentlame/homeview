@@ -1,6 +1,7 @@
 package com.monsterbutt.homeview.player;
 
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -87,6 +88,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
         };
     }
 
+    @TargetApi(24)
     @Override
     public PlaybackControlsRowPresenter createControlsRowAndPresenter() {
         PlaybackControlsRowPresenter presenter = makeControlsRowAndPresenter();
@@ -103,7 +105,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
             @Override
             public void onActionClicked(Action action) {
                 if (action == mPIPAction)
-                    ;//mFragment.getActivity().enterPictureInPictureMode();
+                    mFragment.getActivity().enterPictureInPictureMode();
                 else
                     dispatchAction(action);
             }
@@ -302,7 +304,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     protected SparseArrayObjectAdapter createPrimaryActionsAdapter(
             PresenterSelector presenterSelector) {
         SparseArrayObjectAdapter adapter = new SparseArrayObjectAdapter(presenterSelector);
-        if (Build.VERSION.SDK_INT > 23 || Build.VERSION.CODENAME.equals("N"))
+        if (Build.VERSION.SDK_INT > 23)
             adapter.set(PlaybackControlGlue.ACTION_CUSTOM_LEFT_FIRST, mPIPAction);
 
         return adapter;

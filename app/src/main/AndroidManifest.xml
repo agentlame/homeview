@@ -65,14 +65,13 @@
 
         </activity>
 
-        <activity android:name=".ui.activity.PlaybackActivity" /> <!--
+        <activity android:name=".ui.activity.PlaybackActivity"
                   android:resizeableActivity="true"
                   android:supportsPictureInPicture="true"
                   android:launchMode="singleTask"
-                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation" /> -->
+                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation" />
 
         <activity android:name=".ui.activity.DetailsActivity"/>
-        <activity android:name=".ui.activity.FilterChoiceActivity"/>
         <activity android:name=".ui.activity.ContainerActivity" />
 
         <service android:exported="false" android:name=".services.ThemeService" >
