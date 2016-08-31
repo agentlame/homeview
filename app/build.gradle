@@ -39,7 +39,7 @@ android {
     defaultConfig {
         applicationId "com.monsterbutt.homeview"
         minSdkVersion 23
-        targetSdkVersion 23
+        targetSdkVersion 24
         archivesBaseName = "homeview"
 
         versionName appVersionStr
