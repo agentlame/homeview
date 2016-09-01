@@ -23,6 +23,7 @@ import java.util.Map;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v17.leanback.app.BrowseFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
@@ -30,6 +31,7 @@ import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
 import android.support.v17.leanback.widget.TitleView;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
 
@@ -83,6 +85,11 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
                 startActivity(intent);
             }
         });
+
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = getContext().getTheme();
+        theme.resolveAttribute(R.attr.brand_accent, typedValue, true);
+        setSearchAffordanceColor(typedValue.data);
 
         TitleView tv = (TitleView) getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group);
         TextView text = (TextView) tv.findViewById(android.support.v17.leanback.R.id.title_text);
