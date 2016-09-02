@@ -172,7 +172,12 @@ public class UpnpItemsFragment extends VerticalGridFragment implements CardSelec
             synchronized (UpnpItemsFragment.this) {
                 if (!transitioned) {
                     transitioned = true;
-                    startEntranceTransition();
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            startEntranceTransition();
+                        }
+                    });
                 }
             }
         }
