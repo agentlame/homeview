@@ -30,7 +30,7 @@ import com.monsterbutt.homeview.ui.handler.VideoPlayerHandler;
 
 
 public class PlaybackControlHelper extends PlaybackControlGlue {
-    private static final int[] SEEK_SPEEDS = {2}; // A single seek speed for fast-forward / rewind.
+    private static final int[] SEEK_SPEEDS = {0}; // A single seek speed for fast-forward / rewind.
     private static final int DEFAULT_UPDATE_PERIOD = 500;
     private static final int UPDATE_PERIOD = 16;
     Drawable mMediaArt;
@@ -257,11 +257,11 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     }
 
     public void dispatchAction(Action action) {
-        if (action instanceof PlaybackControlsRow.MultiAction) {
+       /* if (action instanceof PlaybackControlsRow.MultiAction) {
             PlaybackControlsRow.MultiAction multiAction = (PlaybackControlsRow.MultiAction) action;
             multiAction.nextIndex();
             notifyActionChanged(multiAction);
-        }
+        }*/
 
         if (action == mFastForwardAction) {
             mTransportControls.fastForward();
