@@ -22,6 +22,8 @@ import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.UpnpCardPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.services.UpnpService;
+import com.monsterbutt.homeview.ui.activity.ContainerActivity;
+import com.monsterbutt.homeview.ui.activity.UpnpItemsActivity;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 
 import org.fourthline.cling.android.AndroidUpnpService;
@@ -152,6 +154,8 @@ public class UpnpItemsFragment extends VerticalGridFragment implements CardSelec
         @Override
         public void received(ActionInvocation actionInvocation, DIDLContent didl) {
 
+            List<UpnpItemsActivity.QuickJumpRow> quickjumpList = new ArrayList<>();
+
             adapter.clear();
             List<CardObject> list = new ArrayList<>();
             Activity act = getActivity();
@@ -161,13 +165,37 @@ public class UpnpItemsFragment extends VerticalGridFragment implements CardSelec
                 for(Container container : containers)
                     list.add(new PosterCard(act, new UpnpContainer(container)));
             }
+
+            UpnpItemsActivity.QuickJumpRow lastQuickRow = null;
             List<Item> items = didl.getItems();
             if (items != null && !items.isEmpty()) {
 
-                for (Item item : items)
+                int index = containers != null ? containers.size() : 0;
+                for (Item item : items) {
                     list.add(new PosterCard(act, new UpnpItem(item)));
+
+                    String titleLetter = item.getTitle().trim().substring(0,1);
+                    if (!Character.isAlphabetic(titleLetter.charAt(0)))
+                        titleLetter = ContainerActivity.QuickJumpRow.NUM_OR_SYMBOL;
+                    else
+                        titleLetter = titleLetter.toUpperCase();
+                    if (lastQuickRow == null || !lastQuickRow.letter.equals(titleLetter)) {
+
+                        lastQuickRow = new UpnpItemsActivity.QuickJumpRow(titleLetter, index);
+                        quickjumpList.add(lastQuickRow);
+                    }
+                    ++index;
+                }
             }
             adapter.addAll(0, list);
+
+            final List<UpnpItemsActivity.QuickJumpRow> uiList = quickjumpList;
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ((UpnpItemsActivity) getActivity()).setQuickJumpList(uiList);
+                }
+            });
 
             synchronized (UpnpItemsFragment.this) {
                 if (!transitioned) {

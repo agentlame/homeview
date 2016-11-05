@@ -1,9 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fragment_upnp"
-    android:name="com.monsterbutt.homeview.ui.fragment.UpnpItemsFragment"
+    android:id="@+id/coordinator"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.activity.UpnpItemsActivity"
-    tools:deviceIds="tv" />
+    android:fitsSystemWindows="true" >
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:fitsSystemWindows="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <FrameLayout
+        android:id="@+id/toolbarQuickJump"
+        android:layout_gravity="left"
+        android:layout_width="@dimen/container_quickjump_width"
+        android:layout_height="match_parent">
+
+        <ListView
+            android:id="@+id/list_shortcut"
+            android:paddingTop="@dimen/toolbar_list_padding_top"
+            android:layout_gravity="start|center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/container_item_textsize"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="@dimen/jumprow_dividerheight"
+            android:focusableInTouchMode="true"
+            android:clickable="true" />
+
+
+    </FrameLayout>
+
+</android.support.design.widget.CoordinatorLayout>

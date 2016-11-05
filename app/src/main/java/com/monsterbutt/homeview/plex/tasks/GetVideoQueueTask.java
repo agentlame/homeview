@@ -19,6 +19,7 @@ import us.nineworlds.plex.rest.model.impl.Video;
 
 public class GetVideoQueueTask extends PlexServerTask {
 
+    private final String SECONDARY = "secondary";
 
     List<PlexVideoItem> mList = new ArrayList<>();
     public List<PlexVideoItem> getQueue() { return mList; }
@@ -48,17 +49,38 @@ public class GetVideoQueueTask extends PlexServerTask {
                     // show seasons, get all episodes of show, first unwatched is current
                     Directory all = mc.getDirectories().get(0);
                     mc = server.getVideoMetadata(all.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS));
+                    if (mc != null && mc.getVideos() == null)
+                        mc = server.getVideoMetadata(all.getKey());
                 }
                 else if (viewGroup.equals(Show.TYPE)) {
 
                     // all shows, get all episodes of all shows, first unwatched is current
                     mc.setViewGroup(Episode.TYPE);
+
+                    if (mc.getVideos() == null)
+                        mc.setVideos(new ArrayList<Video>());
                     for (Directory dir : mc.getDirectories()) {
 
                         MediaContainer show = server.getVideoMetadata(
                                 dir.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS));
                         if (show != null && show.getVideos() != null)
                             mc.getVideos().addAll(show.getVideos());
+                    }
+                }
+                else if (viewGroup.equals(SECONDARY)) {
+
+                    mc = server.getVideoMetadata(metadataKey + "/all");
+                    if (mc.getVideos() == null) {
+
+                        if (mc.getVideos() == null)
+                            mc.setVideos(new ArrayList<Video>());
+                        for (Directory dir : mc.getDirectories()) {
+
+                            MediaContainer show = server.getVideoMetadata(
+                                    dir.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS));
+                            if (show != null && show.getVideos() != null)
+                                mc.getVideos().addAll(show.getVideos());
+                        }
                     }
                 }
             }
