@@ -31,7 +31,7 @@ public class FrameRateSwitcher {
 
         private final static String intentVal = "android.media.action.HDMI_AUDIO_PLUG";
 
-        public static void RegisterReceiver(Activity activity, VideoPlayer player,
+        public static void RegisterReceiver(Activity activity, HomeViewExoPlayer player,
                                             FrameRateSwitcherListener listener, FrameRateSwitcher switcher) {
 
             activity.registerReceiver(new RefreshRateSwitchReceiver(activity, player, listener, switcher),
@@ -39,7 +39,7 @@ public class FrameRateSwitcher {
         }
 
         private final Activity activity;
-        private final VideoPlayer player;
+        private final HomeViewExoPlayer player;
         private final FrameRateSwitcherListener listener;
         private final FrameRateSwitcher switcher;
         private boolean isPlugged = true;
@@ -47,7 +47,7 @@ public class FrameRateSwitcher {
         Timer timeoutTimer;
         static private final String lock = "lock";
 
-        private RefreshRateSwitchReceiver(Activity activity, VideoPlayer player,
+        private RefreshRateSwitchReceiver(Activity activity, HomeViewExoPlayer player,
                                           FrameRateSwitcherListener listener, FrameRateSwitcher switcher) {
 
             RefreshRateSwitchReceiver.isFinished = false;
@@ -119,7 +119,7 @@ public class FrameRateSwitcher {
 
     public interface FrameRateSwitcherListener {
 
-        void switchOccured(VideoPlayer player, FrameRateSwitcher switcher);
+        void switchOccured(HomeViewExoPlayer player, FrameRateSwitcher switcher);
     }
 
     private static final float UNKNOWN = (float)0.0;
@@ -254,16 +254,16 @@ public class FrameRateSwitcher {
         return  Math.abs(a - b);
     }
 
-    public static void setDisplayRefreshRate(Activity activity, final VideoPlayer player,
+    public static void setDisplayRefreshRate(Activity activity, final HomeViewExoPlayer player,
                                               final FrameRateSwitcherListener listener) {
 
         SettingsManager mgr = SettingsManager.getInstance(activity);
-        if (mgr.getBoolean("preferences_device_refreshrate") && player.getPreparedVideo().hasSourceStats()) {
+        if (mgr.getBoolean("preferences_device_refreshrate") && player.getItem().hasSourceStats()) {
 
             WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
             Display display = wm.getDefaultDisplay();
             final Display.Mode[] modes = display.getSupportedModes();
-            final float preferredFrameRate = convertFrameRate(player.getPreparedVideo().getMedia().get(0).getVideoFrameRate());
+            final float preferredFrameRate = convertFrameRate(player.getItem().getMedia().get(0).getVideoFrameRate());
             final int requestMode = getBestFrameRate(modes, preferredFrameRate);
             if (requestMode != -1 && display.getMode().getRefreshRate() != modes[requestMode].getRefreshRate()) {
 

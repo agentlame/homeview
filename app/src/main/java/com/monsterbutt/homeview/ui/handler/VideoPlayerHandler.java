@@ -3,27 +3,26 @@ package com.monsterbutt.homeview.ui.handler;
 import android.content.Intent;
 import android.media.MediaMetadata;
 import android.media.session.PlaybackState;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v17.leanback.app.PlaybackOverlayFragment;
 import android.support.v17.leanback.widget.ListRow;
-import android.util.Log;
 import android.view.InputEvent;
 import android.view.KeyEvent;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.WindowManager;
-import android.widget.Toast;
 
-import com.google.android.exoplayer.AspectRatioFrameLayout;
-import com.google.android.exoplayer.ExoPlayer;
-import com.google.android.exoplayer.util.Util;
+import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.player.ExtractorRendererBuilder;
+import com.monsterbutt.homeview.player.ExoPlayerFactory;
+import com.monsterbutt.homeview.player.HomeViewExoPlayer;
+import com.monsterbutt.homeview.player.HomeViewExoPlayerView;
 import com.monsterbutt.homeview.player.StartPosition;
-import com.monsterbutt.homeview.player.VideoPlayer;
+import com.monsterbutt.homeview.player.TrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.Movie;
@@ -38,7 +37,7 @@ import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 
-public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.Callback,
+public class VideoPlayerHandler implements ExoPlayer.EventListener,
                                             UILifecycleManager.LifecycleListener,
                                             PlaybackOverlayFragment.InputEventHandler {
 
@@ -59,13 +58,12 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
     private final HomeViewActivity mActivity;
     private final PlaybackFragment mFragment;
     private final PlexServer mServer;
-    private final AspectRatioFrameLayout mVideoFrame;
-    private VideoPlayer mPlayer;
+    private HomeViewExoPlayer mPlayer;
+    private final HomeViewExoPlayerView mVideoFrame;
+    private TrackSelector mTrackSelector;
 
     private long mLastRewind;
     private long mLastForward;
-
-    private Surface mCacheSurface = null;
 
     private boolean mCheckForPIPChanged = false;
     private boolean mGuiShowing = false;
@@ -77,7 +75,7 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
                               MediaSessionHandler mediaSessionHandler,
                               CurrentVideoHandler currentVideoHandler,
                               SubtitleHandler subtitleHandler,
-                              AspectRatioFrameLayout videoFrame) {
+                              HomeViewExoPlayerView videoFrame) {
 
         mFragment = fragment;
         mActivity = (HomeViewActivity) fragment.getActivity();
@@ -87,8 +85,6 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
         mSubtitleHandler = subtitleHandler;
         mVideoFrame = videoFrame;
 
-        SurfaceView surfaceView = (SurfaceView) mActivity.findViewById(R.id.surface_view);
-        surfaceView.getHolder().addCallback(this);
         fragment.setFadeCompleteListener(new PlaybackOverlayFragment.OnFadeCompleteListener() {
             @Override
             public void onFadeInComplete() { setGuiShowing(true); }
@@ -136,7 +132,7 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
     public boolean seekOffset(long offsetInSeconds) {
 
         long duration = mPlayer.getDuration();
-        if (duration != ExoPlayer.UNKNOWN_TIME) {
+        if (duration != C.TIME_UNSET) {
 
             long offsetInMilli = offsetInSeconds * 1000;
             int direction = offsetInSeconds > 0 ? PlaybackState.STATE_FAST_FORWARDING : PlaybackState.STATE_REWINDING;
@@ -164,29 +160,6 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
             }
         }
         return false;
-    }
-
-
-    @Override
-    public void surfaceCreated(SurfaceHolder holder) {
-
-        if (mPlayer != null) {
-            mPlayer.setSurface(holder.getSurface());
-        }
-        else
-            mCacheSurface = holder.getSurface();
-    }
-
-    @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-    }
-
-    @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
-
-        if (mPlayer != null) {
-            mPlayer.blockingClearSurface();
-        }
     }
 
     public void pipModeChanged(boolean isInPictureInPictureMode) {
@@ -233,7 +206,7 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
     public void onDestroyed() { }
 
     public boolean isPlaying() {
-        return mPlayer != null && mPlayer.getPlayerControl().isPlaying();
+        return mPlayer != null && ExoPlayer.STATE_READY == mPlayer.getPlaybackState() && mPlayer.getPlayWhenReady();
     }
 
     public void setPosition(long position) {
@@ -267,43 +240,27 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
     public long getDuration() {
         if (mPlayer != null)
             return mPlayer.getDuration();
-        return ExoPlayer.UNKNOWN_TIME;
-    }
-
-    private VideoPlayer.RendererBuilder getRendererBuilder() {
-        String userAgent = Util.getUserAgent(mActivity, "ExoVideoPlayer");
-
-        Uri contentUri = Uri.parse(mCurrentVideoHandler.getPath());
-        int contentType = Util.inferContentType(contentUri.getLastPathSegment());
-        switch (contentType) {
-            case Util.TYPE_OTHER: {
-                return new ExtractorRendererBuilder(mActivity, userAgent, contentUri);
-            }
-            default: {
-                throw new IllegalStateException("Unsupported type: " + contentType);
-            }
-        }
+        return C.TIME_UNSET;
     }
 
     private void preparePlayer(boolean playWhenReady) {
 
         if (mPlayer == null) {
 
-            mPlayer = new VideoPlayer(getRendererBuilder());
-            mPlayer.setCaptionListener(mSubtitleHandler);
+            mTrackSelector= new TrackSelector(new Handler());
+            mPlayer = ExoPlayerFactory.newHomeViewInstance(mActivity, mTrackSelector, new DefaultLoadControl());
+            mPlayer.setImageSubsOutput(mSubtitleHandler);
             mPlayer.addListener(this);
-            if (mCacheSurface != null)
-                mPlayer.setSurface(mCacheSurface);
-            mCacheSurface = null;
+            mVideoFrame.setPlayer(mPlayer);
         }
-        else {
-
+        else
             mPlayer.stop();
-            mPlayer.setRendererBuilder(getRendererBuilder());
-        }
 
+
+        mIsMetadataSet = false;
+
+        mPlayer.prepare(mActivity, mServer, mCurrentVideoHandler.getVideo());
         mPlayer.seekTo(mCurrentVideoHandler.getStartPosition());
-        mPlayer.prepare(mCurrentVideoHandler.getVideo());
 
         if (mCurrentVideoHandler.getPlaybackStartType() == StartPosition.PlaybackStartType.Ask)
             ResumeChoiceHandler.askUser(mFragment, mPlayer, mCurrentVideoHandler.getLastViewedPosition(), CHOOSER_TIMEOUT);
@@ -320,26 +277,13 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
         if (doPlay && getPlaybackState() != PlaybackState.STATE_PLAYING) {
 
             mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            mPlayer.getPlayerControl().start();
+            mPlayer.setPlayWhenReady(true);
             mMediaSessionHandler.setPlaybackState(PlaybackState.STATE_PLAYING);
         } else {
             mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            mPlayer.getPlayerControl().pause();
+            mPlayer.setPlayWhenReady(false);
             mMediaSessionHandler.setPlaybackState(PlaybackState.STATE_PAUSED);
         }
-    }
-
-    @Override
-    public void onError(Exception e) {
-
-        Toast.makeText(mActivity, "An error has occured", Toast.LENGTH_LONG).show();
-        Log.e("VideoPlaybackError", "An error occurred: " + e);
-    }
-
-    @Override
-    public void onVideoSizeChanged(final int width, final int height, int unappliedRotationDegrees,
-                                   float pixelWidthHeightRatio) {
-        mVideoFrame.setAspectRatio(height == 0 ? 1 : (width * pixelWidthHeightRatio) / height);
     }
 
     @Override
@@ -376,39 +320,6 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
         return true;
     }
 
-    @Override
-    public void onStateChanged(boolean playWhenReady, int playbackState) {
-        switch (playbackState) {
-            case ExoPlayer.STATE_BUFFERING:
-                // Do nothing.
-                break;
-            case ExoPlayer.STATE_ENDED:
-                mIsMetadataSet = false;
-                if (!skipToNext())
-                    mActivity.finish();
-                break;
-            case ExoPlayer.STATE_IDLE:
-                // Do nothing.
-                break;
-            case ExoPlayer.STATE_PREPARING:
-                mIsMetadataSet = false;
-                mCurrentVideoHandler.setTracks(mPlayer);
-                break;
-            case ExoPlayer.STATE_READY:
-
-                // Duration is set here.
-                if (!mIsMetadataSet) {
-                    mCurrentVideoHandler.updateRecommendations(mActivity, true);
-
-                    mPlaybackUIHandler.updateMetadata();
-                    mIsMetadataSet = true;
-                }
-                break;
-            default:
-                // Do nothing.
-                break;
-        }
-    }
 
     private void playVideo(PlexVideoItem video, Bundle extras) {
 
@@ -440,7 +351,7 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
         }
     }
 
-    public ListRow getCodecRowForVideo() { return mCurrentVideoHandler.getCodecRowForVideo(mPlayer); }
+    public ListRow getCodecRowForVideo() { return mCurrentVideoHandler.getCodecRowForVideo(mTrackSelector); }
 
     public ListRow getExtrasRowForVideo() { return mCurrentVideoHandler.getExtrasRowForVideo(); }
 
@@ -476,6 +387,57 @@ public class VideoPlayerHandler implements VideoPlayer.Listener, SurfaceHolder.C
             mFragment.startActivity(intent, null);
             mActivity.finish();
         }
+    }
+
+    @Override
+    public void onLoadingChanged(boolean isLoading) {
+
+    }
+
+    @Override
+    public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+
+        switch (playbackState) {
+            case ExoPlayer.STATE_BUFFERING:
+                // Do nothing.
+                break;
+            case ExoPlayer.STATE_ENDED:
+                mIsMetadataSet = false;
+                if (!skipToNext())
+                    mActivity.finish();
+                break;
+            case ExoPlayer.STATE_IDLE:
+                // Do nothing.:
+                break;
+            case ExoPlayer.STATE_READY:
+                // Duration is set here.
+                if (!mIsMetadataSet) {
+                    mCurrentVideoHandler.setTracks(mTrackSelector);
+                    mCurrentVideoHandler.updateRecommendations(mActivity, true);
+
+                    mPlaybackUIHandler.updateMetadata();
+                    mIsMetadataSet = true;
+                }
+                break;
+            default:
+                // Do nothing.
+                break;
+        }
+    }
+
+    @Override
+    public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+    }
+
+    @Override
+    public void onPlayerError(ExoPlaybackException error) {
+
+    }
+
+    @Override
+    public void onPositionDiscontinuity() {
+
     }
 
     private class GetFullInfo extends AsyncTask<String, Void, MediaContainer> {

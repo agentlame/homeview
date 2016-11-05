@@ -10,10 +10,10 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import android.view.View;
 
-import com.google.android.exoplayer.util.MimeTypes;
+import com.google.android.exoplayer2.util.MimeTypes;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.MediaCodecCapabilities;
-import com.monsterbutt.homeview.player.MediaTrackSelector;
+import com.monsterbutt.homeview.player.TrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 
 import java.util.List;
@@ -38,7 +38,7 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     public Stream (us.nineworlds.plex.rest.model.impl.Stream stream, int trackIndex, MediaCodecCapabilities capabilities) {
         mStream = stream;
         mTrackTypeIndex = trackIndex;
-        if (mTrackTypeIndex == MediaTrackSelector.TrackTypeOff)
+        if (mTrackTypeIndex == TrackSelector.TrackTypeOff)
             mDecodeStatus = MediaCodecCapabilities.DecodeType.Hardware;
         else
             mDecodeStatus = capabilities.determineDecoderType(  getMimeTypeForTrackType(),

@@ -5,19 +5,11 @@
     android:background="@color/black"
     android:orientation="vertical">
 
-    <com.google.android.exoplayer.AspectRatioFrameLayout
-        android:id="@+id/video_frame"
+    <com.monsterbutt.homeview.player.HomeViewExoPlayerView
+        android:id="@+id/player_view"
+        android:focusable="true"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center">
-
-        <SurfaceView
-            android:id="@+id/surface_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center|center_vertical"/>
-
-    </com.google.android.exoplayer.AspectRatioFrameLayout>
+        android:layout_height="match_parent"/>
 
     <ImageView
         android:id="@+id/imageSubtitles"
@@ -25,7 +17,7 @@
         android:layout_height="0dp"
         android:layout_width="0dp" />
 
-    <TextView
+    <!--<TextView
         android:id="@+id/textSubtitles"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -36,7 +28,7 @@
         android:shadowColor="@color/black"
         android:shadowDx="1"
         android:shadowDy="1"
-        android:shadowRadius="5" />
+        android:shadowRadius="5" /> -->
 
     <fragment
         android:id="@+id/playback_controls_fragment"

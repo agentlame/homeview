@@ -59,7 +59,7 @@ public class MediaTracks implements Parcelable {
 
         MediaTrackType type = tracks.get(streamType);
         if (type == null)
-            return MediaTrackSelector.TrackTypeOff;
+            return TrackSelector.TrackTypeOff;
         return type.getSelectedTrackDisplayIndex();
     }
 
@@ -67,7 +67,7 @@ public class MediaTracks implements Parcelable {
 
         MediaTrackType type = tracks.get(streamType);
         if (type == null)
-            return MediaTrackSelector.TrackTypeOff;
+            return TrackSelector.TrackTypeOff;
         return type.getSelectedPlayerIndex();
     }
 
@@ -98,7 +98,7 @@ public class MediaTracks implements Parcelable {
 
         MediaTrackType type = tracks.get(streamType);
         if (type == null)
-            return MediaTrackSelector.TrackTypeOff;
+            return TrackSelector.TrackTypeOff;
         return type.setSelectedTrack(displayIndex);
     }
 
@@ -118,5 +118,13 @@ public class MediaTracks implements Parcelable {
 
         MediaTrackType type = tracks.get(streamType);
         return (type == null) ? null : type.getSelectedTrack();
+    }
+
+    public boolean isSelectedTrack(int streamType, int displayIndex) {
+
+        MediaTrackType type = tracks.get(streamType);
+        if (type == null)
+            return false;
+        return type.isSelectedTrack(displayIndex);
     }
 }

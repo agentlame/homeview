@@ -113,7 +113,7 @@
     <string name="preferences_playback_resume">Resume playback</string>
     <string name="preferences_playback_resume_summary">How would you like to resume a file that was already started</string>
     <string name="preferences_playback_resume_dialog">Pick a resume option</string>
-    <string name="preferences_playback_resume_entries_default">ask</string>
+    <string name="preferences_playback_resume_entries_default">resume</string>
     <string name="preferences_playback_playnext">Play next track</string>
     <string name="preferences_playback_playnext_summary">Play next episode/movie after media finishes?</string>
     <string name="preferences_playback_playnext_dialog">Select play next option</string>

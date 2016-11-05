@@ -1,53 +1,55 @@
 package com.monsterbutt.homeview.player.renderers;
 
-import android.content.Context;
 import android.media.AudioFormat;
-import android.media.AudioManager;
+import android.os.Handler;
 
-import com.google.android.exoplayer.ExoPlaybackException;
-import com.google.android.exoplayer.MediaCodecAudioTrackRenderer;
-import com.google.android.exoplayer.MediaCodecSelector;
-import com.google.android.exoplayer.MediaFormat;
-import com.google.android.exoplayer.MediaFormatHolder;
-import com.google.android.exoplayer.SampleSource;
-import com.google.android.exoplayer.audio.AudioCapabilities;
-import com.google.android.exoplayer.util.MimeTypes;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.Format;
+import com.google.android.exoplayer2.audio.AudioCapabilities;
+import com.google.android.exoplayer2.audio.AudioRendererEventListener;
+import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
+import com.google.android.exoplayer2.drm.DrmSessionManager;
+import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
+import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
+import com.google.android.exoplayer2.util.MimeTypes;
 import com.monsterbutt.homeview.player.MediaCodecCapabilities;
-import com.monsterbutt.homeview.player.VideoPlayer;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 
 
-public class DeviceAudioTrackRenderer extends MediaCodecAudioTrackRenderer {
+public class DeviceAudioTrackRenderer extends MediaCodecAudioRenderer {
 
-    private final PlexVideoItem mItem;
+    private PlexVideoItem mItem = null;
     private final AudioCapabilities mCaps;
 
-    public static DeviceAudioTrackRenderer getRenderer(Context context, VideoPlayer player, SampleSource sampleSource) {
+    public DeviceAudioTrackRenderer(MediaCodecSelector mediaCodecSelector,
+                                     DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
+                                     boolean playClearSamplesWithoutKeys, Handler eventHandler,
+                                     AudioRendererEventListener eventListener,
+                                     int streamType,
+                                     MediaCodecCapabilities mcc) {
 
-        return new DeviceAudioTrackRenderer(player, sampleSource, MediaCodecCapabilities.getInstance(context));
-    }
-
-    private DeviceAudioTrackRenderer(VideoPlayer player, SampleSource sampleSource, MediaCodecCapabilities mcc) {
-
-        super(sampleSource, MediaCodecSelector.DEFAULT, null, true, player.getMainHandler(), player,
-                mcc.usePassthroughAudioIfAvailable() ? mcc.getSystemAudioCapabilities() : null
-                , AudioManager.STREAM_MUSIC);
-        mItem = player.getPreparedVideo();
+        super(mediaCodecSelector, drmSessionManager, playClearSamplesWithoutKeys, eventHandler,
+                eventListener, mcc.usePassthroughAudioIfAvailable() ? mcc.getSystemAudioCapabilities() : null, streamType);
         mCaps = mcc.getSystemAudioCapabilities();
     }
 
-    @Override
-    protected void onInputFormatChanged(MediaFormatHolder holder) throws ExoPlaybackException {
+    public void prepareVideo(PlexVideoItem item) {
+        mItem = item;
+    }
 
-        MediaFormat format = holder.format;
-        if (format.mimeType.equals(MimeTypes.AUDIO_DTS) && mItem.trackIsDtsHd(format.trackId)
+    @Override
+    protected void onInputFormatChanged(Format format) throws ExoPlaybackException {
+
+        if (mItem != null &&
+                format.sampleMimeType.equals(MimeTypes.AUDIO_DTS) && mItem.trackIsDtsHd(format.id)
                 && mCaps.supportsEncoding(AudioFormat.ENCODING_DTS_HD)) {
 
-            holder.format = MediaFormat.createAudioFormat(format.trackId, MimeTypes.AUDIO_DTS_HD,
-                                            format.bitrate, format.maxInputSize, format.durationUs,
+            format = Format.createAudioSampleFormat(format.id, MimeTypes.AUDIO_DTS_HD,
+                                            format.codecs, format.bitrate, format.maxInputSize,
                                             format.channelCount, format.sampleRate,
-                                            format.initializationData, format.language);
+                                            format.initializationData, format.drmInitData,
+                                            format.selectionFlags, format.language);
         }
-        super.onInputFormatChanged(holder);
+        super.onInputFormatChanged(format);
     }
 }

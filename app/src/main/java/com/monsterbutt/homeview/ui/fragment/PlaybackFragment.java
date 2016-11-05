@@ -6,10 +6,9 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.google.android.exoplayer.AspectRatioFrameLayout;
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.player.HomeViewExoPlayerView;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.services.ThemeService;
@@ -38,10 +37,10 @@ public class PlaybackFragment
         Activity activity = getActivity();
         setBackgroundType(BACKGROUND_TYPE);
         PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
-        AspectRatioFrameLayout videoFrame = (AspectRatioFrameLayout) activity.findViewById(R.id.video_frame);
+        HomeViewExoPlayerView videoFrame = (HomeViewExoPlayerView) activity.findViewById(R.id.player_view);
+        videoFrame.setUseController(false);
         SubtitleHandler subtitleHandler = new SubtitleHandler(activity, videoFrame,
-                (ImageView) activity.findViewById(R.id.imageSubtitles),
-                (TextView) activity.findViewById(R.id.textSubtitles));
+                (ImageView) activity.findViewById(R.id.imageSubtitles));
         mMediaSessionHandler = new MediaSessionHandler(this);
 
         mCurrentVideoHandler = new CurrentVideoHandler(this, server, mMediaSessionHandler, subtitleHandler);

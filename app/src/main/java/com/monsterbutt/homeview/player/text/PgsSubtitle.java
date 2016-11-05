@@ -1,9 +1,9 @@
 package com.monsterbutt.homeview.player.text;
 
-import com.google.android.exoplayer.text.Cue;
-import com.google.android.exoplayer.text.Subtitle;
-import com.google.android.exoplayer.util.Assertions;
-import com.google.android.exoplayer.util.Util;
+import com.google.android.exoplayer2.text.Cue;
+import com.google.android.exoplayer2.text.Subtitle;
+import com.google.android.exoplayer2.util.Assertions;
+import com.google.android.exoplayer2.util.Util;
 
 import java.util.Collections;
 import java.util.List;
@@ -153,14 +153,6 @@ public class PgsSubtitle implements Subtitle {
         Assertions.checkArgument(index >= 0);
         Assertions.checkArgument(index < cueTimesUs.length);
         return cueTimesUs[index];
-    }
-
-    @Override
-    public long getLastEventTime() {
-        if (getEventTimeCount() == 0) {
-            return -1;
-        }
-        return cueTimesUs[cueTimesUs.length - 1];
     }
 
     @Override

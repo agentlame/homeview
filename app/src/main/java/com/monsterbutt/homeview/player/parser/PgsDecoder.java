@@ -2,22 +2,21 @@ package com.monsterbutt.homeview.player.parser;
 
 import android.util.Log;
 
-import com.google.android.exoplayer.ParserException;
-import com.google.android.exoplayer.text.Subtitle;
-import com.google.android.exoplayer.text.SubtitleParser;
-import com.google.android.exoplayer.util.MimeTypes;
-import com.google.android.exoplayer.util.ParsableByteArray;
+import com.google.android.exoplayer2.text.SimpleSubtitleDecoder;
+import com.google.android.exoplayer2.text.Subtitle;
+import com.google.android.exoplayer2.text.SubtitleDecoderException;
+import com.google.android.exoplayer2.util.ParsableByteArray;
 import com.monsterbutt.homeview.player.text.PgsSubtitle;
 
 import java.util.Arrays;
 
 /**
- * PgsParser is based/influenced/converted from FFMPEG libavcodec/pgssubdec.c
+ * PgsDecoder is based/influenced/converted from FFMPEG libavcodec/pgssubdec.c
  */
 
-public class PgsParser implements SubtitleParser {
+public class PgsDecoder extends SimpleSubtitleDecoder {
 
-    private static final String TAG = "PgsParser";
+    private static final String TAG = "PgsDecoder";
 
     private static final int PALETTE_SEGMENT        = 0x14;
     private static final int PICTURE_SEGMENT        = 0x15;
@@ -39,17 +38,15 @@ public class PgsParser implements SubtitleParser {
         }
     }
 
-    @Override
-    public boolean canParse(String mimeType) {
-        return mimeType.equals(MimeTypes.APPLICATION_PGS);
+    public PgsDecoder() {
+        super("PgsDecoder");
     }
 
     @Override
-    public Subtitle parse(byte[] bytes, int offset, int length) throws ParserException {
+    protected Subtitle decode(byte[] data, int size) throws SubtitleDecoderException {
 
         PGSSubContext ctx = new PGSSubContext();
-        ParsableByteArray buffer = new ParsableByteArray(bytes, length);
-        buffer.skipBytes(offset);
+        ParsableByteArray buffer = new ParsableByteArray(data, size);
 
         if (buffer.bytesLeft() < 3)
             return null;

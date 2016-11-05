@@ -13,12 +13,13 @@ import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.ListRow;
 import android.util.Pair;
 
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.player.PlaybackControlHelper;
 import com.monsterbutt.homeview.player.StartPosition;
-import com.monsterbutt.homeview.player.VideoPlayer;
+import com.monsterbutt.homeview.player.TrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Chapter;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
@@ -249,12 +250,12 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
         activity.startService(intent);
     }
 
-    public void setTracks(VideoPlayer player) {
+    public void setTracks(TrackSelector selector) {
 
         if (mSelectedVideoTracks != null) {
-            mSelectedVideoTracks.setSelectedTrack(player, Stream.Audio_Stream,
+            mSelectedVideoTracks.setSelectedTrack(selector, Stream.Audio_Stream,
                     mSelectedVideoTracks.getSelectedTrackDisplayIndex(Stream.Audio_Stream));
-            mSelectedVideoTracks.setSelectedTrack(player, Stream.Subtitle_Stream,
+            mSelectedVideoTracks.setSelectedTrack(selector, Stream.Subtitle_Stream,
                     mSelectedVideoTracks.getSelectedTrackDisplayIndex(Stream.Subtitle_Stream));
         }
     }
@@ -355,13 +356,13 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
         }
     }
 
-    public ListRow getCodecRowForVideo(VideoPlayer player) {
+    public ListRow getCodecRowForVideo(TrackSelector selector) {
 
         ListRow ret = null;
         synchronized (this) {
             if (mSelectedVideo != null) {
                 ret = mSelectedVideo.getCodecsRow(mActivity, mServer, mSelectedVideoTracks);
-                mSelectionHandler.setCodecClickListener(new CodecClickHandler(mActivity, mSelectedVideoTracks, player, ret));
+                mSelectionHandler.setCodecClickListener(new CodecClickHandler(mActivity, mSelectedVideoTracks, selector, ret));
             }
         }
         return ret;
@@ -404,13 +405,13 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
 
         private final Activity mActivity;
         private final MediaTrackSelector mTracks;
-        private final VideoPlayer mPlayer;
+        private final TrackSelector mSelector;
         private final ListRow mRow;
 
-        public CodecClickHandler(Activity activity, MediaTrackSelector tracks, VideoPlayer player, ListRow row) {
+        public CodecClickHandler(Activity activity, MediaTrackSelector tracks, TrackSelector selector, ListRow row) {
             mActivity = activity;
             mTracks = tracks;
-            mPlayer = player;
+            mSelector = selector;
             mRow = row;
         }
 
@@ -425,7 +426,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
-                    mTracks.setSelectedTrack(mPlayer, trackType, which);
+                    mTracks.setSelectedTrack(mSelector, trackType, which);
                     ArrayObjectAdapter adapter = (ArrayObjectAdapter) mRow.getAdapter();
                     int index = adapter.indexOf(card);
                     if (0 <= index) {

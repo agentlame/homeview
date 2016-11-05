@@ -5,7 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.google.android.exoplayer.text.Cue;
+import com.google.android.exoplayer2.text.Cue;
 
 public class PgsCue extends Cue {
 
@@ -24,6 +24,7 @@ public class PgsCue extends Cue {
 
     public PgsCue(PgsSubtitle.AVSubtitleRect avSubtitleRect) {
 
+        super("");
         this.start_display_time = avSubtitleRect.start_display_time;
         this.x = avSubtitleRect.x;
         this.y = avSubtitleRect.y;

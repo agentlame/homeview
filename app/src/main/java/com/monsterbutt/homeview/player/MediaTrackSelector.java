@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.exoplayer2.C;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Stream;
@@ -25,8 +26,6 @@ public class MediaTrackSelector implements Parcelable {
     private MediaTracks mTracks = null;
     private boolean didSelectSubs = false;
     private final String baseLangCode;
-
-    public final static int TrackTypeOff = -1;
 
     public MediaTrackSelector(Context context, List<us.nineworlds.plex.rest.model.impl.Stream> streams,
                               String baseLangCode, MediaCodecCapabilities capabilities) {
@@ -56,42 +55,26 @@ public class MediaTrackSelector implements Parcelable {
         return mTracks.getSelectedTrack(streamType);
     }
 
-    public void setSelectedTrack(VideoPlayer player, int streamType, int displayIndex) {
+    public void setSelectedTrack(TrackSelector selector, int streamType, int displayIndex) {
+
+        if (mTracks.isSelectedTrack(streamType, displayIndex))
+            return;
 
         int index = mTracks.setSelectedTrack(streamType, displayIndex);
-        if (player != null) {
+        switch(streamType) {
 
-            switch(streamType) {
+            case Stream.Subtitle_Stream:
 
-                case Stream.Subtitle_Stream:
+                didSelectSubs = index != TrackSelector.TrackTypeOff;
+                if (selector != null)
+                    selector.setSelectionOverride(C.TRACK_TYPE_TEXT, didSelectSubs ? Integer.toString(index+1) : null);
+                break;
 
-                    didSelectSubs = index != TrackTypeOff;
-                    player.setSelectedTrack(VideoPlayer.TYPE_TEXT, index);
-                    break;
+            case Stream.Audio_Stream:
 
-                case Stream.Audio_Stream:
-
-                    if (index != TrackTypeOff) {
-                        switch (mTracks.getDecodeStatusForSelected(streamType)) {
-
-                            case Hardware:
-                            case Passthrough:
-                                player.setSelectedTrack(VideoPlayer.TYPE_AUDIO_FFMPEG, TrackTypeOff);
-                                player.setSelectedTrack(VideoPlayer.TYPE_AUDIO, index);
-                                break;
-
-                            case Software:
-                            case Unsupported:
-                            default:
-
-                                player.setSelectedTrack(VideoPlayer.TYPE_AUDIO, TrackTypeOff);
-                                player.setSelectedTrack(VideoPlayer.TYPE_AUDIO_FFMPEG, index);
-                                break;
-                        }
-                    }
-
-                    break;
-            }
+                if (selector != null)
+                    selector.setSelectionOverride(C.TRACK_TYPE_AUDIO, Integer.toString(index+1));
+                break;
         }
     }
 
@@ -178,7 +161,7 @@ public class MediaTrackSelector implements Parcelable {
 
     public boolean areSubtitlesEnabled() {
 
-        return mTracks.getSelectedPlayerIndex(Stream.Subtitle_Stream) != MediaTrackSelector.TrackTypeOff
+        return mTracks.getSelectedPlayerIndex(Stream.Subtitle_Stream) != TrackSelector.TrackTypeOff
                 && didSelectSubs;
     }
 }

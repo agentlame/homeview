@@ -12,10 +12,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.exoplayer.ExoPlayer;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.player.HomeViewExoPlayer;
 import com.monsterbutt.homeview.player.StartPosition;
-import com.monsterbutt.homeview.player.VideoPlayer;
 import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
 
 import java.util.ArrayList;
@@ -68,7 +68,7 @@ public class ResumeChoiceHandler implements DialogInterface.OnClickListener,
         }
     }
 
-    public static void askUser(PlaybackFragment fragment, VideoPlayer player, long lastVideoOffset, int timeout) {
+    public static void askUser(PlaybackFragment fragment, HomeViewExoPlayer player, long lastVideoOffset, int timeout) {
 
         new ResumeChoiceHandler(fragment, player, lastVideoOffset, timeout);
     }
@@ -85,10 +85,10 @@ public class ResumeChoiceHandler implements DialogInterface.OnClickListener,
     private PlaybackFragment fragment;
     private Handler handler  = new Handler();
     private AlertDialog alert;
-    private VideoPlayer player;
+    private HomeViewExoPlayer player;
     private long lastVideoOffset;
 
-    private ResumeChoiceHandler(PlaybackFragment fragment, VideoPlayer player, long lastVideoOffset, int timeout) {
+    private ResumeChoiceHandler(PlaybackFragment fragment, HomeViewExoPlayer player, long lastVideoOffset, int timeout) {
 
         this.fragment = fragment;
         this.player = player;
@@ -121,7 +121,6 @@ public class ResumeChoiceHandler implements DialogInterface.OnClickListener,
                         case ExoPlayer.STATE_ENDED:
                         case ExoPlayer.STATE_BUFFERING:
                         case ExoPlayer.STATE_IDLE:
-                        case ExoPlayer.STATE_PREPARING:
 
                             player.seekTo(lastVideoOffset);
                             fragment.tickle();

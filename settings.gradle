@@ -1,4 +1,7 @@
 include ':app'
-include ':ExoPlayer'
+include ':library'
+include ':extension-ffmpeg'
 
-project(':ExoPlayer').projectDir = new File(rootDir, 'ExoPlayer/library')
+
+project(':library').projectDir = new File(settingsDir, 'ExoPlayer/library')
+project(':extension-ffmpeg').projectDir = new File(settingsDir, 'ExoPlayer/extensions/ffmpeg')

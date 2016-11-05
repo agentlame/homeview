@@ -6,8 +6,9 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.text.TextUtils;
 
-import com.google.android.exoplayer.audio.AudioCapabilities;
-import com.google.android.exoplayer.util.MimeTypes;
+import com.google.android.exoplayer2.audio.AudioCapabilities;
+import com.google.android.exoplayer2.util.MimeTypes;
+import com.google.android.exoplayer2.C;
 import com.monsterbutt.homeview.settings.SettingsManager;
 
 import java.util.ArrayList;
@@ -24,7 +25,9 @@ public class MediaCodecCapabilities {
         Unsupported
     }
 
+
     private static final int NO_ENCODING = -1;
+    private static final int ENCODING_TRUEHD = 14;
 
     private static MediaCodecCapabilities gInstance = null;
     public static MediaCodecCapabilities getInstance(Context context) {
@@ -48,7 +51,7 @@ public class MediaCodecCapabilities {
         codecTranslations.put("video/h263",     MimeTypes.VIDEO_MPEG2);
         codecTranslations.put("video/mpeg2v",   MimeTypes.VIDEO_MPEG2);
         codecTranslations.put("video/mpeg2video",MimeTypes.VIDEO_MPEG2);
-        codecTranslations.put("video/mpeg4"     ,MimeTypes.VIDEO_MP4V);
+        codecTranslations.put("video/mpeg4",    MimeTypes.VIDEO_MP4V);
         codecTranslations.put("video/h264",     MimeTypes.VIDEO_H264);
         codecTranslations.put("video/h265",     MimeTypes.VIDEO_H265);
         codecTranslations.put("video/vc1",      MimeTypes.VIDEO_VC1);
@@ -129,6 +132,10 @@ public class MediaCodecCapabilities {
                 if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_E_AC3))
                     return AudioFormat.ENCODING_E_AC3;
                 break;
+            case MimeTypes.AUDIO_TRUEHD:
+                if (audioCapabilities.supportsEncoding(ENCODING_TRUEHD))
+                    return ENCODING_TRUEHD;
+                break;
             case MimeTypes.AUDIO_DTS:
                 if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DTS))
                     return AudioFormat.ENCODING_DTS;
@@ -137,15 +144,16 @@ public class MediaCodecCapabilities {
                 if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DTS_HD))
                     return AudioFormat.ENCODING_DTS_HD;
                 break;
-            case MimeTypes.AUDIO_TRUEHD:
-                /*
-                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_TRUEHD))
-                    return C.ENCODING_TRUEHD;
-                break;    */
-                return NO_ENCODING;
             case MimeTypes.AUDIO_RAW:
-                if (bitDepth == 16)
+                if (bitDepth == 8)
+                    return AudioFormat.ENCODING_PCM_8BIT;
+                else if (bitDepth == 16)
                     return AudioFormat.ENCODING_PCM_16BIT;
+                else if (bitDepth == 24)
+                    return C.ENCODING_PCM_24BIT;
+                else if (bitDepth == 32)
+                    return C.ENCODING_PCM_32BIT;
+                break;
             default:
                 return NO_ENCODING;
         }

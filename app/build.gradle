@@ -54,8 +54,6 @@ android {
         exclude 'META-INF/beans.xml'
     }
 
-    sourceSets.main.jni.srcDirs = [] //disable automatic ndk-build call
-
     signingConfigs {
         release
     }
@@ -93,19 +91,6 @@ android {
     }
 }
 
-task ndkBuild(type: Exec) {
-
-    Properties properties = new Properties()
-    properties.load(project.rootProject.file('local.properties').newDataInputStream())
-    def sdkDir = properties.getProperty('sdk.dir')
-    def ndkDir = properties.getProperty('ndk.dir')
-    commandLine "${ndkDir}/ndk-build", '-C', file('src/main/jni').absolutePath, "NDK_LIBS_OUT=../jniLibs"
-}
-
-tasks.withType(JavaCompile) {
-    compileTask -> compileTask.dependsOn ndkBuild
-}
-
 repositories {
     mavenCentral()
     mavenLocal()
@@ -116,6 +101,11 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
+
+
+    compile project(':library')
+    compile project(':extension-ffmpeg')
+
     compile 'com.android.support:recyclerview-v7:24.2.0'
     compile 'com.android.support:leanback-v17:24.2.0'
     compile 'com.android.support:appcompat-v7:24.2.0'
@@ -125,7 +115,6 @@ dependencies {
         exclude module: 'stax-api'
         exclude module: 'xpp3'
     }
-    compile project(':ExoPlayer')
     compile 'com.android.support:design:24.2.0'
 
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.21'
@@ -134,4 +123,6 @@ dependencies {
     compile group: 'org.eclipse.jetty', name: 'jetty-server', version:'8.1.12.v20130726'
     compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version:'8.1.12.v20130726'
     compile group: 'org.eclipse.jetty', name: 'jetty-client', version:'8.1.12.v20130726'
+
+    //compile 'com.google.android.exoplayer:exoplayer:r2.0.3'
 }

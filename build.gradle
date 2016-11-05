@@ -5,7 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
+        classpath 'com.android.tools.build:gradle:2.1.2'
         classpath 'com.novoda:bintray-release:0.2.7'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -16,10 +16,25 @@ allprojects {
     repositories {
         jcenter()
     }
+    project.ext {
+        compileSdkVersion=24
+        targetSdkVersion=23
+        buildToolsVersion='24.0.2'
+        releaseRepoName = 'exoplayer'
+        releaseUserOrg = 'google'
+        releaseGroupId = 'com.google.android.exoplayer'
+        releaseVersion = 'r2.0.4'
+        releaseWebsite = 'https://github.com/google/ExoPlayer'
+    }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+ext {
+    compileSdkVersion = 24
+    buildToolsVersion = '24.0.2'
 }
 
 def architectures = [ arm:"armeabi-v7a", x86:"x86" ]
@@ -36,7 +51,23 @@ def buildFFmpeg(archAbbrev, arch) {
         def ndkDir = properties.getProperty('ndk.dir')
         commandLine './createlibs', archAbbrev, ndkDir, Runtime.runtime.availableProcessors()
     }
-    copyFFmpegArch(archAbbrev, arch)
+
+    copyFFmpegArchToExoPlayer(archAbbrev, arch)
+}
+
+def buildExoPlayerJNI(archs) {
+
+    exec {
+
+        println "Setting directory : " + "$projectDir/ExoPlayer/extensions/ffmpeg/src/main/jni"
+        workingDir = "$projectDir/ExoPlayer/extensions/ffmpeg/src/main/jni"
+
+        def procCount = Runtime.runtime.availableProcessors()
+        Properties properties = new Properties()
+        properties.load(project.file('local.properties').newDataInputStream())
+        def ndkDir = properties.getProperty('ndk.dir')
+        commandLine "$ndkDir/ndk-build", "APP_ABI=$archs", "-j$procCount"
+    }
 }
 
 def copyFFmpegLib(archAbbrev, arch) {
@@ -52,20 +83,29 @@ def copyFFmpegLib(archAbbrev, arch) {
     }
 }
 
-def copyFFmpegHeaders(archAbbrev, arch) {
+def copyFFmpegArchToExoPlayer(archAbbrev, arch) {
+
+    copyFFmpegHeadersExoPlayer(archAbbrev)
+    copyFFmpegLibExoPlayer(archAbbrev, arch)
+}
+
+def copyFFmpegHeadersExoPlayer(archAbbrev) {
 
     copy {
         from "FFmpeg_Android/android/${archAbbrev}/include/"
-        into "app/src/main/include/${arch}"
+        into "ExoPlayer/extensions/ffmpeg/src/main/jni/ffmpeg"
     }
 }
 
-def copyFFmpegArch(archAbbrev, arch) {
+def copyFFmpegLibExoPlayer(archAbbrev, arch) {
 
-    copyFFmpegHeaders(archAbbrev, arch)
-    copyFFmpegLib(archAbbrev, arch)
+    copy {
+        from "FFmpeg_Android/android/${archAbbrev}/lib/"
+        into "ExoPlayer/extensions/ffmpeg/src/main/jni/ffmpeg/android-libs/${arch}"
+        include '*'
+        exclude 'pkgconfig'
+    }
 }
-
 
 task updateFFmpegSubmodule << {
 
@@ -78,8 +118,10 @@ task updateFFmpegSubmodule << {
 task copyFFmpeg << {
 
     architectures.each {
-        key,value -> copyFFmpegArch(key,value)
+        key,value -> copyFFmpegArchToExoPlayer(key,value)
     }
+
+    buildExoPlayerJNI(architectures.values().join(","))
 }
 
 task buildFFmpeg <<  {
@@ -89,5 +131,7 @@ task buildFFmpeg <<  {
     architectures.each {
         key,value -> buildFFmpeg(key,value)
     }
+
+    buildExoPlayerJNI(architectures.values().join(","))
 }
 buildFFmpeg.dependsOn updateFFmpegSubmodule

@@ -37,7 +37,7 @@ public class MediaTrackType implements Parcelable {
             off.setStreamType(Stream.Subtitle_Stream);
             off.setLanguage(context != null ? context.getString(R.string.subs_off) : "Off");
             off.setLanguageCode(baseLangCode);
-            streams.add(new Stream(off, MediaTrackSelector.TrackTypeOff, capabilities));
+            streams.add(new Stream(off, TrackSelector.TrackTypeOff, capabilities));
             hasOffTrack = true;
         }
         else
@@ -75,7 +75,7 @@ public class MediaTrackType implements Parcelable {
     public int getSelectedTrackDisplayIndex() {
 
         if (selected == null)
-            return MediaTrackSelector.TrackTypeOff;
+            return TrackSelector.TrackTypeOff;
         return streams.indexOf(selected);
     }
 
@@ -83,7 +83,7 @@ public class MediaTrackType implements Parcelable {
 
         // this skips off and unsupported as exoplayer know nothing of off and skips unsupported
         if (selected == null || selected.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Unsupported)
-            return MediaTrackSelector.TrackTypeOff;
+            return TrackSelector.TrackTypeOff;
         boolean isSoftware = selected.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Software;
         int playerIndex = selected.getTrackTypeIndex();
         for (int currIndex = playerIndex; 0 < currIndex--; /**/) {
@@ -156,7 +156,7 @@ public class MediaTrackType implements Parcelable {
         selected = null;
         if (displayIndex >= 0 && displayIndex < streams.size())
             selected = streams.get(displayIndex);
-        return selected == null ? MediaTrackSelector.TrackTypeOff : getSelectedPlayerIndex();
+        return selected == null || selected.getIndex() == null ? TrackSelector.TrackTypeOff : Integer.parseInt(selected.getIndex());
     }
 
     public MediaTrackSelector.StreamChoiceArrayAdapter getTracks(Context context, PlexServer server) {
@@ -178,5 +178,12 @@ public class MediaTrackType implements Parcelable {
 
     public Stream getSelectedTrack() {
         return selected;
+    }
+
+    public boolean isSelectedTrack(int displayIndex) {
+
+        if (displayIndex >= 0 && displayIndex < streams.size())
+            return selected == streams.get(displayIndex);
+        return false;
     }
 }
