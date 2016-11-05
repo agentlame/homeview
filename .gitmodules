@@ -1,7 +1,8 @@
-[submodule "ExoPlayer"]
-	path = ExoPlayer
-	url = https://github.com/drhill/ExoPlayer
-	branch = dev
 [submodule "FFmpeg_Android"]
 	path = FFmpeg_Android
 	url = https://github.com/drhill/FFmpeg_Android.git
+	branch = master
+[submodule "ExoPlayer"]
+	path = ExoPlayer
+	url = https://github.com/google/ExoPlayer
+	branch = release-v2
