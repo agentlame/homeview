@@ -20,6 +20,9 @@ import com.monsterbutt.homeview.ui.handler.PlaybackUIHandler;
 import com.monsterbutt.homeview.ui.handler.SubtitleHandler;
 import com.monsterbutt.homeview.ui.handler.VideoPlayerHandler;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class PlaybackFragment
         extends android.support.v17.leanback.app.PlaybackOverlayFragment
         implements HomeViewActivity.OnStopKeyListener, HomeViewActivity.OnBackPressedListener {
@@ -29,6 +32,44 @@ public class PlaybackFragment
     private VideoPlayerHandler mPlayerHandler;
     private CurrentVideoHandler mCurrentVideoHandler;
     private MediaSessionHandler mMediaSessionHandler;
+    private PlaybackUIHandler mPlaybackUIHandler;
+
+    private OnFadeCompleteListener mFadeListener = new OnFadeCompleteListener() {
+
+        private final static int HALF_SECOND = 500;
+        private Timer mTimer = new Timer();
+        private boolean mRunning = false;
+
+        @Override
+        public void onFadeInComplete() {
+
+            synchronized (this) {
+
+                mPlayerHandler.setGuiShowing(true);
+                if (mRunning)
+                    return;
+                mRunning = false;
+                mTimer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        mPlaybackUIHandler.updateProgress();
+                    }
+                }, 0, HALF_SECOND);
+            }
+
+        }
+        @Override
+        public void onFadeOutComplete() {
+
+            synchronized (this) {
+
+                mPlayerHandler.setGuiShowing(false);
+                mTimer.cancel();
+                mRunning = false;
+                mTimer = new Timer();
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -47,11 +88,12 @@ public class PlaybackFragment
         mPlayerHandler = new VideoPlayerHandler(this, server, mMediaSessionHandler,
                                                 mCurrentVideoHandler, subtitleHandler, videoFrame);
         mCurrentVideoHandler.setHandler(mPlayerHandler, new NextUpHandler(activity, mPlayerHandler));
-        PlaybackUIHandler playbackUIHandler = new PlaybackUIHandler(this, server, mCurrentVideoHandler);
-        mPlayerHandler.setUIHandler(playbackUIHandler);
-        mMediaSessionHandler.attach(mPlayerHandler, mCurrentVideoHandler, playbackUIHandler);
+        mPlaybackUIHandler = new PlaybackUIHandler(this, server, mCurrentVideoHandler);
+        mPlayerHandler.setUIHandler(mPlaybackUIHandler);
+        mMediaSessionHandler.attach(mPlayerHandler, mCurrentVideoHandler, mPlaybackUIHandler);
         ((HomeViewActivity)getActivity()).setStopKeyListner(this);
         ((HomeViewActivity)getActivity()).setBackPressedListener(this);
+        setFadeCompleteListener(mFadeListener);
     }
 
     @Override

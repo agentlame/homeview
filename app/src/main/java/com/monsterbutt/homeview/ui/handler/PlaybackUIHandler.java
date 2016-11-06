@@ -95,6 +95,10 @@ public class PlaybackUIHandler extends MediaController.Callback {
         mRowsAdapter.notifyArrayItemRangeChanged(0, 1);
     }
 
+    public void updateProgress() {
+        mGlue.updateProgress();
+    }
+
     public void setupVideoForPlayback() {
 
         updateMetadata();

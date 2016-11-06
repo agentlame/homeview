@@ -124,12 +124,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
     @Override
     public int getUpdatePeriod() {
-        View view = mFragment.getView();
-        int totalTime = getControlsRow().getTotalTime();
-        if (view == null || totalTime <= 0 || view.getWidth() == 0) {
-            return DEFAULT_UPDATE_PERIOD;
-        }
-        return Math.max(UPDATE_PERIOD, totalTime / view.getWidth());
+        return DEFAULT_UPDATE_PERIOD;
     }
 
     @Override

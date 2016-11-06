@@ -84,16 +84,9 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
         mCurrentVideoHandler = currentVideoHandler;
         mSubtitleHandler = subtitleHandler;
         mVideoFrame = videoFrame;
-
-        fragment.setFadeCompleteListener(new PlaybackOverlayFragment.OnFadeCompleteListener() {
-            @Override
-            public void onFadeInComplete() { setGuiShowing(true); }
-            @Override
-            public void onFadeOutComplete() { setGuiShowing(false); }
-        });
     }
 
-    private boolean isGuiShowing() {
+    public boolean isGuiShowing() {
         boolean ret;
         synchronized (this) {
             ret = mGuiShowing;
@@ -101,7 +94,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
         return ret;
     }
 
-    private void setGuiShowing(boolean val) {
+    public void setGuiShowing(boolean val) {
         synchronized (this) {
             mGuiShowing = val;
         }
