@@ -288,14 +288,25 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
         KeyEvent key = (KeyEvent) event;
         switch (key.getKeyCode()) {
 
+            case KeyEvent.KEYCODE_MEDIA_REWIND:
             case KeyEvent.KEYCODE_DPAD_LEFT:
                 if (KeyEvent.ACTION_DOWN == key.getAction())
                     rewind();
                 return true;
+            case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+            case KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD:
+                if (KeyEvent.ACTION_DOWN == key.getAction())
+                    mMediaSessionHandler.onSkipToPrevious();
+                return true;
+            case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
             case KeyEvent.KEYCODE_DPAD_RIGHT:
-
                 if (KeyEvent.ACTION_DOWN == key.getAction())
                     fastForward();
+                return true;
+            case KeyEvent.KEYCODE_MEDIA_NEXT:
+            case KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD:
+                if (KeyEvent.ACTION_DOWN == key.getAction())
+                    mMediaSessionHandler.onSkipToNext();
                 return true;
             default:
                 break;

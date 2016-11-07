@@ -24,13 +24,15 @@ public class MediaSessionHandler {
     private final PlaybackFragment mFragment;
     private VideoPlayerHandler mVideoPlayerHandler;
     private CurrentVideoHandler mCurrentVideoHandler;
+    private MediaSessionCallback mSessionCallback;
 
     public MediaSessionHandler(PlaybackFragment fragment) {
 
         mFragment = fragment;
         Activity activity = mFragment.getActivity();
         mSession = new MediaSession(activity, "HomeViewPlayer");
-        mSession.setCallback(new MediaSessionCallback());
+        mSessionCallback = new MediaSessionCallback();
+        mSession.setCallback(mSessionCallback);
         mSession.setFlags(FLAG_HANDLES_MEDIA_BUTTONS | FLAG_HANDLES_TRANSPORT_CONTROLS);
         mSession.setActive(true);
 
@@ -83,6 +85,14 @@ public class MediaSessionHandler {
     public void setQueue(List<MediaSession.QueueItem> queue, String title) {
         mSession.setQueue(queue);
         mSession.setQueueTitle(title);
+    }
+
+    public void onSkipToNext() {
+        mSessionCallback.onSkipToNext();
+    }
+
+    public void onSkipToPrevious() {
+        mSessionCallback.onSkipToPrevious();
     }
 
     private class MediaSessionCallback extends MediaSession.Callback {
