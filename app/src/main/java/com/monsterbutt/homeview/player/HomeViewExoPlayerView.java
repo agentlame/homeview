@@ -18,6 +18,7 @@ package com.monsterbutt.homeview.player;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -32,6 +33,7 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.R;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.text.CaptionStyleCompat;
 import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
@@ -100,6 +102,9 @@ public final class HomeViewExoPlayerView extends FrameLayout {
         subtitleLayout = (SubtitleView) findViewById(R.id.subtitles);
         subtitleLayout.setUserDefaultStyle();
         subtitleLayout.setUserDefaultTextSize();
+        subtitleLayout.setStyle(new CaptionStyleCompat(Color.WHITE,
+                Color.TRANSPARENT, Color.TRANSPARENT,
+                CaptionStyleCompat.EDGE_TYPE_OUTLINE, Color.BLACK, null));
 
         controller = (PlaybackControlView) findViewById(R.id.control);
         controller.hide();
