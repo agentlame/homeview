@@ -30,7 +30,7 @@ public class TrackSelector extends DefaultTrackSelector {
             for (int rendererIndex = 0; rendererIndex < mRenderers.length; ++rendererIndex) {
 
                 if (type == mRenderers[rendererIndex].getTrackType())
-                    setSelectionOverride(rendererIndex, null, null);
+                    setRendererDisabled(rendererIndex, true);
             }
         }
         else {
@@ -64,7 +64,8 @@ public class TrackSelector extends DefaultTrackSelector {
                         try {
                             if (0 < (RendererCapabilities.FORMAT_HANDLED &
                                     mRenderers[rendererIndex].supportsFormat(trackFormat))) {
-
+                                if (getRendererDisabled(rendererIndex))
+                                    setRendererDisabled(rendererIndex, false);
                                 setSelectionOverride(rendererIndex, trackGroupArray, override);
                                 break;
                             }

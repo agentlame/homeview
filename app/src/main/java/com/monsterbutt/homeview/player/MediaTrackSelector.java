@@ -57,9 +57,6 @@ public class MediaTrackSelector implements Parcelable {
 
     public void setSelectedTrack(TrackSelector selector, int streamType, int displayIndex) {
 
-        if (mTracks.isSelectedTrack(streamType, displayIndex))
-            return;
-
         int index = mTracks.setSelectedTrack(streamType, displayIndex);
         switch(streamType) {
 
