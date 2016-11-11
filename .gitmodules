@@ -4,5 +4,5 @@
 	branch = master
 [submodule "ExoPlayer"]
 	path = ExoPlayer
-	url = https://github.com/google/ExoPlayer
-	branch = release-v2
+	url = https://github.com/drhill/ExoPlayer
+	branch = release-v2-truehd

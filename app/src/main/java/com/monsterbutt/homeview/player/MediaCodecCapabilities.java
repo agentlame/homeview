@@ -27,7 +27,6 @@ public class MediaCodecCapabilities {
 
 
     private static final int NO_ENCODING = -1;
-    private static final int ENCODING_TRUEHD = 14;
 
     private static MediaCodecCapabilities gInstance = null;
     public static MediaCodecCapabilities getInstance(Context context) {
@@ -133,8 +132,8 @@ public class MediaCodecCapabilities {
                     return AudioFormat.ENCODING_E_AC3;
                 break;
             case MimeTypes.AUDIO_TRUEHD:
-                if (audioCapabilities.supportsEncoding(ENCODING_TRUEHD))
-                    return ENCODING_TRUEHD;
+                if (audioCapabilities.supportsEncoding(C.ENCODING_TRUE_HD))
+                    return C.ENCODING_TRUE_HD;
                 break;
             case MimeTypes.AUDIO_DTS:
                 if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DTS))
