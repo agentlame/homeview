@@ -16,6 +16,7 @@
 
 package com.monsterbutt.homeview.presenters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -151,6 +152,12 @@ public class CardPresenter extends Presenter {
                     cardView.setTarget(null);
                 }
             });
+
+            if (context instanceof Activity) {
+                Activity act = (Activity) context;
+                if (act.isFinishing() || act.isDestroyed())
+                    return;
+            }
 
             Glide.with(context)
                     .load(imageURL)
