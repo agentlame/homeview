@@ -333,9 +333,12 @@ import java.util.concurrent.CopyOnWriteArraySet;
                 break;
             }
             case ExoPlayerImplInternal.MSG_ERROR: {
-                ExoPlaybackException exception = (ExoPlaybackException) msg.obj;
-                for (EventListener listener : listeners) {
-                    listener.onPlayerError(exception);
+
+                if (msg.obj instanceof ExoPlaybackException) {
+                    ExoPlaybackException exception = (ExoPlaybackException) msg.obj;
+                    for (EventListener listener : listeners) {
+                        listener.onPlayerError(exception);
+                    }
                 }
                 break;
             }
