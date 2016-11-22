@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v17.leanback.app.PlaybackOverlayFragment;
 import android.support.v17.leanback.widget.ListRow;
+import android.util.Log;
 import android.view.InputEvent;
 import android.view.KeyEvent;
 import android.view.WindowManager;
@@ -70,6 +71,8 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
     private boolean mIsMetadataSet = false;
 
     private boolean mAllowNextTrack = true;
+
+    private static final String Tag = "VideoPlayerHandler";
 
     public VideoPlayerHandler(PlaybackFragment fragment, PlexServer server,
                               MediaSessionHandler mediaSessionHandler,
@@ -167,13 +170,8 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
         boolean forcePlay = mCheckForPIPChanged && mCurrentVideoHandler.checkPassedVideo();
         PlexVideoItem video = mCurrentVideoHandler.getVideo();
-        if ((mPlayer == null || forcePlay) && video != null) {
-
-            if (video.selectedHasMissingData())
-                new GetFullInfo().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, video.getKey());
-            else
-                playVideo(video, mAutoPlayExtras);
-        }
+        if ((mPlayer == null || forcePlay) && video != null)
+            playVideo(video);
         mCheckForPIPChanged = false;
     }
 
@@ -236,7 +234,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
         return C.TIME_UNSET;
     }
 
-    private void preparePlayer(boolean playWhenReady) {
+    private void preparePlayer() {
 
         if (mPlayer == null) {
 
@@ -257,7 +255,6 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
         if (mCurrentVideoHandler.getPlaybackStartType() == StartPosition.PlaybackStartType.Ask)
             ResumeChoiceHandler.askUser(mFragment, mPlayer, mCurrentVideoHandler.getLastViewedPosition(), CHOOSER_TIMEOUT);
-        mPlayer.setPlayWhenReady(playWhenReady);
     }
 
     public void playPause(boolean doPlay) {
@@ -324,18 +321,24 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
         return true;
     }
 
+    public void playVideo(PlexVideoItem video) {
+        playVideo(video, false);
+    }
 
-    private void playVideo(PlexVideoItem video, Bundle extras) {
+    public void playVideo(PlexVideoItem video, boolean forceLoad) {
 
-        mLastRewind = 0;
-        mLastForward = video.getDuration();
-        mCurrentVideoHandler.setVideo(video, mSubtitleHandler);
-        if (video.shouldUpdateStatusOnPlayback())
-            mCurrentVideoHandler.updateProgressTask();
-        preparePlayer(true);
-        mPlaybackUIHandler.setupVideoForPlayback();
-        mMediaSessionHandler.setPlaybackState(PlaybackState.STATE_PAUSED);
-        playPause(extras.getBoolean(AUTO_PLAY));
+        if (video.selectedHasMissingData() && !forceLoad)
+            new GetFullInfo().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, video.getKey());
+        else {
+            mLastRewind = 0;
+            mLastForward = video.getDuration();
+            mCurrentVideoHandler.setVideo(video, mSubtitleHandler);
+            if (video.shouldUpdateStatusOnPlayback())
+                mCurrentVideoHandler.updateProgressTask();
+            mPlaybackUIHandler.setupVideoForPlayback();
+            mMediaSessionHandler.setPlaybackState(PlaybackState.STATE_PAUSED);
+            preparePlayer();
+        }
     }
 
     public int getPlaybackState() { return mMediaSessionHandler.getPlaybackState(); }
@@ -343,17 +346,6 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
     public PlexVideoItem getCurrentVideo() { return mCurrentVideoHandler.getVideo(); }
 
     public void setMetadata(MediaMetadata data) { mMediaSessionHandler.setMetadata(data); }
-
-    public void playVideo(PlexVideoItem video) {
-
-        if (video != null) {
-
-            if (video.selectedHasMissingData())
-                new GetFullInfo().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, video.getKey());
-            else
-                playVideo(video, mAutoPlayExtras);
-        }
-    }
 
     public ListRow getCodecRowForVideo() { return mCurrentVideoHandler.getCodecRowForVideo(mTrackSelector); }
 
@@ -396,6 +388,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
     @Override
     public void onLoadingChanged(boolean isLoading) {
 
+        Log.i(Tag, "Loading Changed : " + Boolean.toString(isLoading));
     }
 
     @Override
@@ -406,6 +399,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                 // Do nothing.
                 break;
             case ExoPlayer.STATE_ENDED:
+                Log.i(Tag, "State_Ended");
                 mIsMetadataSet = false;
                 if (!skipToNext())
                     mActivity.finish();
@@ -415,6 +409,8 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                 break;
             case ExoPlayer.STATE_READY:
                 // Duration is set here.
+
+                Log.i(Tag, "State_Ready");
                 if (!mIsMetadataSet) {
                     mCurrentVideoHandler.setTracks(mTrackSelector);
                     mCurrentVideoHandler.updateRecommendations(mActivity, true);
@@ -422,6 +418,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                     mPlaybackUIHandler.updateMetadata();
                     mIsMetadataSet = true;
                 }
+                mPlayer.shouldPlay(true);
                 break;
             default:
                 // Do nothing.
@@ -458,7 +455,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
         protected void onPostExecute(MediaContainer result) {
 
             if (result != null)
-                playVideo(PlexVideoItem.getItem(result.getVideos().get(0)), mAutoPlayExtras);
+                playVideo(PlexVideoItem.getItem(result.getVideos().get(0)), true);
         }
     }
 }

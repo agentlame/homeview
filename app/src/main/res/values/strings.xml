@@ -126,10 +126,17 @@
     <string name="preferences_device_speakers_summary">Choose your speaker configuration</string>
     <string name="preferences_device_speakers_dialog">Select speaker configuration</string>
     <string name="preferences_device_speakers_entries_default">8</string>
+
     <string name="preferences_device_refreshrate_timeout">Refresh Rate Timeout</string>
-    <string name="preferences_device_refreshrate_timeout_summary">Choose a timeout value for when to revert refresh rates after a failure.</string>
+    <string name="preferences_device_refreshrate_timeout_summary">Choose a timeout value for when to force the app to accept a refresh rate change.  Some devices do not give a proper signal for a change taking place.</string>
     <string name="preferences_device_refreshrate_timeout_dialog">Select timeout value</string>
     <string name="preferences_device_refreshrate_timeout_entries_default">3000</string>
+
+    <string name="preferences_device_refreshrate_delay">Refresh Rate Playback Delay</string>
+    <string name="preferences_device_refreshrate_delay_summary">Choose a delay value for when to start playback after a refresh rate change.</string>
+    <string name="preferences_device_refreshrate_delay_dialog">Select delay value</string>
+    <string name="preferences_device_refreshrate_delay_entries_default">0</string>
+
     <string name="preferences_device">Device Setup</string>
 
     <string name="preferences_nextup_episode">Next episode threshold</string>

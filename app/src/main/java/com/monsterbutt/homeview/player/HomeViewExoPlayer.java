@@ -101,7 +101,7 @@ public final class HomeViewExoPlayer implements ExoPlayer, FrameRateSwitcher.Fra
 
     }
 
-    private static final String TAG = "SimpleExoPlayer";
+    private static final String TAG = "HomeViewExoPlayer";
     private static final int MAX_DROPPED_VIDEO_FRAME_COUNT_TO_NOTIFY = 50;
 
     private final ExoPlayer player;
@@ -134,7 +134,12 @@ public final class HomeViewExoPlayer implements ExoPlayer, FrameRateSwitcher.Fra
     private PlexServer server;
     private PlexVideoItem item;
     private Activity activity;
+    private FrameRateSwitcher switcher = null;
     private TextRenderer.Output imageSubsHandler = null;
+
+    private boolean isVideoLoaded = false;
+    private boolean resetPosition;
+    private boolean resetTimeline;
 
     /* package */ HomeViewExoPlayer(Context context, TrackSelector<?> trackSelector,
                                     LoadControl loadControl, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
@@ -435,37 +440,56 @@ public final class HomeViewExoPlayer implements ExoPlayer, FrameRateSwitcher.Fra
     }
 
     @Override
-    public void switchOccured(HomeViewExoPlayer player, FrameRateSwitcher switcher) {
+    public void shouldPlay(boolean play) {
 
-        MediaSource videoSource = new ExtractorMediaSource(Uri.parse(item.getVideoPath(server)),
-                new DefaultDataSourceFactory(activity, Util.getUserAgent(activity, "HomeView")),
-                new DefaultExtractorsFactory(), null, null);
-
-        mAudioRenderer.prepareVideo(item);
-        prepare(videoSource);
+        synchronized (this) {
+            if (isVideoLoaded) {
+                if (player.getPlayWhenReady() != play)
+                    player.setPlayWhenReady(play);
+            } else if (play) {
+                isVideoLoaded = true;
+                prepare(new ExtractorMediaSource(Uri.parse(item.getVideoPath(server)),
+                        new DefaultDataSourceFactory(activity, Util.getUserAgent(activity, "HomeView")),
+                        new DefaultExtractorsFactory(), null, null));
+            }
+        }
     }
 
     public void prepare(Activity activity, PlexServer server, PlexVideoItem item) {
 
-        this.item = item;
-        this.server = server;
-        this.activity = activity;
-        FrameRateSwitcher.setDisplayRefreshRate(activity, this, this);
+        synchronized (this) {
+            this.item = item;
+            this.server = server;
+            this.activity = activity;
+            isVideoLoaded = false;
+            if (switcher != null)
+                switcher.unregister();
+            switcher = new FrameRateSwitcher(activity, this);
+            mAudioRenderer.prepareVideo(item);
+        }
+        if (!switcher.setDisplayRefreshRate(item))
+            shouldPlay(true);
     }
 
     @Override
     public void prepare(MediaSource mediaSource) {
 
-        player.prepare(mediaSource);
+        prepare(mediaSource, false, false);
     }
 
     @Override
     public void prepare(MediaSource mediaSource, boolean resetPosition, boolean resetTimeline) {
+
+        Log.i(TAG, "Preparing video with reset");
+        player.setPlayWhenReady(false);
+        this.resetPosition = resetPosition;
+        this.resetTimeline = resetTimeline;
         player.prepare(mediaSource, resetPosition, resetTimeline);
     }
 
     @Override
     public void setPlayWhenReady(boolean playWhenReady) {
+        Log.i(TAG, "Set playwhenready : " + Boolean.toString(playWhenReady));
         player.setPlayWhenReady(playWhenReady);
     }
 
@@ -506,6 +530,10 @@ public final class HomeViewExoPlayer implements ExoPlayer, FrameRateSwitcher.Fra
 
     @Override
     public void release() {
+
+        if (switcher != null)
+            switcher.unregister();
+
         player.release();
         removeSurfaceCallbacks();
         if (surface != null) {
