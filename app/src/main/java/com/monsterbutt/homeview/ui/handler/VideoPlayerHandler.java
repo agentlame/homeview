@@ -3,6 +3,7 @@ package com.monsterbutt.homeview.ui.handler;
 import android.content.Intent;
 import android.media.MediaMetadata;
 import android.media.session.PlaybackState;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,8 +19,13 @@ import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.ExoPlayerFactory;
+import com.monsterbutt.homeview.player.FrameRateSwitcher;
 import com.monsterbutt.homeview.player.HomeViewExoPlayer;
 import com.monsterbutt.homeview.player.HomeViewExoPlayerView;
 import com.monsterbutt.homeview.player.StartPosition;
@@ -40,7 +46,8 @@ import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 public class VideoPlayerHandler implements ExoPlayer.EventListener,
                                             UILifecycleManager.LifecycleListener,
-                                            PlaybackOverlayFragment.InputEventHandler {
+                                            PlaybackOverlayFragment.InputEventHandler,
+                                            FrameRateSwitcher.FrameRateSwitcherListener {
 
     private static final int CHOOSER_TIMEOUT = 15 * 1000;
     private static final int DOUBLE_CLICK_TIMEOUT = 400;
@@ -71,6 +78,11 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
     private boolean mIsMetadataSet = false;
 
     private boolean mAllowNextTrack = true;
+
+    private FrameRateSwitcher switcher = null;
+
+    private boolean isVideoLoaded = false;
+
 
     private static final String Tag = "VideoPlayerHandler";
 
@@ -187,6 +199,9 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
     public void onStop() {
 
+        if (switcher != null)
+            switcher.unregister();
+
         if (mPlayer != null) {
             mPlayer.release();
             mPlayer = null;
@@ -250,11 +265,34 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
         mIsMetadataSet = false;
 
-        mPlayer.prepare(mActivity, mServer, mCurrentVideoHandler.getVideo());
+        mPlayer.setPlaybackItem(mCurrentVideoHandler.getVideo());
+        isVideoLoaded = false;
+        if (switcher != null)
+            switcher.unregister();
+        switcher = new FrameRateSwitcher(mActivity, this);
+        if (!switcher.setDisplayRefreshRate(mCurrentVideoHandler.getVideo()))
+            shouldPlay(true);
+
         mPlayer.seekTo(mCurrentVideoHandler.getStartPosition());
 
         if (mCurrentVideoHandler.getPlaybackStartType() == StartPosition.PlaybackStartType.Ask)
             ResumeChoiceHandler.askUser(mFragment, mPlayer, mCurrentVideoHandler.getLastViewedPosition(), CHOOSER_TIMEOUT);
+    }
+
+    @Override
+    public void shouldPlay(boolean play) {
+
+        synchronized (this) {
+            if (isVideoLoaded) {
+                if (mPlayer.getPlayWhenReady() != play)
+                    playPause(play);
+            } else if (play) {
+                isVideoLoaded = true;
+                mPlayer.prepare(new ExtractorMediaSource(Uri.parse(mCurrentVideoHandler.getVideo().getVideoPath(mServer)),
+                        new DefaultDataSourceFactory(mActivity, Util.getUserAgent(mActivity, "HomeView")),
+                        new DefaultExtractorsFactory(), null, null));
+            }
+        }
     }
 
     public void playPause(boolean doPlay) {
@@ -264,11 +302,13 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
             return;
         }
 
-        if (doPlay && getPlaybackState() != PlaybackState.STATE_PLAYING) {
+        if (doPlay) {
 
-            mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            mPlayer.setPlayWhenReady(true);
-            mMediaSessionHandler.setPlaybackState(PlaybackState.STATE_PLAYING);
+            if (getPlaybackState() != PlaybackState.STATE_PLAYING) {
+                mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                mPlayer.setPlayWhenReady(true);
+                mMediaSessionHandler.setPlaybackState(PlaybackState.STATE_PLAYING);
+            }
         } else {
             mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             mPlayer.setPlayWhenReady(false);
@@ -418,7 +458,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                     mPlaybackUIHandler.updateMetadata();
                     mIsMetadataSet = true;
                 }
-                mPlayer.shouldPlay(true);
+                playPause(true);
                 break;
             default:
                 // Do nothing.

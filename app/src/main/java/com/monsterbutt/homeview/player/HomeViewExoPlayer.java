@@ -16,13 +16,11 @@ package com.monsterbutt.homeview.player;
 */
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaCodec;
 import android.media.PlaybackParams;
-import android.net.Uri;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Surface;
@@ -41,23 +39,19 @@ import com.google.android.exoplayer2.audio.AudioTrack;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.google.android.exoplayer2.metadata.MetadataRenderer;
 import com.google.android.exoplayer2.metadata.id3.Id3Decoder;
 import com.google.android.exoplayer2.metadata.id3.Id3Frame;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.trackselection.TrackSelections;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
+
 import com.monsterbutt.homeview.player.renderers.DeviceAudioTrackRenderer;
-import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 
 import java.lang.reflect.Constructor;
@@ -65,7 +59,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @TargetApi(16)
-public final class HomeViewExoPlayer implements ExoPlayer, FrameRateSwitcher.FrameRateSwitcherListener {
+public final class HomeViewExoPlayer implements ExoPlayer {
 
     public interface VideoListener {
 
@@ -131,15 +125,7 @@ public final class HomeViewExoPlayer implements ExoPlayer, FrameRateSwitcher.Fra
     private float volume;
     private PlaybackParamsHolder playbackParamsHolder;
 
-    private PlexServer server;
-    private PlexVideoItem item;
-    private Activity activity;
-    private FrameRateSwitcher switcher = null;
     private TextRenderer.Output imageSubsHandler = null;
-
-    private boolean isVideoLoaded = false;
-    private boolean resetPosition;
-    private boolean resetTimeline;
 
     /* package */ HomeViewExoPlayer(Context context, TrackSelector<?> trackSelector,
                                     LoadControl loadControl, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
@@ -434,56 +420,19 @@ public final class HomeViewExoPlayer implements ExoPlayer, FrameRateSwitcher.Fra
         return player.getPlaybackState();
     }
 
-    public PlexVideoItem getItem() {
-
-        return item;
-    }
-
-    @Override
-    public void shouldPlay(boolean play) {
-
-        synchronized (this) {
-            if (isVideoLoaded) {
-                if (player.getPlayWhenReady() != play)
-                    player.setPlayWhenReady(play);
-            } else if (play) {
-                isVideoLoaded = true;
-                prepare(new ExtractorMediaSource(Uri.parse(item.getVideoPath(server)),
-                        new DefaultDataSourceFactory(activity, Util.getUserAgent(activity, "HomeView")),
-                        new DefaultExtractorsFactory(), null, null));
-            }
-        }
-    }
-
-    public void prepare(Activity activity, PlexServer server, PlexVideoItem item) {
-
-        synchronized (this) {
-            this.item = item;
-            this.server = server;
-            this.activity = activity;
-            isVideoLoaded = false;
-            if (switcher != null)
-                switcher.unregister();
-            switcher = new FrameRateSwitcher(activity, this);
-            mAudioRenderer.prepareVideo(item);
-        }
-        if (!switcher.setDisplayRefreshRate(item))
-            shouldPlay(true);
+    public void setPlaybackItem(PlexVideoItem item) {
+        mAudioRenderer.prepareVideo(item);
     }
 
     @Override
     public void prepare(MediaSource mediaSource) {
-
         prepare(mediaSource, false, false);
     }
 
     @Override
     public void prepare(MediaSource mediaSource, boolean resetPosition, boolean resetTimeline) {
-
-        Log.i(TAG, "Preparing video with reset");
+        Log.i(TAG, "Preparing video");
         player.setPlayWhenReady(false);
-        this.resetPosition = resetPosition;
-        this.resetTimeline = resetTimeline;
         player.prepare(mediaSource, resetPosition, resetTimeline);
     }
 
@@ -530,9 +479,6 @@ public final class HomeViewExoPlayer implements ExoPlayer, FrameRateSwitcher.Fra
 
     @Override
     public void release() {
-
-        if (switcher != null)
-            switcher.unregister();
 
         player.release();
         removeSurfaceCallbacks();
