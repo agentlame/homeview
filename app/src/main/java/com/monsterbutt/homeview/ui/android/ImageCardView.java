@@ -281,6 +281,7 @@ public class ImageCardView extends BaseCardView {
             mTitleView.setMinLines(2);
             mTitleView.setMaxLines(2);
         }
+        mTitleView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
     }
 
 
