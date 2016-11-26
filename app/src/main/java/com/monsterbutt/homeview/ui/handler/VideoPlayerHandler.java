@@ -427,8 +427,6 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
     @Override
     public void onLoadingChanged(boolean isLoading) {
-
-        Log.i(Tag, "Loading Changed : " + Boolean.toString(isLoading));
     }
 
     @Override
