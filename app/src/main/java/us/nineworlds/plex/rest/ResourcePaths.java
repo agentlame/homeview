@@ -77,11 +77,11 @@ public class ResourcePaths {
 	}
 
 	public String getHubsURL(String sectionId) {
-		return getHubsURL() + SECTIONS + sectionId;
+		return getHostPort() + HUBS_PATH + SECTIONS + sectionId;
 	}
 
 	public String getHubsURL() {
-		return getHostPort() + HUBS_PATH + "?excludeMusic=1";
+		return getHostPort() + HUBS_PATH + "?excludeMusic=1&excludePhotos=1";
 	}
 	
 	protected String getHostPort() {
