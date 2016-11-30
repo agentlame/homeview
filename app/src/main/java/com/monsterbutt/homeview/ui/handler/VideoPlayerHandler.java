@@ -1,5 +1,6 @@
 package com.monsterbutt.homeview.ui.handler;
 
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaMetadata;
 import android.media.session.PlaybackState;
@@ -21,7 +22,8 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSource;
 import com.google.android.exoplayer2.util.Util;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.ExoPlayerFactory;
@@ -289,7 +291,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
             } else if (play) {
                 isVideoLoaded = true;
                 mPlayer.prepare(new ExtractorMediaSource(Uri.parse(mCurrentVideoHandler.getVideo().getVideoPath(mServer)),
-                        new DefaultDataSourceFactory(mActivity, Util.getUserAgent(mActivity, "HomeView")),
+                        new DataSourceFactory(mActivity),
                         new DefaultExtractorsFactory(), null, null));
             }
         }
@@ -494,6 +496,21 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
             if (result != null)
                 playVideo(PlexVideoItem.getItem(result.getVideos().get(0)), true);
+        }
+    }
+
+    private class DataSourceFactory implements DataSource.Factory {
+
+        private final Context context;
+        private final String userAgent;
+        public DataSourceFactory(Context context) {
+            this.context = context;
+            this.userAgent = Util.getUserAgent(context, "HomeView");
+        }
+
+        @Override
+        public DefaultDataSource createDataSource() {
+            return new DefaultDataSource(context, null, userAgent, true);
         }
     }
 }
