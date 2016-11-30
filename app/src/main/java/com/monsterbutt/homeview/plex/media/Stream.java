@@ -239,7 +239,7 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     }
 
     public static boolean profileIsDtsHdVariant(String profile) {
-        return profile != null && profile.equals(Profile_DTS_MA) || profile.equals(Profile_DTS_HR);
+        return profile != null && (profile.equals(Profile_DTS_MA) || profile.equals(Profile_DTS_HR));
     }
 
     public int getTrackType() {

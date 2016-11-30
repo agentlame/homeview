@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.InputEvent;
 import android.view.KeyEvent;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -43,13 +44,16 @@ import com.monsterbutt.homeview.ui.activity.ContainerActivity;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
 
+import java.io.IOException;
+
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 
 public class VideoPlayerHandler implements ExoPlayer.EventListener,
                                             UILifecycleManager.LifecycleListener,
                                             PlaybackOverlayFragment.InputEventHandler,
-                                            FrameRateSwitcher.FrameRateSwitcherListener {
+                                            FrameRateSwitcher.FrameRateSwitcherListener,
+                                            ExtractorMediaSource.EventListener {
 
     private static final int CHOOSER_TIMEOUT = 15 * 1000;
     private static final int DOUBLE_CLICK_TIMEOUT = 400;
@@ -84,7 +88,6 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
     private FrameRateSwitcher switcher = null;
 
     private boolean isVideoLoaded = false;
-
 
     private static final String Tag = "VideoPlayerHandler";
 
@@ -251,36 +254,6 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
         return C.TIME_UNSET;
     }
 
-    private void preparePlayer() {
-
-        if (mPlayer == null) {
-
-            mTrackSelector= new TrackSelector(new Handler());
-            mPlayer = ExoPlayerFactory.newHomeViewInstance(mActivity, mTrackSelector, new DefaultLoadControl());
-            mPlayer.setImageSubsOutput(mSubtitleHandler);
-            mPlayer.addListener(this);
-            mVideoFrame.setPlayer(mPlayer);
-        }
-        else
-            mPlayer.stop();
-
-
-        mIsMetadataSet = false;
-
-        mPlayer.setPlaybackItem(mCurrentVideoHandler.getVideo());
-        isVideoLoaded = false;
-        if (switcher != null)
-            switcher.unregister();
-        switcher = new FrameRateSwitcher(mActivity, this);
-        if (!switcher.setDisplayRefreshRate(mCurrentVideoHandler.getVideo()))
-            shouldPlay(true);
-
-        mPlayer.seekTo(mCurrentVideoHandler.getStartPosition());
-
-        if (mCurrentVideoHandler.getPlaybackStartType() == StartPosition.PlaybackStartType.Ask)
-            ResumeChoiceHandler.askUser(mFragment, mPlayer, mCurrentVideoHandler.getLastViewedPosition(), CHOOSER_TIMEOUT);
-    }
-
     @Override
     public void shouldPlay(boolean play) {
 
@@ -289,12 +262,33 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                 if (mPlayer.getPlayWhenReady() != play)
                     playPause(play);
             } else if (play) {
-                isVideoLoaded = true;
-                mPlayer.prepare(new ExtractorMediaSource(Uri.parse(mCurrentVideoHandler.getVideo().getVideoPath(mServer)),
-                        new DataSourceFactory(mActivity),
-                        new DefaultExtractorsFactory(), null, null));
+
+                if (mPlayer == null) {
+
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mTrackSelector= new TrackSelector(new Handler());
+                            mPlayer = ExoPlayerFactory.newHomeViewInstance(mActivity, mTrackSelector, new DefaultLoadControl());
+                            mPlayer.setImageSubsOutput(mSubtitleHandler);
+                            mPlayer.addListener(VideoPlayerHandler.this);
+                            mVideoFrame.setPlayer(mPlayer);
+                            setVideo();
+                        }
+                    });
+
+                }
+                else
+                    setVideo();
             }
         }
+    }
+
+    private void setVideo() {
+        mPlayer.setPlaybackItem(mCurrentVideoHandler.getVideo());
+        mPlayer.prepare(new ExtractorMediaSource(Uri.parse(mCurrentVideoHandler.getVideo().getVideoPath(mServer)),
+                new DataSourceFactory(mActivity),
+                new DefaultExtractorsFactory(), null, this));
     }
 
     public void playPause(boolean doPlay) {
@@ -379,7 +373,19 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                 mCurrentVideoHandler.updateProgressTask();
             mPlaybackUIHandler.setupVideoForPlayback();
             mMediaSessionHandler.setPlaybackState(PlaybackState.STATE_PAUSED);
-            preparePlayer();
+
+            if (mPlayer != null) {
+                mPlayer.stop();
+                mPlayer.release();
+                mPlayer = null;
+            }
+            mIsMetadataSet = false;
+            isVideoLoaded = false;
+            if (switcher != null)
+                switcher.unregister();
+            switcher = new FrameRateSwitcher(mActivity, this);
+            if (!switcher.setDisplayRefreshRate(mCurrentVideoHandler.getVideo()))
+                shouldPlay(true);
         }
     }
 
@@ -454,8 +460,13 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                 if (!mIsMetadataSet) {
                     mCurrentVideoHandler.setTracks(mTrackSelector);
                     mCurrentVideoHandler.updateRecommendations(mActivity, true);
-
                     mPlaybackUIHandler.updateMetadata();
+
+                    mPlayer.seekTo(mCurrentVideoHandler.getStartPosition());
+
+                    if (mCurrentVideoHandler.getPlaybackStartType() == StartPosition.PlaybackStartType.Ask)
+                        ResumeChoiceHandler.askUser(mFragment, mPlayer, mCurrentVideoHandler.getLastViewedPosition(), CHOOSER_TIMEOUT);
+                    isVideoLoaded = true;
                     mIsMetadataSet = true;
                 }
                 playPause(true);
@@ -473,12 +484,19 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
-
+        String msg = error != null ? error.getMessage() : "";
+        Toast.makeText(mActivity, mActivity.getString(R.string.video_error_unknown_error) + msg, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onPositionDiscontinuity() {
 
+    }
+
+    @Override
+    public void onLoadError(IOException error) {
+        String msg = error != null ? error.getMessage() : "";
+        Toast.makeText(mActivity, mActivity.getString(R.string.video_error_load_error) + msg, Toast.LENGTH_LONG).show();
     }
 
     private class GetFullInfo extends AsyncTask<String, Void, MediaContainer> {
