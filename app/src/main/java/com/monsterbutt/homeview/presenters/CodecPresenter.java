@@ -66,7 +66,7 @@ public class CodecPresenter extends Presenter {
 
         cardView.setDecoderText(obj.getDecoder());
         cardView.setTitleText(obj.getTitle());
-        if (!TextUtils.isEmpty(obj.getContent()))
+        if (!TextUtils.isEmpty(obj.getContent()) || !cardView.isSubtitleTextEmpty())
             cardView.setSubtitleText(obj.getContent());
 
         Drawable a = obj.getImage(context);

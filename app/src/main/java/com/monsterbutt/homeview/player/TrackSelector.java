@@ -1,7 +1,5 @@
 package com.monsterbutt.homeview.player;
 
-import android.os.Handler;
-
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
@@ -18,8 +16,8 @@ public class TrackSelector extends DefaultTrackSelector {
     private TrackGroupArray[] mTracks;
     private RendererCapabilities[] mRenderers;
 
-    public TrackSelector(Handler eventHandler) {
-        super(eventHandler);
+    public TrackSelector() {
+        super(null);
     }
 
     public void setSelectionOverride(int type, String trackId) {

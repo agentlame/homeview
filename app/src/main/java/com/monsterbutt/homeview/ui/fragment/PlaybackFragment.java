@@ -7,8 +7,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.widget.ImageView;
 
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.player.HomeViewExoPlayerView;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.services.ThemeService;
@@ -78,7 +78,7 @@ public class PlaybackFragment
         Activity activity = getActivity();
         setBackgroundType(BACKGROUND_TYPE);
         PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
-        HomeViewExoPlayerView videoFrame = (HomeViewExoPlayerView) activity.findViewById(R.id.player_view);
+        SimpleExoPlayerView videoFrame = (SimpleExoPlayerView) activity.findViewById(R.id.player_view);
         videoFrame.setUseController(false);
         SubtitleHandler subtitleHandler = new SubtitleHandler(activity, videoFrame,
                 (ImageView) activity.findViewById(R.id.imageSubtitles));

@@ -1,12 +1,14 @@
 package com.monsterbutt.homeview.ui.handler;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.google.android.exoplayer2.text.CaptionStyleCompat;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.text.Cue;
-import com.monsterbutt.homeview.player.HomeViewExoPlayerView;
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.monsterbutt.homeview.player.text.PgsCue;
 
 import java.util.List;
@@ -16,15 +18,18 @@ public class SubtitleHandler implements TextRenderer.Output {
     private int mSourceHeight = 0;
     private int mSourceWidth = 0;
 
-    private final HomeViewExoPlayerView mVideoFrame;
+    private final SimpleExoPlayerView mVideoFrame;
     private final Activity mActvity;
     private final ImageView mSubtitlesImage;
     private CurrentVideoHandler mCurrentVideoHandler = null;
 
-    public SubtitleHandler(Activity act, HomeViewExoPlayerView videoFrame, ImageView subtitlesImage) {
+    public SubtitleHandler(Activity act, SimpleExoPlayerView videoFrame, ImageView subtitlesImage) {
 
         mActvity = act;
         mVideoFrame = videoFrame;
+        mVideoFrame.setSubtitleStyle(new CaptionStyleCompat(Color.WHITE,
+                Color.TRANSPARENT, Color.TRANSPARENT,
+                CaptionStyleCompat.EDGE_TYPE_OUTLINE, Color.BLACK, null));
         mSubtitlesImage = subtitlesImage;
     }
 

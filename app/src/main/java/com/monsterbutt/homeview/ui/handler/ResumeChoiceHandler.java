@@ -13,8 +13,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.player.HomeViewExoPlayer;
 import com.monsterbutt.homeview.player.StartPosition;
 import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
 
@@ -68,7 +68,7 @@ public class ResumeChoiceHandler implements DialogInterface.OnClickListener,
         }
     }
 
-    public static void askUser(PlaybackFragment fragment, HomeViewExoPlayer player, long lastVideoOffset, int timeout) {
+    public static void askUser(PlaybackFragment fragment, SimpleExoPlayer player, long lastVideoOffset, int timeout) {
 
         new ResumeChoiceHandler(fragment, player, lastVideoOffset, timeout);
     }
@@ -85,10 +85,10 @@ public class ResumeChoiceHandler implements DialogInterface.OnClickListener,
     private PlaybackFragment fragment;
     private Handler handler  = new Handler();
     private AlertDialog alert;
-    private HomeViewExoPlayer player;
+    private SimpleExoPlayer player;
     private long lastVideoOffset;
 
-    private ResumeChoiceHandler(PlaybackFragment fragment, HomeViewExoPlayer player, long lastVideoOffset, int timeout) {
+    private ResumeChoiceHandler(PlaybackFragment fragment, SimpleExoPlayer player, long lastVideoOffset, int timeout) {
 
         this.fragment = fragment;
         this.player = player;

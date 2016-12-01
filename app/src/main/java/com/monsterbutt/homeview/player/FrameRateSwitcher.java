@@ -273,21 +273,22 @@ public class FrameRateSwitcher {
             final int requestMode = getBestFrameRate(modes, preferredFrameRate);
             WindowManager.LayoutParams params = activity.getWindow().getAttributes();
             final int currentModeId = params.preferredDisplayModeId;
-            oldMode = modes[currentModeId];
-            if (requestMode != -1 ) {
-                newMode = modes[requestMode];
-                if (oldMode.getRefreshRate() != newMode.getRefreshRate()) {
+            if (currentModeId >= 0 && currentModeId < modes.length) {
+                oldMode = modes[currentModeId];
+                if (requestMode != -1) {
+                    newMode = modes[requestMode];
+                    if (oldMode.getRefreshRate() != newMode.getRefreshRate()) {
 
-                    Log.i(Tag, "Changing frame rate to " + Float.toString(newMode.getRefreshRate()));
-                    params.preferredDisplayModeId = newMode.getModeId();
-                    activity.getWindow().setAttributes(params);
-                    receiver.setReady();
-                    return true;
-                }
+                        Log.i(Tag, "Changing frame rate to " + Float.toString(newMode.getRefreshRate()));
+                        params.preferredDisplayModeId = newMode.getModeId();
+                        activity.getWindow().setAttributes(params);
+                        receiver.setReady();
+                        return true;
+                    }
+                } else
+                    newMode = modes[currentModeId];
+                Log.i(Tag, "Frame rate left alone");
             }
-            else
-                newMode = modes[currentModeId];
-            Log.i(Tag, "Frame rate left alone");
         }
         else
             Log.i(Tag, "Not attempting to change frame rate");

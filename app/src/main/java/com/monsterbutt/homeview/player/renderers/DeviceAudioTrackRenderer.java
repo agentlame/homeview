@@ -25,11 +25,10 @@ public class DeviceAudioTrackRenderer extends MediaCodecAudioRenderer {
                                      DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
                                      boolean playClearSamplesWithoutKeys, Handler eventHandler,
                                      AudioRendererEventListener eventListener,
-                                     int streamType,
                                      MediaCodecCapabilities mcc) {
 
         super(mediaCodecSelector, drmSessionManager, playClearSamplesWithoutKeys, eventHandler,
-                eventListener, mcc.usePassthroughAudioIfAvailable() ? mcc.getSystemAudioCapabilities() : null, streamType);
+                eventListener, mcc.usePassthroughAudioIfAvailable() ? mcc.getSystemAudioCapabilities() : null);
         mCaps = mcc.getSystemAudioCapabilities();
     }
 

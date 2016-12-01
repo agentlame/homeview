@@ -1,13 +1,10 @@
 package com.monsterbutt.homeview.ui.handler;
 
-import android.content.Context;
 import android.content.Intent;
 import android.media.MediaMetadata;
 import android.media.session.PlaybackState;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v17.leanback.app.PlaybackOverlayFragment;
 import android.support.v17.leanback.widget.ListRow;
 import android.util.Log;
@@ -21,16 +18,14 @@ import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSource;
-import com.google.android.exoplayer2.util.Util;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.player.ExoPlayerFactory;
 import com.monsterbutt.homeview.player.FrameRateSwitcher;
-import com.monsterbutt.homeview.player.HomeViewExoPlayer;
-import com.monsterbutt.homeview.player.HomeViewExoPlayerView;
+import com.monsterbutt.homeview.player.HomeViewPlayer;
 import com.monsterbutt.homeview.player.StartPosition;
 import com.monsterbutt.homeview.player.TrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
@@ -72,9 +67,9 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
     private final HomeViewActivity mActivity;
     private final PlaybackFragment mFragment;
     private final PlexServer mServer;
-    private HomeViewExoPlayer mPlayer;
-    private final HomeViewExoPlayerView mVideoFrame;
-    private TrackSelector mTrackSelector;
+    private HomeViewPlayer mPlayer;
+    private final SimpleExoPlayerView mVideoFrame;
+    private TrackSelector mTrackSelector = new TrackSelector();
 
     private long mLastRewind;
     private long mLastForward;
@@ -95,7 +90,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                               MediaSessionHandler mediaSessionHandler,
                               CurrentVideoHandler currentVideoHandler,
                               SubtitleHandler subtitleHandler,
-                              HomeViewExoPlayerView videoFrame) {
+                              SimpleExoPlayerView videoFrame) {
 
         mFragment = fragment;
         mActivity = (HomeViewActivity) fragment.getActivity();
@@ -268,27 +263,19 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                     mActivity.runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            mTrackSelector= new TrackSelector(new Handler());
-                            mPlayer = ExoPlayerFactory.newHomeViewInstance(mActivity, mTrackSelector, new DefaultLoadControl());
+                            mPlayer = new HomeViewPlayer(mActivity, mTrackSelector, new DefaultLoadControl());
                             mPlayer.setImageSubsOutput(mSubtitleHandler);
                             mPlayer.addListener(VideoPlayerHandler.this);
                             mVideoFrame.setPlayer(mPlayer);
-                            setVideo();
+                            mPlayer.prepare(mCurrentVideoHandler.getVideo(), mServer, mActivity, VideoPlayerHandler.this);
                         }
                     });
 
                 }
                 else
-                    setVideo();
+                    mPlayer.prepare(mCurrentVideoHandler.getVideo(), mServer, mActivity, this);
             }
         }
-    }
-
-    private void setVideo() {
-        mPlayer.setPlaybackItem(mCurrentVideoHandler.getVideo());
-        mPlayer.prepare(new ExtractorMediaSource(Uri.parse(mCurrentVideoHandler.getVideo().getVideoPath(mServer)),
-                new DataSourceFactory(mActivity),
-                new DefaultExtractorsFactory(), null, this));
     }
 
     public void playPause(boolean doPlay) {
@@ -483,8 +470,13 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
     }
 
     @Override
+    public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+    }
+
+    @Override
     public void onPlayerError(ExoPlaybackException error) {
-        String msg = error != null ? error.getMessage() : "";
+        String msg = error != null && !error.getMessage().isEmpty() ? " " + error.getMessage() : "";
         Toast.makeText(mActivity, mActivity.getString(R.string.video_error_unknown_error) + msg, Toast.LENGTH_LONG).show();
     }
 
@@ -495,7 +487,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
     @Override
     public void onLoadError(IOException error) {
-        String msg = error != null ? error.getMessage() : "";
+        String msg = error != null && !error.getMessage().isEmpty() ? " " + error.getMessage() : "";
         Toast.makeText(mActivity, mActivity.getString(R.string.video_error_load_error) + msg, Toast.LENGTH_LONG).show();
     }
 
@@ -514,21 +506,6 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
             if (result != null)
                 playVideo(PlexVideoItem.getItem(result.getVideos().get(0)), true);
-        }
-    }
-
-    private class DataSourceFactory implements DataSource.Factory {
-
-        private final Context context;
-        private final String userAgent;
-        public DataSourceFactory(Context context) {
-            this.context = context;
-            this.userAgent = Util.getUserAgent(context, "HomeView");
-        }
-
-        @Override
-        public DefaultDataSource createDataSource() {
-            return new DefaultDataSource(context, null, userAgent, true);
         }
     }
 }
