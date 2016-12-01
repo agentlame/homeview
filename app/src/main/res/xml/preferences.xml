@@ -121,7 +121,7 @@
 
         <ListPreference
             android:key="preferences_device_refreshrate_delay"
-            android:drawable="@drawable/ic_hourglass_empty_white_48dp"
+            android:drawable="@drawable/ic_alarm_on_white_48dp"
             android:dependency="preferences_device_refreshrate"
             android:title="@string/preferences_device_refreshrate_delay"
             android:summary="@string/preferences_device_refreshrate_delay_summary"

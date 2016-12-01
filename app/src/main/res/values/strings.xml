@@ -119,21 +119,21 @@
     <string name="preferences_playback_playnext_summary">Play next episode/movie after media finishes?</string>
     <string name="preferences_playback_playnext_dialog">Select play next option</string>
     <string name="preferences_playback_playnext_entries_default">always</string>
-    <string name="preferences_device_refreshrate">Refresh rate switching</string>
+    <string name="preferences_device_refreshrate">Proper Refresh</string>
     <string name="preferences_device_refreshrate_summary">Switch refrsh rate, if available, to media\'s native rate?</string>
-    <string name="preferences_device_passthrough">Audio passthrough</string>
+    <string name="preferences_device_passthrough">Passthrough</string>
     <string name="preferences_device_passthrough_summary">Passthrough audio tracks, if available, to receiver/display?</string>
     <string name="preferences_device_speakers">Speaker Setup</string>
     <string name="preferences_device_speakers_summary">Choose your speaker configuration</string>
     <string name="preferences_device_speakers_dialog">Select speaker configuration</string>
     <string name="preferences_device_speakers_entries_default">8</string>
 
-    <string name="preferences_device_refreshrate_timeout">Refresh Rate Timeout</string>
+    <string name="preferences_device_refreshrate_timeout">Switch Timeout</string>
     <string name="preferences_device_refreshrate_timeout_summary">Choose a timeout value for when to force the app to accept a refresh rate change.  Some devices do not give a proper signal for a change taking place.</string>
     <string name="preferences_device_refreshrate_timeout_dialog">Select timeout value</string>
     <string name="preferences_device_refreshrate_timeout_entries_default">3000</string>
 
-    <string name="preferences_device_refreshrate_delay">Refresh Rate Playback Delay</string>
+    <string name="preferences_device_refreshrate_delay">Start Delay</string>
     <string name="preferences_device_refreshrate_delay_summary">Choose a delay value for when to start playback after a refresh rate change.</string>
     <string name="preferences_device_refreshrate_delay_dialog">Select delay value</string>
     <string name="preferences_device_refreshrate_delay_entries_default">0</string>
