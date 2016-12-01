@@ -72,9 +72,8 @@ public class HomeViewPlayer extends SimpleExoPlayer {
                                        @ExtensionRendererMode int extensionRendererMode, AudioRendererEventListener eventListener,
                                        ArrayList<Renderer> out) {
 
-        ComponentListener componentListener = getComponentListener();
         mAudioRenderer = new DeviceAudioTrackRenderer(MediaCodecSelector.DEFAULT,
-                drmSessionManager, true, mainHandler, componentListener, MediaCodecCapabilities.getInstance(context));
+                drmSessionManager, true, mainHandler, eventListener, MediaCodecCapabilities.getInstance(context));
         out.add(mAudioRenderer);
         if (currentVideo != null)
             mAudioRenderer.prepareVideo(currentVideo);
@@ -92,7 +91,7 @@ public class HomeViewPlayer extends SimpleExoPlayer {
                     Class.forName("com.google.android.exoplayer2.ext.opus.LibopusAudioRenderer");
             Constructor<?> constructor = clazz.getConstructor(Handler.class,
                     AudioRendererEventListener.class);
-            Renderer renderer = (Renderer) constructor.newInstance(mainHandler, componentListener);
+            Renderer renderer = (Renderer) constructor.newInstance(mainHandler, eventListener);
             out.add(extensionRendererIndex++, renderer);
             Log.i(TAG, "Loaded LibopusAudioRenderer.");
         } catch (ClassNotFoundException e) {
@@ -106,7 +105,7 @@ public class HomeViewPlayer extends SimpleExoPlayer {
                     Class.forName("com.google.android.exoplayer2.ext.flac.LibflacAudioRenderer");
             Constructor<?> constructor = clazz.getConstructor(Handler.class,
                     AudioRendererEventListener.class);
-            Renderer renderer = (Renderer) constructor.newInstance(mainHandler, componentListener);
+            Renderer renderer = (Renderer) constructor.newInstance(mainHandler, eventListener);
             out.add(extensionRendererIndex++, renderer);
             Log.i(TAG, "Loaded LibflacAudioRenderer.");
         } catch (ClassNotFoundException e) {
@@ -120,7 +119,7 @@ public class HomeViewPlayer extends SimpleExoPlayer {
                     Class.forName("com.google.android.exoplayer2.ext.ffmpeg.FfmpegAudioRenderer");
             Constructor<?> constructor = clazz.getConstructor(Handler.class,
                     AudioRendererEventListener.class);
-            Renderer renderer = (Renderer) constructor.newInstance(mainHandler, componentListener);
+            Renderer renderer = (Renderer) constructor.newInstance(mainHandler, eventListener);
             out.add(extensionRendererIndex, renderer);
             Log.i(TAG, "Loaded FfmpegAudioRenderer.");
         } catch (ClassNotFoundException e) {
