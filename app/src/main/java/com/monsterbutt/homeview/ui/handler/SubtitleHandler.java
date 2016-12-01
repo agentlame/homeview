@@ -9,6 +9,7 @@ import com.google.android.exoplayer2.text.CaptionStyleCompat;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.ui.SubtitleView;
 import com.monsterbutt.homeview.player.text.PgsCue;
 
 import java.util.List;
@@ -27,9 +28,12 @@ public class SubtitleHandler implements TextRenderer.Output {
 
         mActvity = act;
         mVideoFrame = videoFrame;
-        mVideoFrame.setSubtitleStyle(new CaptionStyleCompat(Color.WHITE,
-                Color.TRANSPARENT, Color.TRANSPARENT,
-                CaptionStyleCompat.EDGE_TYPE_OUTLINE, Color.BLACK, null));
+        SubtitleView subtitleView = mVideoFrame.getSubtitleView();
+        if (subtitleView != null) {
+            subtitleView.setStyle(new CaptionStyleCompat(Color.WHITE,
+                    Color.TRANSPARENT, Color.TRANSPARENT,
+                    CaptionStyleCompat.EDGE_TYPE_OUTLINE, Color.BLACK, null));
+        }
         mSubtitlesImage = subtitlesImage;
     }
 
