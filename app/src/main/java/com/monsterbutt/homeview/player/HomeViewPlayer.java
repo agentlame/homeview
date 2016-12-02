@@ -3,12 +3,12 @@ package com.monsterbutt.homeview.player;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
-import android.util.Log;
 
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
+import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
@@ -21,12 +21,10 @@ import com.monsterbutt.homeview.player.renderers.DeviceAudioTrackRenderer;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
 public class HomeViewPlayer extends SimpleExoPlayer {
 
-    private static final String TAG = "HomeViewPlayer";
     private static final long DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS = 5000;
 
     private DeviceAudioTrackRenderer mAudioRenderer = null;
@@ -53,62 +51,21 @@ public class HomeViewPlayer extends SimpleExoPlayer {
                                        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
                                        @ExtensionRendererMode int extensionRendererMode, AudioRendererEventListener eventListener,
                                        ArrayList<Renderer> out) {
-
+        super.buildAudioRenderers(context, mainHandler, drmSessionManager, extensionRendererMode, eventListener, out);
         mAudioRenderer = new DeviceAudioTrackRenderer(MediaCodecSelector.DEFAULT,
                 drmSessionManager, true, mainHandler, eventListener, MediaCodecCapabilities.getInstance(context));
-        out.add(mAudioRenderer);
+
+        for(Renderer renderer : out) {
+
+            if (renderer instanceof MediaCodecAudioRenderer) {
+                int index = out.indexOf(renderer);
+                out.remove(index);
+                out.add(index, mAudioRenderer);
+                break;
+            }
+        }
         if (currentVideo != null)
             mAudioRenderer.prepareVideo(currentVideo);
-
-        if (extensionRendererMode == EXTENSION_RENDERER_MODE_OFF) {
-            return;
-        }
-        int extensionRendererIndex = out.size();
-        if (extensionRendererMode == EXTENSION_RENDERER_MODE_PREFER) {
-            extensionRendererIndex--;
-        }
-
-        try {
-            Class<?> clazz =
-                    Class.forName("com.google.android.exoplayer2.ext.opus.LibopusAudioRenderer");
-            Constructor<?> constructor = clazz.getConstructor(Handler.class,
-                    AudioRendererEventListener.class);
-            Renderer renderer = (Renderer) constructor.newInstance(mainHandler, eventListener);
-            out.add(extensionRendererIndex++, renderer);
-            Log.i(TAG, "Loaded LibopusAudioRenderer.");
-        } catch (ClassNotFoundException e) {
-            // Expected if the app was built without the extension.
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            Class<?> clazz =
-                    Class.forName("com.google.android.exoplayer2.ext.flac.LibflacAudioRenderer");
-            Constructor<?> constructor = clazz.getConstructor(Handler.class,
-                    AudioRendererEventListener.class);
-            Renderer renderer = (Renderer) constructor.newInstance(mainHandler, eventListener);
-            out.add(extensionRendererIndex++, renderer);
-            Log.i(TAG, "Loaded LibflacAudioRenderer.");
-        } catch (ClassNotFoundException e) {
-            // Expected if the app was built without the extension.
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            Class<?> clazz =
-                    Class.forName("com.google.android.exoplayer2.ext.ffmpeg.FfmpegAudioRenderer");
-            Constructor<?> constructor = clazz.getConstructor(Handler.class,
-                    AudioRendererEventListener.class);
-            Renderer renderer = (Renderer) constructor.newInstance(mainHandler, eventListener);
-            out.add(extensionRendererIndex, renderer);
-            Log.i(TAG, "Loaded FfmpegAudioRenderer.");
-        } catch (ClassNotFoundException e) {
-            // Expected if the app was built without the extension.
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private class DataSourceFactory implements DataSource.Factory {
