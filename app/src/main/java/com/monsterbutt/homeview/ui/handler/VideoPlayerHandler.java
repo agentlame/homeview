@@ -63,7 +63,6 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
     private final MediaSessionHandler mMediaSessionHandler;
     private final CurrentVideoHandler mCurrentVideoHandler;
     private PlaybackUIHandler mPlaybackUIHandler;
-    private final SubtitleHandler mSubtitleHandler;
     private final HomeViewActivity mActivity;
     private final PlaybackFragment mFragment;
     private final PlexServer mServer;
@@ -89,7 +88,6 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
     public VideoPlayerHandler(PlaybackFragment fragment, PlexServer server,
                               MediaSessionHandler mediaSessionHandler,
                               CurrentVideoHandler currentVideoHandler,
-                              SubtitleHandler subtitleHandler,
                               SimpleExoPlayerView videoFrame) {
 
         mFragment = fragment;
@@ -97,7 +95,6 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
         mServer = server;
         mMediaSessionHandler = mediaSessionHandler;
         mCurrentVideoHandler = currentVideoHandler;
-        mSubtitleHandler = subtitleHandler;
         mVideoFrame = videoFrame;
     }
 
@@ -264,7 +261,6 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                         @Override
                         public void run() {
                             mPlayer = new HomeViewPlayer(mActivity, mTrackSelector, new DefaultLoadControl());
-                            mPlayer.setImageSubsOutput(mSubtitleHandler);
                             mPlayer.addListener(VideoPlayerHandler.this);
                             mVideoFrame.setPlayer(mPlayer);
                             mPlayer.prepare(mCurrentVideoHandler.getVideo(), mServer, mActivity, VideoPlayerHandler.this);
@@ -355,7 +351,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
         else {
             mLastRewind = 0;
             mLastForward = video.getDuration();
-            mCurrentVideoHandler.setVideo(video, mSubtitleHandler);
+            mCurrentVideoHandler.setVideo(video);
             if (video.shouldUpdateStatusOnPlayback())
                 mCurrentVideoHandler.updateProgressTask();
             mPlaybackUIHandler.setupVideoForPlayback();

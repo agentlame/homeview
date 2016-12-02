@@ -3,11 +3,13 @@ package com.monsterbutt.homeview.ui.fragment;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.widget.ImageView;
 
+import com.google.android.exoplayer2.text.CaptionStyleCompat;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.ui.SubtitleView;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
@@ -17,7 +19,6 @@ import com.monsterbutt.homeview.ui.handler.CurrentVideoHandler;
 import com.monsterbutt.homeview.ui.handler.MediaSessionHandler;
 import com.monsterbutt.homeview.ui.handler.NextUpHandler;
 import com.monsterbutt.homeview.ui.handler.PlaybackUIHandler;
-import com.monsterbutt.homeview.ui.handler.SubtitleHandler;
 import com.monsterbutt.homeview.ui.handler.VideoPlayerHandler;
 
 import java.util.Timer;
@@ -80,13 +81,17 @@ public class PlaybackFragment
         PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
         SimpleExoPlayerView videoFrame = (SimpleExoPlayerView) activity.findViewById(R.id.player_view);
         videoFrame.setUseController(false);
-        SubtitleHandler subtitleHandler = new SubtitleHandler(activity, videoFrame,
-                (ImageView) activity.findViewById(R.id.imageSubtitles));
+        SubtitleView subtitleView = videoFrame.getSubtitleView();
+        if (subtitleView != null) {
+            subtitleView.setStyle(new CaptionStyleCompat(Color.WHITE,
+                    Color.TRANSPARENT, Color.TRANSPARENT,
+                    CaptionStyleCompat.EDGE_TYPE_OUTLINE, Color.BLACK, null));
+        }
         mMediaSessionHandler = new MediaSessionHandler(this);
 
-        mCurrentVideoHandler = new CurrentVideoHandler(this, server, mMediaSessionHandler, subtitleHandler);
+        mCurrentVideoHandler = new CurrentVideoHandler(this, server, mMediaSessionHandler);
         mPlayerHandler = new VideoPlayerHandler(this, server, mMediaSessionHandler,
-                                                mCurrentVideoHandler, subtitleHandler, videoFrame);
+                                                mCurrentVideoHandler, videoFrame);
         mCurrentVideoHandler.setHandler(mPlayerHandler, new NextUpHandler(activity, mPlayerHandler));
         mPlaybackUIHandler = new PlaybackUIHandler(this, server, mCurrentVideoHandler);
         mPlayerHandler.setUIHandler(mPlaybackUIHandler);

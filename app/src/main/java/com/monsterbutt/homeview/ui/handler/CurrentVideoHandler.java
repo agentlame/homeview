@@ -13,7 +13,6 @@ import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.ListRow;
 import android.util.Pair;
 
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.MediaTrackSelector;
@@ -40,8 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import us.nineworlds.plex.rest.model.impl.Media;
-
 public class CurrentVideoHandler implements PlexServerTaskCaller,
                                             PlaybackControlHelper.ProgressUpdateCallback,
                                             Chapter.OnClickListenerHandler {
@@ -56,7 +53,6 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
     private MediaTrackSelector mSelectedVideoTracks = null;
     private final MediaSessionHandler mSessionHandler;
     private VideoPlayerHandler mVideoHandler;
-    private final SubtitleHandler mSubtitleHandler;
     private final CardSelectionHandler mSelectionHandler;
     private NextUpHandler mNextUpHandler = null;
     private final HomeViewActivity mActivity;
@@ -65,13 +61,10 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
     private long mPassedVideoKey = 0;
 
     public CurrentVideoHandler(PlaybackFragment fragment, PlexServer server,
-                               MediaSessionHandler sessionHandler,
-                               SubtitleHandler subtitleHandler) {
+                               MediaSessionHandler sessionHandler) {
 
         mActivity = (HomeViewActivity) fragment.getActivity();
         mSessionHandler = sessionHandler;
-        mSubtitleHandler = subtitleHandler;
-        mSubtitleHandler.setHandler(this);
         mServer = server;
         mQueue = new ArrayList<>();
 
@@ -90,7 +83,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
 
         mSelectedVideo = intentVideo;
         mSelectedVideoTracks = intent.getParcelableExtra(PlaybackActivity.TRACKS);
-        setVideo(intentVideo, mSubtitleHandler);
+        setVideo(intentVideo);
         mStartPosition = new StartPosition(mActivity, intent, mSelectedVideo != null ?
                 mSelectedVideo.getViewedOffset() : 0);
 
@@ -130,7 +123,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
                 // Set the queue index to the selected video.
                 if (v.shouldPlaybackFirst()) {
                     if (mSelectedVideo == null)
-                        setVideo(v, mSubtitleHandler);
+                        setVideo(v);
                     mQueueIndex = mQueue.size();
                 }
 
@@ -140,7 +133,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
             if (mQueueIndex == -1 && !mQueue.isEmpty()) {
 
                 if (mSelectedVideo == null && first != null) {
-                    setVideo(first, mSubtitleHandler);
+                    setVideo(first);
                     mStartPosition.setVideoOffset(mSelectedVideo.getViewedOffset());
                 }
                 mQueueIndex = 0;
@@ -187,7 +180,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
 
     public StartPosition.PlaybackStartType getPlaybackStartType() { return mStartPosition.getStartType(); }
 
-    public void setVideo(PlexVideoItem video, SubtitleHandler subtitleHandler) {
+    public void setVideo(PlexVideoItem video) {
 
         if (mNextUpHandler != null)
             mNextUpHandler.dismiss();
@@ -197,12 +190,6 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
             if (mSelectedVideoTracks == null) {
                 mSelectedVideoTracks = mSelectedVideo.fillTrackSelector(mActivity,
                         Locale.getDefault().getISO3Language(), MediaCodecCapabilities.getInstance(mActivity));
-            }
-
-            if (mSelectedVideo.hasSourceStats()) {
-
-                Media media = mSelectedVideo.getMedia().get(0);
-                subtitleHandler.setSourceStatus(Integer.valueOf(media.getHeight()), Integer.valueOf(media.getWidth()));
             }
         }
     }
@@ -277,15 +264,6 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
 
             if (mQueue.size() > 1 && mQueueIndex != mQueue.size()-1)
                 ret = Pair.create(mSelectedVideo.getNextUpThresholdTrigger(mActivity), mQueue.get(mQueueIndex + 1));
-        }
-        return ret;
-    }
-
-    public boolean areSubtitlesEnabled() {
-
-        boolean ret;
-        synchronized (this) {
-            ret = mSelectedVideoTracks != null && mSelectedVideoTracks.areSubtitlesEnabled();
         }
         return ret;
     }
