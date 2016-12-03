@@ -92,6 +92,8 @@ public class ImageCardView extends BaseCardView {
         if (hasTitle) {
             mTitleView = (TextView) inflater.inflate(android.support.v17.leanback.R.layout.lb_image_card_view_themed_title,
                     mInfoArea, false);
+            mTitleView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+            mTitleView.setHorizontallyScrolling(true);
             mInfoArea.addView(mTitleView);
         }
 
@@ -281,7 +283,6 @@ public class ImageCardView extends BaseCardView {
             mTitleView.setMinLines(2);
             mTitleView.setMaxLines(2);
         }
-        mTitleView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
     }
 
 
