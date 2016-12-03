@@ -472,7 +472,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
-        String msg = error != null && !error.getMessage().isEmpty() ? " " + error.getMessage() : "";
+        String msg = error != null && error.getMessage() != null && !error.getMessage().isEmpty() ? " " + error.getMessage() : "";
         Toast.makeText(mActivity, mActivity.getString(R.string.video_error_unknown_error) + msg, Toast.LENGTH_LONG).show();
     }
 
