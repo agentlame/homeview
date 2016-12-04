@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 
+import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -25,7 +26,6 @@ import java.util.ArrayList;
 
 public class HomeViewPlayer extends SimpleExoPlayer {
 
-    private static final long DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS = 5000;
 
     private DeviceAudioTrackRenderer mAudioRenderer = null;
 
@@ -34,7 +34,8 @@ public class HomeViewPlayer extends SimpleExoPlayer {
     public HomeViewPlayer(Context context,
                              com.google.android.exoplayer2.trackselection.TrackSelector trackSelector,
                              LoadControl loadControl) {
-        super(context, trackSelector, loadControl, null, EXTENSION_RENDERER_MODE_ON, DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS);
+        super(context, trackSelector, loadControl, null,
+                EXTENSION_RENDERER_MODE_ON, ExoPlayerFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS);
     }
 
     public void prepare(PlexVideoItem item, PlexServer server, Context context, ExtractorMediaSource.EventListener listener) {
