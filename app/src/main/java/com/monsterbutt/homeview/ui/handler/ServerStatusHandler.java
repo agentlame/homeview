@@ -1,14 +1,16 @@
 package com.monsterbutt.homeview.ui.handler;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.AsyncTask;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
+import com.monsterbutt.homeview.plex.tasks.PlexServerTaskCaller;
 import com.monsterbutt.homeview.plex.tasks.ServerLibraryTask;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.ServerChoiceActivity;
-import com.monsterbutt.homeview.ui.fragment.MainFragment;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -28,16 +30,40 @@ public class ServerStatusHandler implements UILifecycleManager.LifecycleListener
 
     private Timer mServerCheckTimer = null;
 
-    private final MainFragment mFragment;
+    private final Fragment mFragment;
+    private final Activity mActivity;
     private final PlexServerManager mMgr;
     private final ServerStatusListener mListener;
+    private final PlexServerTaskCaller mCaller;
+    private boolean mSkipResume;
 
-    public ServerStatusHandler(MainFragment fragment, ServerStatusListener listener) {
+    public ServerStatusHandler(Activity activity, PlexServerTaskCaller caller,
+                               ServerStatusListener listener) {
+        this(activity, caller, listener, false);
+    }
+
+    public ServerStatusHandler(Activity activity, PlexServerTaskCaller caller,
+                               ServerStatusListener listener, boolean skipFirstResume) {
+
+        mFragment = null;
+        mActivity = activity;
+        mListener = listener;
+        mCaller = caller;
+        mSkipResume = skipFirstResume;
+        mServerCheckTimer = new Timer();
+        mMgr = PlexServerManager.getInstance(mActivity.getApplicationContext());
+    }
+
+    public ServerStatusHandler(Fragment fragment, PlexServerTaskCaller caller,
+                               ServerStatusListener listener, boolean skipFirstResume) {
 
         mFragment = fragment;
+        mActivity = fragment.getActivity();
         mListener = listener;
+        mCaller = caller;
+        mSkipResume = skipFirstResume;
         mServerCheckTimer = new Timer();
-        mMgr = PlexServerManager.getInstance(mFragment.getActivity().getApplicationContext());
+        mMgr = PlexServerManager.getInstance(mActivity.getApplicationContext());
     }
 
     private void checkForPlexServer() {
@@ -67,21 +93,25 @@ public class ServerStatusHandler implements UILifecycleManager.LifecycleListener
 
             if (mListener != null)
                 mListener.setSelectedServer(selected);
-            new ServerLibraryTask(mFragment, selected).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            new ServerLibraryTask(mCaller, selected).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
         else if (!mForcedServerSelectOnce) {
 
             mForcedServerSelectOnce = true;
-            mFragment.startActivityForResult(
-                                    new Intent(mFragment.getActivity(), ServerChoiceActivity.class),
-                                    SERVER_CHOICE_RESULT);
+            Intent intent = new Intent(mActivity, ServerChoiceActivity.class);
+            if (mFragment != null)
+                mFragment.startActivityForResult(intent, SERVER_CHOICE_RESULT);
+            else
+                mActivity.startActivityForResult(intent, SERVER_CHOICE_RESULT);
         }
     }
 
     @Override
     public void onResume() {
 
-        checkForPlexServer();
+        if (!mSkipResume)
+            checkForPlexServer();
+        mSkipResume = false;
     }
 
     @Override

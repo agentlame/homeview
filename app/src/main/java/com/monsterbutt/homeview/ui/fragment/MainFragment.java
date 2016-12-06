@@ -14,8 +14,6 @@
 
 package com.monsterbutt.homeview.ui.fragment;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +22,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v17.leanback.app.BrowseFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
@@ -39,9 +38,11 @@ import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.presenters.SettingCard;
 import com.monsterbutt.homeview.presenters.SettingPresenter;
 import com.monsterbutt.homeview.settings.SettingLaunch;
-import com.monsterbutt.homeview.ui.MediaRowCreator;
+import com.monsterbutt.homeview.ui.HubInfo;
 import com.monsterbutt.homeview.ui.PlexItemRow;
+import com.monsterbutt.homeview.ui.RowData;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
+import com.monsterbutt.homeview.ui.activity.OnBoardingActivity;
 import com.monsterbutt.homeview.ui.activity.SearchActivity;
 import com.monsterbutt.homeview.ui.activity.SettingsActivity;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
@@ -57,17 +58,17 @@ import com.monsterbutt.homeview.ui.handler.ThemeHandler;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 public class MainFragment extends BrowseFragment implements PlexServerTaskCaller,
-                                                            ServerStatusHandler.ServerStatusListener, PlexItemRow.RefreshAllCallback {
+                                                            ServerStatusHandler.ServerStatusListener,
+                                                            PlexItemRow.RefreshAllCallback {
 
-    private static final String SETTINGS_ROW_KEY = "Settings";
-
+    private boolean mFirstResume = true;
 
     private ArrayObjectAdapter mRowsAdapter;
     private CardSelectionHandler mSelectionHandler;
     private UILifecycleManager mLifeCycleMgr = new UILifecycleManager();
     private PlexServer mServer = null;
 
-    private Map<String, MediaRowCreator.RowData> mRows = new HashMap<>();
+    private Map<String, RowData> mRows = new HashMap<>();
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -95,11 +96,14 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         TextView text = (TextView) tv.findViewById(android.support.v17.leanback.R.id.title_text);
         text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 
+        mServer = PlexServerManager.getInstance(getActivity()).getSelectedServer();
         mSelectionHandler = new CardSelectionHandler(this);
+        if (mServer != null)
+            mSelectionHandler.setServer(mServer);
         mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
         setAdapter(mRowsAdapter);
         mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
-        mLifeCycleMgr.put(ServerStatusHandler.key, new ServerStatusHandler(this, this));
+        mLifeCycleMgr.put(ServerStatusHandler.key, new ServerStatusHandler(this, this, this, true));
         mLifeCycleMgr.put(ThemeHandler.key, new ThemeHandler(getActivity(), mServer, false, true));
     }
 
@@ -122,6 +126,27 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         super.onResume();
         mLifeCycleMgr.resumed();
+        if (mFirstResume) {
+
+            Intent intent = getActivity().getIntent();
+            Bundle data = intent != null ? intent.getExtras() : null;
+            String title = "";
+            List<HubInfo> hubs = null;
+            MediaContainer sections = null;
+            boolean noServer = true;
+            if (data != null) {
+                title = data.getString(OnBoardingActivity.TitleExtra);
+                hubs = data.getParcelableArrayList(OnBoardingActivity.HubsExtra);
+                sections = data.getParcelable(OnBoardingActivity.SectionsExtra);
+                noServer = !((title != null && !title.isEmpty()) || (hubs != null) || (sections != null));
+            }
+
+            mFirstResume = false;
+            if (noServer)
+                addSettingsRow(true);
+            else
+                fillData(title, sections, hubs);
+        }
     }
 
     @Override
@@ -133,7 +158,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
             if (server != null && server.isValid())
                 setSelectedServer(server);
             else
-                addSettingsRow(true, 0);
+                addSettingsRow(true);
         }
     }
 
@@ -149,31 +174,36 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         ServerLibraryTask libraryTask = (ServerLibraryTask) task;
         MediaContainer library = libraryTask.getLibrary();
+        String title = "";
         if (library != null)
-            setTitle(library.getTitle1());
+            title = library.getTitle1();
 
-        if (null == mSelectionHandler.getSelection()) {
-
-            String artKey = null;
-            MediaContainer arts = libraryTask.getRandomArts();
-            if (arts != null && arts.getPhotos() != null && !arts.getPhotos().isEmpty()) {
-
-                int photoPos = (int) (1000 * Math.random()) % arts.getPhotos().size();
-                artKey = arts.getPhotos().get(photoPos).getKey();
-            }
-            if (artKey != null && !artKey.isEmpty() && mServer != null)
-                mSelectionHandler.updateBackground(mServer.makeServerURL(artKey), true);
-        }
-        int rowCount = setRowsFromLibrary(libraryTask.getSections(), libraryTask.getHubs(), getString(R.string.main_landscape_rows), ";");
-        addSettingsRow(false, rowCount);
+        if ((title != null && !title.isEmpty()) || (libraryTask.getSections() != null) || (libraryTask.getHubs()!= null))
+            fillData(title, libraryTask.getSections(), libraryTask.getHubs());
+        else
+            addSettingsRow(true);
     }
 
-    private void addSettingsRow(boolean serverOnly, int index) {
+    private void fillData(String title, MediaContainer sections, List<HubInfo> hubs) {
 
-        MediaRowCreator.RowData oldRow = mRows.get(SETTINGS_ROW_KEY);
+        if (title != null && !title.isEmpty())
+            setTitle(title);
+        if (null == mSelectionHandler.getSelection())
+            new GetRandomArtWorkTask(mServer).execute(sections);
+        int rows = 0;
+        handleSectionsRow(sections);
+        addSettingsRow(false);
+        HubInfo.handleHubRows(getActivity(), mServer, hubs,
+                makeOrderHashFromStringDelim(getString(R.string.main_landscape_rows), ";"), mRows, mRowsAdapter,
+                mLifeCycleMgr, this, mSelectionHandler);
+    }
+
+    private void addSettingsRow(boolean serverOnly) {
+
+        RowData oldRow = mRows.get(PlexItemRow.SETTINGS_ROW_KEY);
         if (oldRow != null && oldRow.data.getAdapter().size() == 2) {
 
-            oldRow.currentIndex = index;
+            oldRow.currentIndex = mRowsAdapter.size() - 1;
             return;
         }
 
@@ -183,11 +213,11 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
             gridRowAdapter = (ArrayObjectAdapter) oldRow.data.getAdapter();
         else {
 
-            ListRow row = new ListRow(SETTINGS_ROW_KEY.hashCode(),
-                    new HeaderItem(SETTINGS_ROW_KEY.hashCode(),
+            ListRow row = new ListRow(PlexItemRow.SETTINGS_ROW_KEY.hashCode(),
+                    new HeaderItem(PlexItemRow.SETTINGS_ROW_KEY.hashCode(),
                             getString(R.string.settings)),
                     gridRowAdapter);
-            mRows.put(SETTINGS_ROW_KEY, new MediaRowCreator.RowData(SETTINGS_ROW_KEY, index, row));
+            mRows.put(PlexItemRow.SETTINGS_ROW_KEY, new RowData(PlexItemRow.SETTINGS_ROW_KEY, mRowsAdapter.size(), row));
             mRowsAdapter.add(row);
             gridRowAdapter.add(new SettingCard(context,
                     new SettingLaunch(context.getString(R.string.settings_server),
@@ -213,77 +243,22 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         mSelectionHandler.setServer(server);
     }
 
-    private void updateMainRow(MediaRowCreator.MediaRow row, boolean useLandscape, int index) {
+    private void handleSectionsRow(MediaContainer sections) {
 
-        MediaRowCreator.RowData existing = mRows.get(row.key);
-        if (existing == null)
-            return;
-        existing.currentIndex = index;
-        if (existing.data instanceof PlexItemRow)
-            ((PlexItemRow)existing.data).updateRow(MediaRowCreator.fillAdapterForRow(getActivity(),
-                        mServer, row, useLandscape, this, mSelectionHandler));
-    }
-
-    private void addMainRow(MediaRowCreator.MediaRow row, boolean useLandscape, int index) {
-
-        String header = row.title;
-        int hash = header.hashCode();
-        for (String sub : getString(R.string.main_rows_header_strip).split(";"))
-            header = header.replace(sub, "").trim();
-        PlexItemRow updateRow = index != 0 ?
-                MediaRowCreator.fillAdapterForWatchedRow(getActivity(), mServer, row, header, hash,
-                                                         useLandscape, this, mSelectionHandler)
-                : MediaRowCreator.fillAdapterForRow(getActivity(), mServer, row, header, hash,
-                                                    useLandscape, this, mSelectionHandler);
-        if (index != mRows.size()) {
-            for(MediaRowCreator.RowData oldRow : mRows.values()) {
-                if (oldRow.currentIndex >= index)
-                    ++oldRow.currentIndex;
+        if (sections != null) {
+            RowData data = mRows.get(PlexItemRow.SECTIONS_ROW_KEY);
+            if (data == null) {
+                String header = sections.getTitle1();
+                for (String sub : getString(R.string.main_rows_header_strip).split(";"))
+                    header = header.replace(sub, "").trim();
+                PlexItemRow row = PlexItemRow.buildSectionRow(getActivity(), sections, mServer, header, this, mSelectionHandler);
+                mRows.put(PlexItemRow.SECTIONS_ROW_KEY, new RowData(PlexItemRow.SECTIONS_ROW_KEY, 0, row));
+                mLifeCycleMgr.put(PlexItemRow.SECTIONS_ROW_KEY, row);
+                mRowsAdapter.add(0, row);
             }
+            else
+                ((PlexItemRow) data.data).update(sections.getDirectories(), null);
         }
-        mRows.put(row.key, new MediaRowCreator.RowData(row.key, index, updateRow));
-        mLifeCycleMgr.put(row.key, updateRow);
-        mRowsAdapter.add(index, updateRow);
-    }
-
-    private int setRowsFromLibrary(MediaContainer sections, MediaContainer hubs, String rowLandscape, String delim) {
-
-        List<MediaRowCreator.MediaRow> newRows = MediaRowCreator.buildRowList(sections, hubs);
-        List<MediaRowCreator.RowData> currentRows = new ArrayList<>();
-        currentRows.addAll(mRows.values());
-        Collections.sort(currentRows);
-        // remove old rows that aren't there anymore
-        for (MediaRowCreator.RowData row : currentRows) {
-            // we are reversing through the list
-            boolean found = false;
-            for (MediaRowCreator.MediaRow newRow : newRows) {
-
-                if (newRow.key.equals(row.id)) {
-
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found && !row.id.equals(SETTINGS_ROW_KEY)) {
-                mRows.remove(row.id);
-                mRowsAdapter.removeItems(row.currentIndex, 1);
-            }
-        }
-
-        HashMap < String, Integer > landscape = makeOrderHashFromStringDelim(rowLandscape, delim);
-        int rows = 0;
-        if (newRows != null) {
-            for (MediaRowCreator.MediaRow row : newRows) {
-
-                boolean useLandscape = landscape.containsKey(row.key);
-                if (mRows.get(row.key) != null)
-                    updateMainRow(row, useLandscape, rows++);
-                else
-                    addMainRow(row, useLandscape, rows++);
-            }
-        }
-        return rows;
     }
 
     protected HashMap<String, Integer> makeOrderHashFromStringDelim(String str, String delim) {
@@ -299,5 +274,36 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
     @Override
     public void refresh() {
         mLifeCycleMgr.resumed();
+    }
+
+    private class GetRandomArtWorkTask extends AsyncTask<MediaContainer, Void, String> {
+
+        final PlexServer server;
+
+        public GetRandomArtWorkTask(PlexServer server) {
+            this.server = server;
+        }
+
+        @Override
+        protected String doInBackground(MediaContainer[] params) {
+
+            String artKey = "";
+            MediaContainer sections = params != null && params.length > 0 ? params[0] : null;
+            if (server != null && sections != null && sections.getDirectories() != null && !sections.getDirectories().isEmpty()) {
+
+                int sectionPos = (int) (1000 % Math.random()) % sections.getDirectories().size();
+                MediaContainer arts = server.getSectionArts(sections.getDirectories().get(sectionPos).getKey());
+                if (arts != null && arts.getPhotos() != null && !arts.getPhotos().isEmpty())
+                    artKey = arts.getPhotos().get((int) (1000 * Math.random()) % arts.getPhotos().size()).getKey();
+            }
+            return artKey;
+        }
+
+        @Override
+        protected void onPostExecute(String artKey) {
+
+            if (artKey != null && !artKey.isEmpty())
+                mSelectionHandler.updateBackground(mServer.makeServerURL(artKey), true);
+        }
     }
 }

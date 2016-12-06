@@ -22,12 +22,14 @@ import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.plex.PlexServerManager;
 
+import us.nineworlds.plex.rest.model.impl.MediaContainer;
+
 /*
  * MainActivity class that loads MainFragment
  */
 public class MainActivity extends HomeViewActivity {
 
-    PlexServerManager mMgr = null;
+    private PlexServerManager mMgr = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

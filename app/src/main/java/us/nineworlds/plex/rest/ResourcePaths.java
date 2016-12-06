@@ -81,7 +81,7 @@ public class ResourcePaths {
 	}
 
 	public String getHubsURL() {
-		return getHostPort() + HUBS_PATH + "?excludeMusic=1&excludePhotos=1";
+		return getHostPort() + HUBS_PATH + "?excludeMusic=1&excludePhotos=1&excludePlaylists=1";
 	}
 	
 	protected String getHostPort() {

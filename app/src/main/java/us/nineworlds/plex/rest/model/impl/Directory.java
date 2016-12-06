@@ -147,7 +147,6 @@ public class Directory extends AbstractPlexObject implements Parcelable {
 		dest.writeLong(addedAt);
 		dest.writeString(composite);
 		dest.writeString(originallyAvailableAt);
-		dest.writeLong(lastViewedAt);
 	}
 
 	@Override

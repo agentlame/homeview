@@ -11,18 +11,19 @@ import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
-import com.monsterbutt.homeview.ui.MediaRowCreator;
+import com.monsterbutt.homeview.ui.HubInfo;
 import com.monsterbutt.homeview.ui.PlexItemRow;
+import com.monsterbutt.homeview.ui.RowData;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import us.nineworlds.plex.rest.model.impl.Hub;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 
@@ -33,7 +34,7 @@ public class SectionHubFragment extends BrowseFragment implements PlexItemRow.Re
     private CardSelectionHandler mSelectionHandler;
     private UILifecycleManager mLifeCycleMgr = new UILifecycleManager();
 
-    private Map<String, MediaRowCreator.RowData> mRows = new HashMap<>();
+    private Map<String, RowData> mRows = new HashMap<>();
     private ArrayObjectAdapter mRowsAdapter;
 
     @Override
@@ -89,48 +90,22 @@ public class SectionHubFragment extends BrowseFragment implements PlexItemRow.Re
 
             if (item != null && item.getHubs() != null) {
 
-                List<MediaRowCreator.MediaRow> newRows = MediaRowCreator.buildRowList(null, item);
-
-                List<MediaRowCreator.RowData> currentRows = new ArrayList<>();
-                currentRows.addAll(mRows.values());
-                Collections.sort(currentRows);
-                // remove old rows that aren't there anymore
-                for (MediaRowCreator.RowData row : currentRows) {
-                    // we are reversing through the list
-                    boolean found = false;
-                    for (MediaRowCreator.MediaRow newRow : newRows) {
-
-                        if (newRow.key.equals(row.id)) {
-
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found) {
-                        mLifeCycleMgr.remove(row.id);
-                        mRows.remove(row.id);
-                        mRowsAdapter.removeItems(row.currentIndex, 1);
-                    }
+                List<Hub> toRemove = new ArrayList<>();
+                for (Hub hub : item.getHubs()) {
+                    if (0 == hub.getSize())
+                        toRemove.add(hub);
                 }
-
-                int index = 0;
-                for (MediaRowCreator.MediaRow row : newRows) {
-
-                    PlexItemRow rowUpdate = MediaRowCreator.fillAdapterForWatchedRow(getActivity(),
-                                                            mServer, row, false, SectionHubFragment.this, mSelectionHandler);
-                    if (mRows.containsKey(row.title)) {
-
-                        MediaRowCreator.RowData current = mRows.get(row.title);
-                        ((PlexItemRow)current.data).updateRow(rowUpdate);
-                        current.currentIndex = index;
-                    }
-                    else {
-                        mLifeCycleMgr.put(row.title, rowUpdate);
-                        mRows.put(row.title, new MediaRowCreator.RowData(row.title ,index, rowUpdate));
-                        mRowsAdapter.add(index, rowUpdate);
-                    }
-                    ++index;
+                for(Hub hub : toRemove)
+                    item.getHubs().remove(hub);
+                if (item.getHubs().isEmpty())
+                    return;
+                HubInfo.handleHubRows(getActivity(), mServer, HubInfo.getHubs(item.getHubs()),
+                                        null, mRows, mRowsAdapter, mLifeCycleMgr,
+                                        SectionHubFragment.this, mSelectionHandler);
+                for (Hub hub : item.getHubs()) {
+                    RowData row = mRows.get(hub.getHubIdentifier());
+                    if (row != null)
+                        ((PlexItemRow) row.data).update(hub.getDirectories(), hub.getVideos());
                 }
             }
         }

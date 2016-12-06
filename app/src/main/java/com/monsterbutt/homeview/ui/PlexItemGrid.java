@@ -5,6 +5,7 @@ import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.text.TextUtils;
 
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.media.Folder;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.presenters.CardObject;
@@ -73,7 +74,7 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
 
     public boolean addItem(Context context, PlexLibraryItem item, boolean useScene) {
 
-        String key = Long.toString(item.getRatingKey());
+        String key = item instanceof Folder ? item.getKey() : Long.toString(item.getRatingKey());
         if (!map.containsKey(key)) {
 
             map.put(key, new GridItem(item, adapter.size(), useScene));

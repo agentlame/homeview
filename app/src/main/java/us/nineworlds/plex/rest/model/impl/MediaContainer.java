@@ -23,6 +23,9 @@
 
 package us.nineworlds.plex.rest.model.impl;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.List;
 
 import org.simpleframework.xml.Attribute;
@@ -30,7 +33,7 @@ import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 
 @Root(name="MediaContainer")
-public class MediaContainer {
+public class MediaContainer implements Parcelable {
 
 	public MediaContainer() {}
 
@@ -60,7 +63,99 @@ public class MediaContainer {
 	
 	@Attribute(required=false)
 	private String title2;
-	
+
+	protected MediaContainer(Parcel in) {
+		size = in.readInt();
+		allowSync = in.readInt();
+		art = in.readString();
+		identifier = in.readString();
+		mediaTagPrefix = in.readString();
+		mediaTagVersion = in.readLong();
+		friendlyName = in.readString();
+		title1 = in.readString();
+		title2 = in.readString();
+		sortAsc = in.readInt();
+		content = in.readString();
+		viewGroup = in.readString();
+		viewMode = in.readInt();
+		parentPosterURL = in.readString();
+		parentIndex = in.readLong();
+		parentYear = in.readString();
+		directories = in.createTypedArrayList(Directory.CREATOR);
+		videos = in.createTypedArrayList(Video.CREATOR);
+		tracks = in.createTypedArrayList(Track.CREATOR);
+		hubs = in.createTypedArrayList(Hub.CREATOR);
+		photos = in.createTypedArrayList(Photo.CREATOR);
+		librarySectionID = in.readString();
+		librarySectionTitle = in.readString();
+		grandparentContentRating = in.readString();
+		grandparentRatingKey = in.readLong();
+		grandparentKey = in.readString();
+		grandparentStudio = in.readString();
+		grandparentTheme = in.readString();
+		grandparentThumb = in.readString();
+		grandparentTitle = in.readString();
+		key = in.readLong();
+		theme = in.readString();
+		banner = in.readString();
+		summary = in.readString();
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeInt(size);
+		dest.writeInt(allowSync);
+		dest.writeString(art);
+		dest.writeString(identifier);
+		dest.writeString(mediaTagPrefix);
+		dest.writeLong(mediaTagVersion);
+		dest.writeString(friendlyName);
+		dest.writeString(title1);
+		dest.writeString(title2);
+		dest.writeInt(sortAsc);
+		dest.writeString(content);
+		dest.writeString(viewGroup);
+		dest.writeInt(viewMode);
+		dest.writeString(parentPosterURL);
+		dest.writeLong(parentIndex);
+		dest.writeString(parentYear);
+		dest.writeTypedList(directories);
+		dest.writeTypedList(videos);
+		dest.writeTypedList(tracks);
+		dest.writeTypedList(hubs);
+		dest.writeTypedList(photos);
+		dest.writeString(librarySectionID);
+		dest.writeString(librarySectionTitle);
+		dest.writeString(grandparentContentRating);
+		dest.writeLong(grandparentRatingKey);
+		dest.writeString(grandparentKey);
+		dest.writeString(grandparentStudio);
+		dest.writeString(grandparentTheme);
+		dest.writeString(grandparentThumb);
+		dest.writeString(grandparentTitle);
+		dest.writeLong(key);
+		dest.writeString(theme);
+		dest.writeString(banner);
+		dest.writeString(summary);
+	}
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	public static final Creator<MediaContainer> CREATOR = new Creator<MediaContainer>() {
+		@Override
+		public MediaContainer createFromParcel(Parcel in) {
+			return new MediaContainer(in);
+		}
+
+		@Override
+		public MediaContainer[] newArray(int size) {
+			return new MediaContainer[size];
+		}
+	};
+
 	public String getTitle2() {
 		return title2;
 	}

@@ -31,11 +31,14 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 import us.nineworlds.plex.rest.config.IConfiguration;
+import us.nineworlds.plex.rest.model.impl.Hub;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 
@@ -112,6 +115,17 @@ public class PlexappFactory {
 	public MediaContainer retrieveHubs() throws Exception {
 		String hubsURL = resourcePath.getHubsURL();
 		MediaContainer mediaContainer = serializeResource(hubsURL);
+
+		if (mediaContainer != null && mediaContainer.getHubs() != null) {
+
+			List<Hub> toRemove = new ArrayList<>();
+			for (Hub hub : mediaContainer.getHubs()) {
+				if (hub.getSize() == 0)
+					toRemove.add(hub);
+			}
+			for(Hub hub : toRemove)
+				mediaContainer.getHubs().remove(hub);
+		}
 
 		return mediaContainer;
 	}

@@ -9,6 +9,7 @@ import com.monsterbutt.homeview.plex.media.Movie;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.plex.media.Show;
+import com.monsterbutt.homeview.ui.HubInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -135,27 +136,23 @@ public class PlexServer {
 
             try {
                 ret = mFactory.retrieveHubs();
-                if (ret != null && ret.getHubs() != null) {
+            } catch (Exception e) {
 
-                    for (Hub hub : ret.getHubs()) {
+                Log.e(getClass().getName(), e.toString());
+            }
+        }
+        return ret;
+    }
 
-                        String key = hub.getKey();
-                        if (!TextUtils.isEmpty(key)) {
+    public MediaContainer getHubsData(HubInfo hub) {
 
-                            MediaContainer mc = mFactory.retrieveVideoMetaData(key);
-                            if (mc != null) {
+        MediaContainer ret = null;
+        if (mFactory != null && hub != null) {
 
-                                List<Video> vids = mc.getVideos();
-                                if (vids != null)
-                                    hub.setVideos(vids);
-                                List<Directory> dirs = mc.getDirectories();
-                                if (dirs != null)
-                                    hub.setDirectories(dirs);
-                            }
-                        }
-                    }
+            try {
+                if (!TextUtils.isEmpty(hub.key))
+                    ret = mFactory.retrieveVideoMetaData(hub.path);
 
-                }
             } catch (Exception e) {
 
                 Log.e(getClass().getName(), e.toString());

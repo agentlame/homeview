@@ -162,18 +162,18 @@ public abstract class PlexLibraryItem {
 
         PlexItemRow row = null;
         List<PlexLibraryItem> children = getChildrenItems();
-        if (children != null && !children.isEmpty()) {
-            // setup bottom row for seasons, episodes, or chapters
-            if (shouldChildRowWatchState())
-                row = PlexItemRow.getWatchedStateRow(server, getHeaderForChildren(context), null, listener);
-            else
-                row = PlexItemRow.getRow(server, getHeaderForChildren(context), null, listener);
+        if (children != null) {
             for (PlexLibraryItem child : children) {
 
                 if (skipAllSeason && child.getKey().endsWith(Season.ALL_SEASONS))
-                    continue;
-                row.addItem(context, child, this instanceof Season || this instanceof Episode || this instanceof Movie);
+                    children.remove(child);
             }
+        }
+        if (children != null && !children.isEmpty()) {
+            String header = getHeaderForChildren(context);
+            boolean useLandscape = this instanceof Season || this instanceof Episode || this instanceof Movie;
+            row = PlexItemRow.buildChildItemsRow(context, server, header, children,
+                                                shouldChildRowWatchState(), useLandscape, listener);
         }
         return row;
     }

@@ -1,10 +1,9 @@
 package com.monsterbutt.homeview.plex.tasks;
 
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.plex.PlexServerManager;
+import com.monsterbutt.homeview.ui.HubInfo;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import us.nineworlds.plex.rest.model.impl.Directory;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
@@ -14,8 +13,7 @@ public class ServerLibraryTask extends PlexServerTask {
 
     private MediaContainer mLibrary = null;
     private MediaContainer mSections = null;
-    private MediaContainer mHubs = null;
-    private MediaContainer mRandomArts = null;
+    private ArrayList<HubInfo> mHubs = null;
 
     public ServerLibraryTask(PlexServerTaskCaller caller, PlexServer server) {
         super(caller, server);
@@ -28,7 +26,6 @@ public class ServerLibraryTask extends PlexServerTask {
         MediaContainer library = server.getLibrary();
         MediaContainer hubs = server.getHubs();
         MediaContainer sections = null;
-        MediaContainer arts = null;
         if (library != null) {
 
             for (Directory dir : library.getDirectories()) {
@@ -38,18 +35,10 @@ public class ServerLibraryTask extends PlexServerTask {
                 sections = server.getLibraryDir(dir.getKey());
             }
         }
-
-        if (sections != null && sections.getDirectories() != null && !sections.getDirectories().isEmpty()) {
-
-            int sectionPos = (int) (1000 % Math.random()) % sections.getDirectories().size();
-            arts = server.getSectionArts(sections.getDirectories().get(sectionPos).getKey());
-        }
-
         synchronized (this) {
             mLibrary = library;
             mSections= sections;
-            mHubs = hubs;
-            mRandomArts = arts;
+            mHubs = HubInfo.getHubs(hubs);
         }
 
         return library != null;
@@ -73,18 +62,9 @@ public class ServerLibraryTask extends PlexServerTask {
         return ret;
     }
 
-    public MediaContainer getRandomArts() {
+    public ArrayList<HubInfo> getHubs() {
 
-        MediaContainer ret;
-        synchronized (this) {
-            ret = mRandomArts;
-        }
-        return ret;
-    }
-
-    public MediaContainer getHubs() {
-
-        MediaContainer ret;
+        ArrayList<HubInfo> ret;
         synchronized (this) {
             ret = mHubs;
         }
