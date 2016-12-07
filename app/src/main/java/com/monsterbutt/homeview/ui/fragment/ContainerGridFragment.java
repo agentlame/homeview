@@ -330,9 +330,20 @@ public class ContainerGridFragment extends VerticalGridFragment
                     public void onClick(DialogInterface dialog, int which) {
 
                         SectionFilter selected = mFilters.selected(which);
-                        mFilterText.setText(selected.name);
-                        new LoadSectionFilterTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mContainer.getLibrarySectionID(), selected.key);
-                        dialog.dismiss();
+                        if (selected.key.startsWith("/")) {
+
+                            dialog.dismiss();
+                            Intent intent = new Intent(getActivity(), ContainerActivity.class);
+                            intent.putExtra(ContainerActivity.KEY, selected.key);
+                            if (mSelectionHandler.getBackgroundURL() != null)
+                                intent.putExtra(ContainerActivity.BACKGROUND, mSelectionHandler.getBackgroundURL());
+                            startActivity(intent);
+                        }
+                        else{
+                            mFilterText.setText(selected.name);
+                            new LoadSectionFilterTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mContainer.getLibrarySectionID(), selected.key);
+                            dialog.dismiss();
+                        }
                     }
                 })
                 .create()
