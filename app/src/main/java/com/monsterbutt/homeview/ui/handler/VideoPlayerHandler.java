@@ -39,6 +39,8 @@ import com.monsterbutt.homeview.ui.activity.ContainerActivity;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
 
+import org.fourthline.cling.support.avtransport.callback.Play;
+
 import java.io.IOException;
 
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
@@ -158,6 +160,8 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
             int prevState = getPlaybackState();
             mMediaSessionHandler.setPlaybackState(direction);
             long loc =  position + offsetInMilli;
+            if (direction == PlaybackState.STATE_REWINDING && position < Math.abs(offsetInMilli))
+                loc = 0;
             if (loc < mPlayer.getDuration()) {
                 setPosition(loc);
                 mMediaSessionHandler.setPlaybackState(prevState);
