@@ -271,7 +271,7 @@ public abstract class PlexLibraryItem {
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
             new SetProgressTask(new SetProgressTask.VideoId(server, PlexLibraryItem.this.getKey(),
-                    Long.toString(PlexLibraryItem.this.getRatingKey()))).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.UNWATCHED);
+                    Long.toString(PlexLibraryItem.this.getRatingKey())), obj.getmContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.UNWATCHED);
             setStatus(new WatchedStatusHandler.UpdateStatus(getKey(), 0, WatchedState.Unwatched));
             if (callback != null)
                 callback.resetSelected(obj);
@@ -292,7 +292,7 @@ public abstract class PlexLibraryItem {
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
             new SetProgressTask(new SetProgressTask.VideoId(server, PlexLibraryItem.this.getKey(),
-                    Long.toString(PlexLibraryItem.this.getRatingKey()))).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.WATCHED);
+                    Long.toString(PlexLibraryItem.this.getRatingKey())), obj.getmContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.WATCHED);
             setStatus(new WatchedStatusHandler.UpdateStatus(getKey(), 0, WatchedState.Watched));
             if (callback != null)
                 callback.resetSelected(obj);

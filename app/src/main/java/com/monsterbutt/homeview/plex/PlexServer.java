@@ -1,6 +1,7 @@
 package com.monsterbutt.homeview.plex;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.util.Log;
@@ -9,6 +10,7 @@ import com.monsterbutt.homeview.plex.media.Movie;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.plex.media.Show;
+import com.monsterbutt.homeview.services.UpdateRecommendationsService;
 import com.monsterbutt.homeview.ui.HubInfo;
 
 import java.util.ArrayList;
@@ -446,7 +448,15 @@ public class PlexServer {
         return searchShowsForEpisodes(PlexContainerItem.ALL, query);
     }
 
-    public boolean setUnwatched(String key, String ratingKey) {
+    private void updateNotifications(Context context) {
+
+        if (context != null) {
+            Intent intent = new Intent(context.getApplicationContext(), UpdateRecommendationsService.class);
+            context.startService(intent);
+        }
+    }
+
+    public boolean setUnwatched(String key, String ratingKey, Context context) {
 
         if (mFactory != null) {
 
@@ -455,29 +465,34 @@ public class PlexServer {
                 return mFactory.setUnWatched(key, ratingKey);
             } catch (Exception e) {
                 Log.e(getClass().getName(), e.toString());
+            } finally {
+                updateNotifications(context);
             }
         }
         return false;
     }
 
-    public boolean setWatched(String key, String ratingKey) {
+    public boolean setWatched(String key, String ratingKey, Context context) {
 
+        boolean ret = false;
         if (mFactory != null) {
             Log.d("PlexServer", "Setting Watched for : " + ratingKey);
             try {
-                return mFactory.setWatched(key, ratingKey);
+                ret = mFactory.setWatched(key, ratingKey);
             } catch (Exception e) {
                 Log.e(getClass().getName(), e.toString());
+            } finally {
+                updateNotifications(context);
             }
         }
-        return false;
+        return ret;
     }
 
-    public boolean toggleWatchedState(String key, String ratingKey, boolean isWatched) {
+    public boolean toggleWatchedState(String key, String ratingKey, boolean isWatched, Context context) {
 
         if (isWatched)
-            return setUnwatched(key, ratingKey);
-        return setWatched(key, ratingKey);
+            return setUnwatched(key, ratingKey, context);
+        return setWatched(key, ratingKey, context);
     }
 
     public boolean setProgress(String key, String ratingKey, long progress) {

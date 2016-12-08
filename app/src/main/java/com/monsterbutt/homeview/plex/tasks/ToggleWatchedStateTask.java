@@ -1,5 +1,6 @@
 package com.monsterbutt.homeview.plex.tasks;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 import com.monsterbutt.homeview.plex.PlexServer;
@@ -10,8 +11,11 @@ public class ToggleWatchedStateTask extends AsyncTask<PlexServer, Void, Void> {
     final String key;
     final String ratingKey;
     final boolean isWatched;
-    public ToggleWatchedStateTask(PlexLibraryItem item) {
+    final Context context;
 
+    public ToggleWatchedStateTask(Context context, PlexLibraryItem item) {
+
+        this.context = context;
         key = item.getKey();
         ratingKey = Long.toString(item.getRatingKey());
         isWatched = item.getWatchedState() == PlexLibraryItem.WatchedState.Watched;
@@ -23,7 +27,7 @@ public class ToggleWatchedStateTask extends AsyncTask<PlexServer, Void, Void> {
 
         PlexServer server = params != null && params.length > 0 && params[0] != null ? params[0] : null;
         if (server != null)
-            server.toggleWatchedState(key, ratingKey, isWatched);
+            server.toggleWatchedState(key, ratingKey, isWatched, context);
         return null;
     }
 }

@@ -1,6 +1,5 @@
 package com.monsterbutt.homeview.plex.tasks;
 
-import android.app.Activity;
 import android.os.AsyncTask;
 
 import com.monsterbutt.homeview.plex.PlexServer;
@@ -39,15 +38,15 @@ public class VideoProgressTask {
         if (progressMs > finishedLimitStart) {
 
             if (previousProgressMs < finishedLimitStart)
-                new SetProgressTask(id).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.WATCHED);
+                new SetProgressTask(id, null).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.WATCHED);
         }
         else if (progressMs < startedLimitEnd) {
 
             if (!isFinished && progressMs < previousProgressMs && previousProgressMs > startedLimitEnd)
-                new SetProgressTask(id).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.UNWATCHED);
+                new SetProgressTask(id, null).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.UNWATCHED);
         }
         else
-            new SetProgressTask(id).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, progressMs);
+            new SetProgressTask(id, null).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, progressMs);
 
         previousProgressMs = progressMs;
     }

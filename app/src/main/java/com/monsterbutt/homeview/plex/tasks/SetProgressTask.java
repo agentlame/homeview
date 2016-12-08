@@ -1,5 +1,6 @@
 package com.monsterbutt.homeview.plex.tasks;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 import com.monsterbutt.homeview.plex.PlexServer;
@@ -24,9 +25,10 @@ public class SetProgressTask extends AsyncTask<Long, Void, Boolean> {
     public final static long WATCHED = -1;
 
     private final VideoId id;
-
-    public SetProgressTask(VideoId id) {
+    private final Context context;
+    public SetProgressTask(VideoId id, Context context) {
         this.id = id;
+        this.context = context;
     }
 
     @Override
@@ -38,9 +40,9 @@ public class SetProgressTask extends AsyncTask<Long, Void, Boolean> {
         boolean ret;
         long progressMs = params[0];
         if (progressMs == WATCHED)
-            ret = id.server.setWatched(id.key, id.ratingKey);
+            ret = id.server.setWatched(id.key, id.ratingKey, context);
         else if (progressMs == UNWATCHED)
-            ret = id.server.setUnwatched(id.key, id.ratingKey);
+            ret = id.server.setUnwatched(id.key, id.ratingKey, context);
         else
             ret = id.server.setProgress(id.key, id.ratingKey, progressMs);
 

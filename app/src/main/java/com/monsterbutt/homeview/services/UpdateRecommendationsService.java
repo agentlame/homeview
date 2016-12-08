@@ -23,6 +23,12 @@ import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.provider.BackgroundContentProvider;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -120,7 +126,6 @@ public class UpdateRecommendationsService extends IntentService {
 
                 ++sortOrder;
                 checkedAlready.put(item.getKey(), true);
-
             }
         }
 
@@ -133,10 +138,8 @@ public class UpdateRecommendationsService extends IntentService {
         if (!recommends.isEmpty())
             recommends = recommends.subList(0, Math.min(MAX_RECOMMENDATIONS, recommends.size()));
 
-
+        Map<String, Integer> newNotifications = new HashMap<>();
         NotificationManager mgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        mgr.cancelAll();
         try {
 
             RecommendationBuilder builder = new RecommendationBuilder()
@@ -165,11 +168,62 @@ public class UpdateRecommendationsService extends IntentService {
                     .setGroup(go.group)
                     .setIntent(buildPendingIntent(item))
                     .build();
-                mgr.notify((int) item.getRatingKey(), notification);
+                mgr.notify(item.getKey(), (int) item.getRatingKey(), notification);
+                newNotifications.put(item.getKey(), (int) item.getRatingKey());
                 priority -= priority_span;
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        Map<String, Integer> oldIds = getNotifications();
+        for (Map.Entry pair : oldIds.entrySet()) {
+            String key = (String) pair.getKey();
+            if (!newNotifications.containsKey(key))
+                mgr.cancel(key, (Integer) pair.getValue());
+        }
+        setNotifications(newNotifications);
+    }
+
+    private static final String fileName = "notifications";
+    @SuppressWarnings("unchecked")
+    private Map<String, Integer> getNotifications() {
+
+        Map<String,Integer> ret = new HashMap<>();
+        ObjectInputStream ois = null;
+        try {
+            ois = new ObjectInputStream(new FileInputStream(new File(getCacheDir(), fileName)));
+            ret = (HashMap) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            if (ois != null) {
+                try {
+                    ois.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return ret;
+    }
+
+    private void setNotifications(Map<String,Integer> ids) {
+
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(new FileOutputStream(new File(getCacheDir(), fileName)));
+            oos.writeObject(ids);
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (oos != null) {
+                try {
+                    oos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

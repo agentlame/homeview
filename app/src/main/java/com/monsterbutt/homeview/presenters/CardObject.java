@@ -83,4 +83,6 @@ public abstract class CardObject {
                                  View transitionView, CardPresenter.LongClickWatchStatusCallback callback) {
         return onClicked(fragment, extras, transitionView);
     }
+
+    public Context getmContext() { return mContext; }
 }

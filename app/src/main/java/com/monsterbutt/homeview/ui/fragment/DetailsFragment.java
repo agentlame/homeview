@@ -190,7 +190,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     private void toggleWatched() {
 
         boolean isWatched = !(mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched);
-        new ToggleWatchedStateTask(mItem).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mServer);
+        new ToggleWatchedStateTask(getActivity(), mItem).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mServer);
 
         DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
         setActions((SparseArrayObjectAdapter) row.getActionsAdapter(), isWatched);
