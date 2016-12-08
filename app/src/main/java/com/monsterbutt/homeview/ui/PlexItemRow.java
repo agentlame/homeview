@@ -14,6 +14,7 @@ import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
+import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
@@ -309,16 +310,25 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
     private class GetHubDataTask extends AsyncTask<HubInfo, Void, MediaContainer> {
 
         private final PlexServer server;
+        private final String maxCount;
 
         public GetHubDataTask(PlexServer server) {
             this.server = server;
+            this.maxCount = SettingsManager.getInstance(context).getString("preferences_navigation_hubsizelimit");
         }
 
+        private final String recentlyAddedKey = "recentlyAdded?type=";
+        private final String limitResultsKey = "&X-Plex-Container-Start=0&X-Plex-Container-Size=";
         @Override
         protected MediaContainer doInBackground(HubInfo[] params) {
 
-            if (params != null && params.length > 0)
-                return server.getHubsData(params[0]);
+            if (params != null && params.length > 0) {
+
+                HubInfo hub = params[0];
+                if (hub.path.contains(recentlyAddedKey) && Long.valueOf(maxCount) > 0)
+                    hub = new HubInfo(hub.name, hub.key, hub.path + limitResultsKey + maxCount);
+                return server.getHubsData(hub);
+            }
             return null;
         }
 

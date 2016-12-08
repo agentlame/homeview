@@ -150,6 +150,11 @@
     <string name="preferences_nextup_movies_dialog">When to advertise the next movie?</string>
     <string name="preferences_nextup_movies_default">300</string>
 
+    <string name="preferences_navigation_hubsizelimit">Main Row Max Size</string>
+    <string name="preferences_navigation_hubsizelimit_summary">How many items do you want to limit rows to</string>
+    <string name="preferences_navigation_hubsizelimit_dialog">Max items to display in main screen rows?</string>
+    <string name="preferences_navigation_hubsizelimit_default">50</string>
+
     <string name="preferences_setvalue">Set value</string>
     <string name="preferences_save">Save</string>
     <string name="preferences_save_desc"></string>

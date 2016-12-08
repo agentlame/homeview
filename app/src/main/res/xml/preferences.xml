@@ -53,6 +53,14 @@
             android:summary="@string/preferences_navigation_collapsesingleseason_summary"
             android:defaultValue="true" />
 
+        <EditTextPreference
+            android:key="preferences_navigation_hubsizelimit"
+            android:drawable="@drawable/ic_view_week_white_48dp"
+            android:title="@string/preferences_navigation_hubsizelimit"
+            android:summary="@string/preferences_navigation_hubsizelimit_summary"
+            android:dialogTitle="@string/preferences_navigation_hubsizelimit_dialog"
+            android:defaultValue="@string/preferences_navigation_hubsizelimit_default"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory

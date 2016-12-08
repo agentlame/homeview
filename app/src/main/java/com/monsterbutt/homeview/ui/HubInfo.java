@@ -24,7 +24,7 @@ public class HubInfo implements Parcelable {
     final public String key;
     final public String path;
 
-    private HubInfo(String name, String key, String path) {
+    public HubInfo(String name, String key, String path) {
         this.name = name;
         this.key = key;
         this.path = path;
