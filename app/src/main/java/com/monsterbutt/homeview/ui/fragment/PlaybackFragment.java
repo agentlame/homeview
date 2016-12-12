@@ -27,7 +27,7 @@ public class PlaybackFragment
         extends android.support.v17.leanback.app.PlaybackOverlayFragment
         implements HomeViewActivity.OnStopKeyListener, HomeViewActivity.OnBackPressedListener {
 
-    private static final int BACKGROUND_TYPE = PlaybackFragment.BG_LIGHT;
+    private static final int BACKGROUND_TYPE = PlaybackFragment.BG_NONE;
 
     private VideoPlayerHandler mPlayerHandler;
     private CurrentVideoHandler mCurrentVideoHandler;
