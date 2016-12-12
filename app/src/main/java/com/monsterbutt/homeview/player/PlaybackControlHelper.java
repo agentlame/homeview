@@ -20,8 +20,8 @@ import android.support.v17.leanback.widget.PresenterSelector;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.SparseArrayObjectAdapter;
 import android.view.KeyEvent;
-import android.view.View;
 
+import com.google.android.exoplayer2.C;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.model.Video;
 import com.monsterbutt.homeview.presenters.PlaybackDetailsPresenter;
@@ -32,7 +32,6 @@ import com.monsterbutt.homeview.ui.handler.VideoPlayerHandler;
 public class PlaybackControlHelper extends PlaybackControlGlue {
     private static final int[] SEEK_SPEEDS = {0}; // A single seek speed for fast-forward / rewind.
     private static final int DEFAULT_UPDATE_PERIOD = 500;
-    private static final int UPDATE_PERIOD = 16;
     Drawable mMediaArt;
     private boolean mIsPlaying;
     private int mSpeed;
@@ -43,7 +42,27 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     private PlaybackControlsRow.RewindAction mRewindAction;
 
     private Handler mHandler = new Handler();
-    private Runnable mUpdateProgressRunnable;
+    private Runnable mUpdateProgressRunnable = new Runnable() {
+        @Override
+        public void run() {
+            int totalTime = getControlsRow().getTotalTime();
+            int currentTime = getCurrentPosition();
+            getControlsRow().setCurrentTime(currentTime);
+
+            int progress = (int) mPlaybackHandler.getBufferedPosition();
+            getControlsRow().setBufferedProgress(progress);
+
+            if (mProgressCallback != null)
+                mProgressCallback.progressUpdate(mPlaybackHandler.getPlaybackState(), currentTime);
+
+            if (totalTime > 0 && totalTime <= currentTime) {
+                stopProgressAnimation();
+            } else {
+                mHandler.postDelayed(this, getUpdatePeriod());
+            }
+        }
+    };
+
     private Video mVideo = null;
     private ProgressUpdateCallback mProgressCallback;
 
@@ -67,6 +86,10 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
         mTransportControls = mFragment.getActivity().getMediaController().getTransportControls();
         mIsPlaying = true;
         mSpeed = PLAYBACK_SPEED_NORMAL;
+    }
+
+    public void onStop() {
+        enableProgressUpdating(false);
     }
 
     private PlaybackControlsRowPresenter makeControlsRowAndPresenter() {
@@ -118,7 +141,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     public void enableProgressUpdating(boolean enable) {
         mHandler.removeCallbacks(mUpdateProgressRunnable);
         if (enable) {
-            mHandler.post(mUpdateProgressRunnable);
+            mHandler.postDelayed(mUpdateProgressRunnable, getUpdatePeriod());
         }
     }
 
@@ -129,30 +152,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
     @Override
     public void updateProgress() {
-        if (mUpdateProgressRunnable == null) {
-            mUpdateProgressRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    int totalTime = getControlsRow().getTotalTime();
-                    int currentTime = getCurrentPosition();
-                    getControlsRow().setCurrentTime(currentTime);
-
-                    int progress = (int) mPlaybackHandler.getBufferedPosition();
-                    getControlsRow().setBufferedProgress(progress);
-
-                    if (mProgressCallback != null)
-                        mProgressCallback.progressUpdate(mPlaybackHandler.getPlaybackState(), currentTime);
-
-                    if (totalTime > 0 && totalTime <= currentTime) {
-                        stopProgressAnimation();
-                    } else {
-                        updateProgress();
-                    }
-                }
-            };
-        }
-
-        mHandler.postDelayed(mUpdateProgressRunnable, getUpdatePeriod());
+        enableProgressUpdating(true);
     }
 
     @Override
@@ -177,7 +177,10 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
     @Override
     public int getMediaDuration() {
-        return (int) mPlaybackHandler.getDuration();
+        long duration = mPlaybackHandler.getDuration();
+        if (duration == C.TIME_UNSET)
+            return 0;
+        return (int) duration;
     }
 
     @Override
@@ -196,9 +199,15 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
         return mSpeed;
     }
 
+    private long getPlaybackPosition() {
+        long position = mPlaybackHandler.getCurrentPosition();
+        if (position == C.TIME_UNSET)
+            return 0;
+        return position;
+    }
+
     @Override
-    public int getCurrentPosition() {
-        return (int) mPlaybackHandler.getCurrentPosition();
+    public int getCurrentPosition() { return (int) getPlaybackPosition();
     }
 
     @Override
@@ -264,19 +273,6 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
             mTransportControls.rewind();
         } else {
             super.onActionClicked(action);
-        }
-    }
-
-    private void notifyActionChanged(PlaybackControlsRow.MultiAction action) {
-        int index;
-        index = getPrimaryActionsAdapter().indexOf(action);
-        if (index >= 0) {
-            getPrimaryActionsAdapter().notifyArrayItemRangeChanged(index, 1);
-        } else {
-            index = getSecondaryActionsAdapter().indexOf(action);
-            if (index >= 0) {
-                getSecondaryActionsAdapter().notifyArrayItemRangeChanged(index, 1);
-            }
         }
     }
 

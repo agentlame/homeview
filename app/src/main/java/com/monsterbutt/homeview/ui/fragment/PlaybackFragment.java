@@ -22,7 +22,6 @@ import com.monsterbutt.homeview.ui.handler.PlaybackUIHandler;
 import com.monsterbutt.homeview.ui.handler.VideoPlayerHandler;
 
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class PlaybackFragment
         extends android.support.v17.leanback.app.PlaybackOverlayFragment
@@ -37,7 +36,6 @@ public class PlaybackFragment
 
     private OnFadeCompleteListener mFadeListener = new OnFadeCompleteListener() {
 
-        private final static int HALF_SECOND = 500;
         private Timer mTimer = new Timer();
         private boolean mRunning = false;
 
@@ -47,15 +45,11 @@ public class PlaybackFragment
             synchronized (this) {
 
                 mPlayerHandler.setGuiShowing(true);
+
                 if (mRunning)
                     return;
                 mRunning = false;
-                mTimer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        mPlaybackUIHandler.updateProgress();
-                    }
-                }, 0, HALF_SECOND);
+                mPlaybackUIHandler.updateProgress();
             }
 
         }
@@ -65,6 +59,7 @@ public class PlaybackFragment
             synchronized (this) {
 
                 mPlayerHandler.setGuiShowing(false);
+                mPlaybackUIHandler.disableUpdateProgress();
                 mTimer.cancel();
                 mRunning = false;
                 mTimer = new Timer();
@@ -105,6 +100,7 @@ public class PlaybackFragment
     public void onStop() {
         super.onStop();
         mPlayerHandler.onStop();
+        mPlaybackUIHandler.onStop();
         mCurrentVideoHandler.updateRecommendations(getActivity(), false);
         mMediaSessionHandler.onStop();
     }

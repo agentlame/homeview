@@ -64,6 +64,11 @@ public class PlaybackUIHandler extends MediaController.Callback {
         updateMetadata();
     }
 
+    public void onStop() {
+
+        mGlue.onStop();
+    }
+
     private Activity getActivity() { return mFragment.getActivity(); }
 
     private void updateCodecAndExtras() {
@@ -96,7 +101,11 @@ public class PlaybackUIHandler extends MediaController.Callback {
     }
 
     public void updateProgress() {
-        mGlue.updateProgress();
+        mGlue.enableProgressUpdating(true);
+    }
+
+    public void disableUpdateProgress() {
+        mGlue.enableProgressUpdating(false);
     }
 
     public void setupVideoForPlayback() {
