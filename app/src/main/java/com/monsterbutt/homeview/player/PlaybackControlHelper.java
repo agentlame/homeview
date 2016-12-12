@@ -56,7 +56,8 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
                 mProgressCallback.progressUpdate(mPlaybackHandler.getPlaybackState(), currentTime);
 
             if (totalTime > 0 && totalTime <= currentTime) {
-                stopProgressAnimation();
+                if (mHandler != null && mUpdateProgressRunnable != null)
+                    mHandler.removeCallbacks(mUpdateProgressRunnable);
             } else {
                 mHandler.postDelayed(this, getUpdatePeriod());
             }
@@ -140,9 +141,8 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     @Override
     public void enableProgressUpdating(boolean enable) {
         mHandler.removeCallbacks(mUpdateProgressRunnable);
-        if (enable) {
-            mHandler.postDelayed(mUpdateProgressRunnable, getUpdatePeriod());
-        }
+        if (enable)
+            mHandler.post(mUpdateProgressRunnable);
     }
 
     @Override
@@ -273,13 +273,6 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
             mTransportControls.rewind();
         } else {
             super.onActionClicked(action);
-        }
-    }
-
-    private void stopProgressAnimation() {
-        if (mHandler != null && mUpdateProgressRunnable != null) {
-            mHandler.removeCallbacks(mUpdateProgressRunnable);
-            mUpdateProgressRunnable = null;
         }
     }
 
