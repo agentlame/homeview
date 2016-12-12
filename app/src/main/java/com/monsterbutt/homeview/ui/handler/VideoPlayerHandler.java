@@ -10,7 +10,9 @@ import android.support.v17.leanback.widget.ListRow;
 import android.util.Log;
 import android.view.InputEvent;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
@@ -70,6 +72,8 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
     private final SimpleExoPlayerView mVideoFrame;
     private TrackSelector mTrackSelector = new TrackSelector();
 
+    private ProgressBar mProgress = null;
+
     private long mLastRewind;
     private long mLastForward;
 
@@ -92,6 +96,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
         mFragment = fragment;
         mActivity = (HomeViewActivity) fragment.getActivity();
+        mProgress = (ProgressBar) mActivity.findViewById(R.id.progress);
         mServer = server;
         mMediaSessionHandler = mediaSessionHandler;
         mCurrentVideoHandler = currentVideoHandler;
@@ -432,6 +437,8 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
             case ExoPlayer.STATE_ENDED:
                 Log.i(Tag, "State_Ended");
                 mIsMetadataSet = false;
+                if (mProgress != null)
+                    mProgress.setVisibility(View.VISIBLE);
                 if (!skipToNext())
                     mActivity.finish();
                 break;
@@ -443,6 +450,8 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
                 Log.i(Tag, "State_Ready");
                 if (!mIsMetadataSet) {
+                    if (mProgress != null)
+                        mProgress.setVisibility(View.GONE);
                     mCurrentVideoHandler.setTracks(mTrackSelector);
                     mCurrentVideoHandler.updateRecommendations(mActivity, true);
                     mPlaybackUIHandler.updateMetadata();

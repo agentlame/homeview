@@ -70,7 +70,7 @@ public class PlaybackFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setFadingEnabled(false);
         Activity activity = getActivity();
         setBackgroundType(BACKGROUND_TYPE);
         PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
@@ -114,7 +114,7 @@ public class PlaybackFragment
     @Override
     public void onResume() {
         super.onResume();
-
+        setFadingEnabled(true);
         ThemeService.stopTheme(getActivity());
         mPlayerHandler.onResume();
     }
