@@ -41,6 +41,8 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     private PlaybackControlsRow.FastForwardAction mFastForwardAction;
     private PlaybackControlsRow.RewindAction mRewindAction;
 
+    private boolean mMetadataSet = false;
+
     private Handler mHandler = new Handler();
     private Runnable mUpdateProgressRunnable = new Runnable() {
         @Override
@@ -91,6 +93,20 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
     public void onStop() {
         enableProgressUpdating(false);
+    }
+
+    public boolean isMetadataSet() {
+        boolean ret;
+        synchronized (this) {
+            ret = mMetadataSet;
+        }
+        return ret;
+    }
+
+    public void setMetadataSet(boolean isSet) {
+        synchronized (this) {
+            mMetadataSet = isSet;
+        }
     }
 
     private PlaybackControlsRowPresenter makeControlsRowAndPresenter() {
@@ -167,24 +183,33 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
     @Override
     public CharSequence getMediaTitle() {
+
+        if (!isMetadataSet())
+            return "";
         return mVideo != null ? mVideo.title : "";
     }
 
     @Override
     public CharSequence getMediaSubtitle() {
+
+        if (!isMetadataSet())
+            return "";
         return mVideo != null ? mVideo.description : "";
     }
 
     @Override
     public int getMediaDuration() {
         long duration = mPlaybackHandler.getDuration();
-        if (duration == C.TIME_UNSET)
+        if (duration == C.TIME_UNSET || !isMetadataSet())
             return 0;
         return (int) duration;
     }
 
     @Override
     public Drawable getMediaArt() {
+
+        if (!isMetadataSet())
+            return null;
         return mMediaArt;
     }
 
@@ -201,7 +226,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
     private long getPlaybackPosition() {
         long position = mPlaybackHandler.getCurrentPosition();
-        if (position == C.TIME_UNSET)
+        if (position == C.TIME_UNSET || !isMetadataSet())
             return 0;
         return position;
     }

@@ -113,6 +113,10 @@ public class PlaybackUIHandler extends MediaController.Callback {
         updateCodecAndExtras();
     }
 
+    public boolean isMetadataSet() { return mGlue.isMetadataSet(); }
+
+    public void setMetadataSet(boolean isSet) { mGlue.setMetadataSet(isSet); }
+
     public void updateMetadata() {
 
         Context context = getActivity();

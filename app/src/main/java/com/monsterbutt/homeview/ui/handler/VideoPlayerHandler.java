@@ -79,7 +79,6 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
 
     private boolean mCheckForPIPChanged = false;
     private boolean mGuiShowing = false;
-    private boolean mIsMetadataSet = false;
 
     private boolean mAllowNextTrack = true;
 
@@ -174,6 +173,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
         return false;
     }
 
+    @SuppressWarnings("unused")
     public void pipModeChanged(boolean isInPictureInPictureMode) {
 
         mServer.isPIPActive(isInPictureInPictureMode);
@@ -369,7 +369,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                 mPlayer.release();
                 mPlayer = null;
             }
-            mIsMetadataSet = false;
+            mPlaybackUIHandler.setMetadataSet(false);
             isVideoLoaded = false;
             if (switcher != null)
                 switcher.unregister();
@@ -436,7 +436,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                 break;
             case ExoPlayer.STATE_ENDED:
                 Log.i(Tag, "State_Ended");
-                mIsMetadataSet = false;
+                mPlaybackUIHandler.setMetadataSet(false);
                 if (mProgress != null)
                     mProgress.setVisibility(View.VISIBLE);
                 if (!skipToNext())
@@ -449,7 +449,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                 // Duration is set here.
 
                 Log.i(Tag, "State_Ready");
-                if (!mIsMetadataSet) {
+                if (!mPlaybackUIHandler.isMetadataSet()) {
                     if (mProgress != null)
                         mProgress.setVisibility(View.GONE);
                     mCurrentVideoHandler.setTracks(mTrackSelector);
@@ -457,11 +457,13 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                     mPlaybackUIHandler.updateMetadata();
 
                     mPlayer.seekTo(mCurrentVideoHandler.getStartPosition());
+                    mFragment.tickle();
 
                     if (mCurrentVideoHandler.getPlaybackStartType() == StartPosition.PlaybackStartType.Ask)
                         ResumeChoiceHandler.askUser(mFragment, mPlayer, mCurrentVideoHandler.getLastViewedPosition(), CHOOSER_TIMEOUT);
                     isVideoLoaded = true;
-                    mIsMetadataSet = true;
+
+                    mPlaybackUIHandler.setMetadataSet(true);
                 }
                 playPause(true);
                 break;

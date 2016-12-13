@@ -70,7 +70,6 @@ public class PlaybackFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setFadingEnabled(false);
         Activity activity = getActivity();
         setBackgroundType(BACKGROUND_TYPE);
         PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
@@ -94,6 +93,7 @@ public class PlaybackFragment
         ((HomeViewActivity)getActivity()).setStopKeyListner(this);
         ((HomeViewActivity)getActivity()).setBackPressedListener(this);
         setFadeCompleteListener(mFadeListener);
+        setFadingEnabled(false);
     }
 
     @Override
@@ -109,6 +109,13 @@ public class PlaybackFragment
     public void onDetach() {
         super.onDetach();
         mMediaSessionHandler.onDetach();
+    }
+
+    @Override
+    public void onStart() {
+
+        super.onStart();
+        fadeOut();
     }
 
     @Override
