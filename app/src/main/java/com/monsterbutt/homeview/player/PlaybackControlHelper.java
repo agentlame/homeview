@@ -280,10 +280,6 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
         return (SparseArrayObjectAdapter) getControlsRow().getPrimaryActionsAdapter();
     }
 
-    private ArrayObjectAdapter getSecondaryActionsAdapter() {
-        return (ArrayObjectAdapter) getControlsRow().getSecondaryActionsAdapter();
-    }
-
     @Override
     protected SparseArrayObjectAdapter createPrimaryActionsAdapter(
             PresenterSelector presenterSelector) {

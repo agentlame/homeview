@@ -96,6 +96,6 @@
     <dimen name="toolbar_list_padding_top">0dp</dimen>
     <dimen name="toolbar_buttonheight">25dp</dimen>
 
-    <dimen name="lb_playback_controls_padding_top">332dp</dimen>
+    <dimen name="lb_playback_controls_padding_top">320dp</dimen>
 
 </resources>

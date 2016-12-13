@@ -39,7 +39,6 @@ public class PlaybackUIHandler extends MediaController.Callback {
 
     private ListRow mCodecRow = null;
     private ListRow mExtrasRow = null;
-    private boolean skipFirstPlaybackTickle = true;
 
     public PlaybackUIHandler(PlaybackFragment fragment, PlexServer server, CurrentVideoHandler currentVideoHandler) {
 
