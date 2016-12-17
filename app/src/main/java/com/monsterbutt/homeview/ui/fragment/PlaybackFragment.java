@@ -49,7 +49,6 @@ public class PlaybackFragment
                 if (mRunning)
                     return;
                 mRunning = false;
-                mPlaybackUIHandler.updateProgress();
             }
 
         }
@@ -59,7 +58,6 @@ public class PlaybackFragment
             synchronized (this) {
 
                 mPlayerHandler.setGuiShowing(false);
-                mPlaybackUIHandler.disableUpdateProgress();
                 mTimer.cancel();
                 mRunning = false;
                 mTimer = new Timer();

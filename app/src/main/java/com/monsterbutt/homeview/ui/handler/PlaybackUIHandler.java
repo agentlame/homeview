@@ -99,14 +99,6 @@ public class PlaybackUIHandler extends MediaController.Callback {
         mRowsAdapter.notifyArrayItemRangeChanged(0, 1);
     }
 
-    public void updateProgress() {
-        mGlue.enableProgressUpdating(true);
-    }
-
-    public void disableUpdateProgress() {
-        mGlue.enableProgressUpdating(false);
-    }
-
     public void setupVideoForPlayback() {
 
         updateMetadata();
@@ -116,6 +108,8 @@ public class PlaybackUIHandler extends MediaController.Callback {
     public boolean isMetadataSet() { return mGlue.isMetadataSet(); }
 
     public void setMetadataSet(boolean isSet) { mGlue.setMetadataSet(isSet); }
+
+    public void enableProgressUpdating(boolean enable) { mGlue.enableProgressUpdating(enable);}
 
     public void updateMetadata() {
 

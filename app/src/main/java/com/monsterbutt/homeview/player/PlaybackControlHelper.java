@@ -106,6 +106,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     public void setMetadataSet(boolean isSet) {
         synchronized (this) {
             mMetadataSet = isSet;
+
         }
     }
 
@@ -164,11 +165,6 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     @Override
     public int getUpdatePeriod() {
         return DEFAULT_UPDATE_PERIOD;
-    }
-
-    @Override
-    public void updateProgress() {
-        enableProgressUpdating(true);
     }
 
     @Override

@@ -288,6 +288,7 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
             return;
         }
 
+        mPlaybackUIHandler.enableProgressUpdating(doPlay);
         if (doPlay) {
 
             if (getPlaybackState() != PlaybackState.STATE_PLAYING) {
