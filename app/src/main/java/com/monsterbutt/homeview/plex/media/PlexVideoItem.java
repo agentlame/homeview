@@ -455,7 +455,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         row.add(VideoContract.VideoEntry.COLUMN_SERVERPATH, getMedia().get(0).getVideoPart().get(0).getKey());
         row.add(VideoContract.VideoEntry.COLUMN_FILEPATH, getMedia().get(0).getVideoPart().get(0).getFilename());
         row.add(VideoContract.VideoEntry.COLUMN_WATCHEDOFFSET, mVideo.getViewOffset());
-        row.add(VideoContract.VideoEntry.COLUMN_WATCHED, getWatchedState() == WatchedState.Watched ? 1 : 0);
+        row.add(VideoContract.VideoEntry.COLUMN_WATCHED, getWatchedState().ordinal());
         row.add(VideoContract.VideoEntry.COLUMN_FRAMERATE, getMedia().get(0).getVideoFrameRate());
 
         if (!TextUtils.isEmpty(keyOverride))

@@ -7,9 +7,8 @@ This is an AndroidTV 6.0 app designed to leverage an existing Plex server.  It i
 2.  No channel addon support.
 3.  Only container formats that ExoPlayer uses are supported (MKV, MP4, etc) and in whatever naming conventions ExoPlayer supports.  No ISO or AVI.
 4.  Video formats are limited to what the hardware supports.  This means no VC1 for the Nexus Player and a software decoder in the future may not even make that usable as Ffmpeg's decoding is single threaded.
-5.  TrueHD passthrough is not currently supported.
-6.  Any decoded audio (or 24bit PCM) is down res'd to 16 bit as Android's 32bit float is only two channels.
-7.  VOBSUB and external SRT subtitles are not supported.
+5.  Any decoded audio (or 24bit PCM) is down res'd to 16 bit as Android's 32bit float is only two channels.
+6.  VOBSUB and external SRT subtitles are not supported.
 
 ##Requirements
 1. Android Studio

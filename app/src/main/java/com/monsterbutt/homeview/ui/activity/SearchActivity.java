@@ -4,6 +4,7 @@ import android.app.SearchManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v17.leanback.widget.SpeechRecognitionCallback;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
@@ -13,6 +14,8 @@ import com.monsterbutt.homeview.ui.fragment.SearchFragment;
 
 
 public class SearchActivity extends HomeViewActivity {
+
+    private static final int REQUEST_SPEECH = 1;
     private SearchFragment mFragment;
 
     /**
@@ -37,6 +40,7 @@ public class SearchActivity extends HomeViewActivity {
                     suggestion.putExtra(PlaybackActivity.VIDEO, vid);
                 startActivity(suggestion);
                 finish();
+                return;
             }
             else if (path.equals(MediaContentProvider.ID_DETAIL)) {
 
@@ -44,12 +48,24 @@ public class SearchActivity extends HomeViewActivity {
                 suggestion.putExtra(DetailsActivity.KEY, key);
                 startActivity(suggestion);
                 finish();
+                return;
             }
         }
-        else {
-            setContentView(R.layout.activity_search);
-            mFragment = (SearchFragment) getFragmentManager().findFragmentById(R.id.search_fragment);
-        }
+        setContentView(R.layout.activity_search);
+        mFragment = (SearchFragment) getFragmentManager().findFragmentById(R.id.search_fragment);
+        SpeechRecognitionCallback speechRecognitionCallback = new SpeechRecognitionCallback() {
+            @Override
+            public void recognizeSpeech() {
+                startActivityForResult(mFragment.getRecognizerIntent(), REQUEST_SPEECH);
+            }
+        };
+        mFragment.setSpeechRecognitionCallback(speechRecognitionCallback);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_SPEECH && resultCode == RESULT_OK)
+            mFragment.setSearchQuery(data, true);
     }
 
     @Override

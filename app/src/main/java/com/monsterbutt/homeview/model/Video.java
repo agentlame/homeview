@@ -31,6 +31,8 @@ import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.provider.SearchImagesProvider;
 
+import static com.monsterbutt.homeview.plex.media.PlexLibraryItem.WatchedState.Watched;
+
 /**
  * Video is an immutable object that holds the various metadata associated with a single video.
  */
@@ -50,7 +52,7 @@ public final class Video extends CardObject implements Parcelable {
     public final String serverPath;
     public final long   duration;
     public final long   watchedOffset;
-    public final boolean watched;
+    public final PlexLibraryItem.WatchedState watched;
     public final boolean shouldStartQueuePlayback;
     public final String frameRate;
 
@@ -69,7 +71,7 @@ public final class Video extends CardObject implements Parcelable {
             final String serverPath,
             final long duration,
             final long watchedOffset,
-            final boolean watched,
+            final PlexLibraryItem.WatchedState watched,
             final String frameRate,
             final boolean shouldStartQueuePlayback) {
         this.id = id;
@@ -114,7 +116,7 @@ public final class Video extends CardObject implements Parcelable {
         serverPath = in.readString();
         duration = in.readLong();
         watchedOffset = in.readLong();
-        watched = in.readByte() == 1;
+        watched = PlexLibraryItem.WatchedState.values()[in.readInt()];
         frameRate = in.readString();
         shouldStartQueuePlayback = in.readByte() == 1;
     }
@@ -159,7 +161,7 @@ public final class Video extends CardObject implements Parcelable {
         dest.writeString(serverPath);
         dest.writeLong(duration);
         dest.writeLong(watchedOffset);
-        dest.writeByte((byte) (watched ? 1 : 0));
+        dest.writeInt(watched.ordinal());
         dest.writeString(frameRate);
         dest.writeByte((byte) (shouldStartQueuePlayback ? 1 : 0));
     }
@@ -215,14 +217,27 @@ public final class Video extends CardObject implements Parcelable {
 
     @Override
     public PlexLibraryItem.WatchedState getWatchedState() {
-        return null;
+        return watched;
     }
 
     @Override
     public int getViewedProgress() {
-        return 0;
+        int ret = 0;
+        switch(watched) {
+            case WatchedAndPartial:
+            case PartialWatched:
+                double val = (double) watchedOffset / duration;
+                ret = (int) (val * 100);
+                break;
+            case Watched:
+            case Unwatched:
+            default:
+                break;
+        }
+        return ret;
     }
 
+    @SuppressWarnings("unused")
     public String getFrameRate() { return frameRate;}
 
     @Override
@@ -246,7 +261,7 @@ public final class Video extends CardObject implements Parcelable {
         private String serverPath = "";
         private long   duration = 0;
         private long   watchedOffset = 0;
-        private boolean watched = false;
+        private PlexLibraryItem.WatchedState watched = Watched;
         private String frameRate = "";
         private boolean shouldStartQueuePlayback = false;
 
@@ -320,7 +335,7 @@ public final class Video extends CardObject implements Parcelable {
             return this;
         }
 
-        public VideoBuilder watched(boolean watched) {
+        public VideoBuilder watched(PlexLibraryItem.WatchedState watched) {
             this.watched = watched;
             return this;
         }
@@ -351,7 +366,7 @@ public final class Video extends CardObject implements Parcelable {
                     "",
                     0,
                     0,
-                    false,
+                    Watched,
                     "",
                     false
             );

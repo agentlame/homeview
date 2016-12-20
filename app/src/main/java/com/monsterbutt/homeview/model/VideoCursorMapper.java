@@ -19,6 +19,7 @@ import android.database.Cursor;
 import android.support.v17.leanback.database.CursorMapper;
 
 import com.monsterbutt.homeview.data.VideoContract;
+import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 
 /**
  * VideoCursorMapper maps a database Cursor to a Video object.
@@ -82,7 +83,7 @@ public final class VideoCursorMapper extends CursorMapper {
         String serverPath = cursor.getString(serverPathIndex);
         long   duration = cursor.getLong(durationIndex);
         long   watchedOffset = cursor.getLong(watchedOffsetIndex);
-        boolean watched = 1 == cursor.getShort(watchedIndex);
+        PlexLibraryItem.WatchedState watched = PlexLibraryItem.WatchedState.values()[cursor.getInt(watchedIndex)];
         boolean shouldStartQueuePlayback =  1 == cursor.getShort(shouldStartIndex);
         String frameRate = cursor.getString(frameRateIndex);
 

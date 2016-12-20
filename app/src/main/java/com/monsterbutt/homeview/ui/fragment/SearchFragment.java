@@ -1,14 +1,8 @@
 package com.monsterbutt.homeview.ui.fragment;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.LoaderManager;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.CursorLoader;
-import android.content.Intent;
 import android.content.Loader;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,9 +12,7 @@ import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
 import android.support.v17.leanback.widget.ObjectAdapter;
-import android.support.v17.leanback.widget.SpeechRecognitionCallback;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.data.VideoContract;
@@ -35,51 +27,29 @@ import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
  * This class demonstrates how to do in-app search
  */
 public class SearchFragment extends android.support.v17.leanback.app.SearchFragment
-        implements android.support.v17.leanback.app.SearchFragment.SearchResultProvider,
-        LoaderManager.LoaderCallbacks<Cursor> {
-    private static final String TAG = "SearchFragment";
+        implements android.support.v17.leanback.app.SearchFragment.SearchResultProvider {
 
-    //private static final boolean FINISH_ON_RECOGNIZER_CANCELED = true;
-    private static final int REQUEST_SPEECH = 0x00000010;
+    static private final String QUERY_ARG = "query";
+    private static final int SEARCH_DELAY_MS = 1000;
 
     private final Handler mHandler = new Handler();
-    private ArrayObjectAdapter mRowsAdapter;
-    private String mQuery;
+    private final ArrayObjectAdapter mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
+    private final SearchRunnable mDelayedLoad = new SearchRunnable();
+    private final UILifecycleManager mLifeCycleMgr = new UILifecycleManager();
+
     private CursorObjectAdapter mVideoCursorAdapter;
-
-    private int mSearchLoaderId = 1;
-
-    private UILifecycleManager mLifeCycleMgr = new UILifecycleManager();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
-        mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
-
         CardSelectionHandler selectionHandler = new CardSelectionHandler(this, server);
         mLifeCycleMgr.put(CardSelectionHandler.key, selectionHandler);
 
         mVideoCursorAdapter = new CursorObjectAdapter(new CardPresenter(server, selectionHandler));
         mVideoCursorAdapter.setMapper(new VideoCursorMapper());
         setSearchResultProvider(this);
-
-        if (!hasPermission(Manifest.permission.RECORD_AUDIO)) {
-            // SpeechRecognitionCallback is not required and if not provided recognition will be
-            // handled using internal speech recognizer, in which case you must have RECORD_AUDIO
-            // permission
-            setSpeechRecognitionCallback(new SpeechRecognitionCallback() {
-                @Override
-                public void recognizeSpeech() {
-                    try {
-                        startActivityForResult(getRecognizerIntent(), REQUEST_SPEECH);
-                    } catch (ActivityNotFoundException e) {
-                        Log.e(TAG, "Cannot find activity for speech recognizer", e);
-                    }
-                }
-            });
-        }
     }
 
     @Override
@@ -94,31 +64,6 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
         mHandler.removeCallbacksAndMessages(null);
         super.onPause();
         mLifeCycleMgr.paused();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_SPEECH:
-                switch (resultCode) {
-                    case Activity.RESULT_OK:
-                        setSearchQuery(data, true);
-                        break;
-                    case Activity.RESULT_CANCELED:
-                        // Once recognizer canceled, user expects the current activity to process
-                        // the same BACK press as user doesn't know about overlay activity.
-                        // However, you may not want this behaviour as it makes harder to
-                        // fall back to keyboard input.
-                        //if (FINISH_ON_RECOGNIZER_CANCELED) {
-                           // if (!hasResults()) {
-                           //     getActivity().onBackPressed();
-                           // }
-                       // }
-                        break;
-                    // the rest includes various recognizer errors, see {@link RecognizerIntent}
-                }
-                break;
-        }
     }
 
     @Override
@@ -142,53 +87,76 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
         return mRowsAdapter.size() > 0;
     }
 
-    private boolean hasPermission(final String permission) {
-        final Context context = getActivity();
-        return PackageManager.PERMISSION_GRANTED == context.getPackageManager().checkPermission(
-                permission, context.getPackageName());
-    }
-
     private void loadQuery(String query) {
+
+        mRowsAdapter.clear();
+        mHandler.removeCallbacks(mDelayedLoad);
         if (!TextUtils.isEmpty(query) && !query.equals("nil")) {
-            mQuery = query;
-            getLoaderManager().initLoader(mSearchLoaderId++, null, this);
+            mDelayedLoad.setSearchQuery(query);
+            mHandler.postDelayed(mDelayedLoad, SEARCH_DELAY_MS);
         }
     }
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        String query = mQuery;
-        return new CursorLoader(
-                getActivity(),
-                VideoContract.VideoEntry.CONTENT_URI,
-                null, // Return all fields.
-                VideoContract.VideoEntry.COLUMN_NAME + " LIKE ? OR " +
-                        VideoContract.VideoEntry.COLUMN_DESC + " LIKE ?",
-                new String[]{"%" + query + "%", "%" + query + "%"},
-                null // Default sort order
-        );
-    }
+    private class SearchLoader implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-        if (cursor != null && cursor.moveToFirst()) {
-            mVideoCursorAdapter.changeCursor(cursor);
+        String query;
+        @Override
+        public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-            mRowsAdapter.clear();
-            HeaderItem header = new HeaderItem(getString(R.string.search_results, mQuery));
-            ListRow row = new ListRow(header, mVideoCursorAdapter);
-            mRowsAdapter.add(row);
-        } else {
-            // No results were found.
-            mRowsAdapter.clear();
-            HeaderItem header = new HeaderItem(getString(R.string.no_search_results, mQuery));
-            ListRow row = new ListRow(header, new ArrayObjectAdapter());
-            mRowsAdapter.add(row);
+            query = args != null ? args.getString(QUERY_ARG) : "";
+            if (query == null || query.isEmpty()) {
+                query = "";
+                return null;
+            }
+            return new CursorLoader(
+                    getActivity(),
+                    VideoContract.VideoEntry.CONTENT_URI,
+                    null, // Return all fields.
+                    VideoContract.VideoEntry.COLUMN_NAME + " LIKE ? OR " +
+                            VideoContract.VideoEntry.COLUMN_DESC + " LIKE ?",
+                    new String[]{"%" + query + "%", "%" + query + "%"},
+                    null // Default sort order
+            );
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+            if (cursor != null && cursor.moveToFirst()) {
+                mVideoCursorAdapter.changeCursor(cursor);
+
+                mRowsAdapter.clear();
+                HeaderItem header = new HeaderItem(getString(R.string.search_results, query));
+                ListRow row = new ListRow(header, mVideoCursorAdapter);
+                mRowsAdapter.add(row);
+            } else {
+                // No results were found.
+                mRowsAdapter.clear();
+                HeaderItem header = new HeaderItem(getString(R.string.no_search_results, query));
+                ListRow row = new ListRow(header, new ArrayObjectAdapter());
+                mRowsAdapter.add(row);
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Cursor> loader) {
+            mVideoCursorAdapter.changeCursor(null);
         }
     }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        mVideoCursorAdapter.changeCursor(null);
+    private class SearchRunnable implements Runnable {
+
+        private volatile String searchQuery;
+        private int mSearchLoaderId = 1;
+
+        public void run() {
+
+            Bundle args = new Bundle();
+            args.putString(QUERY_ARG, searchQuery);
+            getLoaderManager().initLoader(mSearchLoaderId++, args, new SearchLoader());
+        }
+
+        public void setSearchQuery(String value) {
+            this.searchQuery = value;
+        }
     }
 }
