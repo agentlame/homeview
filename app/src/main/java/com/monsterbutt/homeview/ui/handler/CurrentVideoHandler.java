@@ -232,8 +232,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
             return;
 
         Intent intent = new Intent(activity.getApplicationContext(), UpdateRecommendationsService.class);
-        if (!excludeSelf)
-            intent.putExtra(UpdateRecommendationsService.EXCLUDE_VIDEO, mSelectedVideo.getRatingKey());
+        mServer.setCurrentPlayingVideoRatingKey(!excludeSelf ? mSelectedVideo.getRatingKey() : PlexServer.INVALID_RATING_KEY);
         activity.startService(intent);
     }
 

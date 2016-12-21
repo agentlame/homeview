@@ -32,6 +32,7 @@ public class PlexServer {
     private static final String PREFS_DEVICE_ID         = "DeviceId";
     public static final  String DEFAULT_SERVER_PORT     = "32400";
     public static final String BASE_DEVICE_ID           = "-HomeView-Android";
+    public static final long INVALID_RATING_KEY         = 0;
 
     public enum SearchType {SEARCH_EPISODE,
                             SEARCH_SERIES,
@@ -41,6 +42,7 @@ public class PlexServer {
     private Configuration mConfiguration = new Configuration();
     private PlexappFactory mFactory = null;
     private boolean mIsPIPActive = false;
+    private long mCurrentPlayingRatingKey = INVALID_RATING_KEY;
 
     public PlexServer(Context context) {
 
@@ -525,5 +527,20 @@ public class PlexServer {
 
     public void isPIPActive(boolean active) {
         mIsPIPActive = active;
+    }
+
+    public void setCurrentPlayingVideoRatingKey(long ratingKey) {
+        synchronized (this) {
+            mCurrentPlayingRatingKey = ratingKey;
+        }
+    }
+
+    public long getCurrentPlayingVideoRatingKey() {
+
+        long ret;
+        synchronized (this) {
+            ret = mCurrentPlayingRatingKey;
+        }
+        return ret;
     }
 }

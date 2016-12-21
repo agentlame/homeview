@@ -44,8 +44,6 @@ public class UpdateRecommendationsService extends IntentService {
 
     private static final String TAG = "RecommendationsService";
 
-    public static final String EXCLUDE_VIDEO = "excludeVideo";
-
     public UpdateRecommendationsService() {
         super(TAG);
     }
@@ -83,7 +81,7 @@ public class UpdateRecommendationsService extends IntentService {
         if (container == null || container.getHubs() == null)
             return;
 
-        long excludeKey = intent.getLongExtra(EXCLUDE_VIDEO, 0);
+        long excludeKey = server.getCurrentPlayingVideoRatingKey();
 
         int MAX_RECOMMENDATIONS = Integer.valueOf(getString(R.string.recommendations_max));
         int BASE_PRIORITY = Integer.valueOf(getString(R.string.recommendations_priority_base));
