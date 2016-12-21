@@ -17,10 +17,10 @@ public class PgsDecoder extends SimpleSubtitleDecoder {
   protected Subtitle decode(byte[] data, int size) throws SubtitleDecoderException {
     ParsableByteArray buffer = new ParsableByteArray(data, size);
     PgsBuilder builder = new PgsBuilder();
-    boolean hasMore;
     do {
-      hasMore = builder.readNextSection(buffer);
-    } while (hasMore);
+      if (!builder.readNextSection(buffer))
+        break;
+    } while (buffer.bytesLeft() > 0);
     return builder.build();
   }
 }

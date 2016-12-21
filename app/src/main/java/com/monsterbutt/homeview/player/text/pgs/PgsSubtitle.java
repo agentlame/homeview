@@ -1,7 +1,6 @@
 package com.monsterbutt.homeview.player.text.pgs;
 
 import com.google.android.exoplayer2.text.Cue;
-import com.google.android.exoplayer2.text.ImageCue;
 import com.google.android.exoplayer2.text.Subtitle;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.Util;
@@ -11,17 +10,12 @@ import java.util.List;
 
 public class PgsSubtitle implements Subtitle {
 
-  private final List<ImageCue> cues;
+  private final Cue[] cues;
   private final long[] cueTimesUs;
 
-  public PgsSubtitle(List<ImageCue> cues) {
+  public PgsSubtitle(Cue[] cues, long[] cueTimesUs) {
     this.cues = cues;
-    cueTimesUs = new long[cues != null ? cues.size() : 0];
-    int index = 0;
-    if (cues != null) {
-      for (ImageCue cue : cues)
-        cueTimesUs[index++] = cue.getStartDisplayTime();
-    }
+    this.cueTimesUs = cueTimesUs;
   }
 
   @Override
@@ -45,11 +39,11 @@ return cueTimesUs.length;
   @Override
   public List<Cue> getCues(long timeUs) {
     int index = Util.binarySearchFloor(cueTimesUs, timeUs, true, false);
-    if (index == -1 || cues.get(index) == null) {
+    if (index == -1 || cues[index] == null) {
       // timeUs is earlier than the start of the first cue, or we have an empty cue.
       return Collections.emptyList();
     }
     else
-      return Collections.singletonList((Cue)cues.get(index));
+      return Collections.singletonList(cues[index]);
   }
 }
