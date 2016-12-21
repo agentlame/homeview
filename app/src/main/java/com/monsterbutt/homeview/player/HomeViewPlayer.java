@@ -33,9 +33,7 @@ import java.util.ArrayList;
 public class HomeViewPlayer extends SimpleExoPlayer {
 
 
-    private DeviceAudioTrackRenderer mAudioRenderer = null;
-
-    private PlexVideoItem currentVideo = null;
+    private DeviceAudioTrackRenderer mDeviceAudioRenderer;
 
     public HomeViewPlayer(Context context,
                              com.google.android.exoplayer2.trackselection.TrackSelector trackSelector,
@@ -46,9 +44,7 @@ public class HomeViewPlayer extends SimpleExoPlayer {
 
     public void prepare(PlexVideoItem item, PlexServer server, Context context, ExtractorMediaSource.EventListener listener) {
 
-        this.currentVideo = item;
-        if (mAudioRenderer != null)
-            mAudioRenderer.prepareVideo(currentVideo);
+        mDeviceAudioRenderer.prepareVideo(item);
         super.prepare(new ExtractorMediaSource(Uri.parse(item.getVideoPath(server)),
                 new DataSourceFactory(context),
                 new DefaultExtractorsFactory(), null, listener));
@@ -60,7 +56,7 @@ public class HomeViewPlayer extends SimpleExoPlayer {
                                        @ExtensionRendererMode int extensionRendererMode, AudioRendererEventListener eventListener,
                                        ArrayList<Renderer> out) {
         super.buildAudioRenderers(context, mainHandler, drmSessionManager, extensionRendererMode, eventListener, out);
-        mAudioRenderer = new DeviceAudioTrackRenderer(MediaCodecSelector.DEFAULT,
+        mDeviceAudioRenderer = new DeviceAudioTrackRenderer(MediaCodecSelector.DEFAULT,
                 drmSessionManager, true, mainHandler, eventListener, MediaCodecCapabilities.getInstance(context));
 
         for(Renderer renderer : out) {
@@ -68,12 +64,10 @@ public class HomeViewPlayer extends SimpleExoPlayer {
             if (renderer instanceof MediaCodecAudioRenderer) {
                 int index = out.indexOf(renderer);
                 out.remove(index);
-                out.add(index, mAudioRenderer);
+                out.add(index, mDeviceAudioRenderer);
                 break;
             }
         }
-        if (currentVideo != null)
-            mAudioRenderer.prepareVideo(currentVideo);
     }
 
     @Override
