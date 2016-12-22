@@ -122,9 +122,13 @@ public class GetVideoQueueTask extends PlexServerTask {
                             break;
                         }
                     }
+                    String replaceKey;
+                    if (0 == first.getGrandparentRatingKey())
+                        replaceKey = Long.toString(mc.getGrandparentRatingKey());
+                    else
+                        replaceKey = Long.toString(first.getGrandparentRatingKey());
                     String showKey = first.getKey().replace(Long.toString(first.getRatingKey()),
-                            Long.toString(first.getGrandparentRatingKey()))
-                            + "/" + Season.ALL_SEASONS;
+                            replaceKey) + "/" + Season.ALL_SEASONS;
                     mc = server.getVideoMetadata(showKey);
                 }
             }
