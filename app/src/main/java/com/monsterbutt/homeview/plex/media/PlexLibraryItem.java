@@ -163,11 +163,14 @@ public abstract class PlexLibraryItem {
         PlexItemRow row = null;
         List<PlexLibraryItem> children = getChildrenItems();
         if (children != null) {
+            List<PlexLibraryItem> removals = new ArrayList<>();
             for (PlexLibraryItem child : children) {
 
                 if (skipAllSeason && child.getKey().endsWith(Season.ALL_SEASONS))
-                    children.remove(child);
+                    removals.add(child);
             }
+            if (!removals.isEmpty())
+                children.removeAll(removals);
         }
         if (children != null && !children.isEmpty()) {
             String header = getHeaderForChildren(context);
