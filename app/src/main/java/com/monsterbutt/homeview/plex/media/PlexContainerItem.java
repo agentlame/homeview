@@ -58,19 +58,19 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
 
         String type = directory.getType() != null ? directory.getType() : "";
         if (type.equalsIgnoreCase(Shows.TYPE)) {
-
             if (directory.getScanner() != null && !directory.getScanner().isEmpty())
                 return new Shows(directory);
             return new Show(directory);
         }
+        else if (type.equalsIgnoreCase(Season.TYPE)) {
+            return new Season(directory);
+        }
         else if (type.equalsIgnoreCase(Movies.TYPE)) {
-
             if (directory.getScanner().equalsIgnoreCase(Videos.SCANNER))
                 return new Videos(directory);
             return new Movies(directory);
         }
         else if (TextUtils.isEmpty(type)) {
-
             return new Folder(directory);
         }
         return null;
