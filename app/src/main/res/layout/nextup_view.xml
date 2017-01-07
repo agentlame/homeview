@@ -27,16 +27,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="marquee"
-                tools:text="Title" />
+                android:maxLines="1"
+                android:scrollHorizontally="true"
+                tools:text="Title is a little long here but it is a test" />
             <TextView
                 android:id="@+id/nextup_subtitle"
                 android:textSize="@dimen/nextup_view_textsize_secondary"
                 android:layout_alignParentStart="true"
                 android:layout_below="@id/nextup_title"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="marquee"
-                android:maxLines="3"
+                android:maxLines="1"
+                android:scrollHorizontally="true"
                 tools:text="Subtitle"/>
             <TextView
                 android:id="@+id/nextup_minutes"
@@ -55,7 +58,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ellipsize="marquee"
-                android:maxLines="2"
+                android:maxLines="1"
+                android:scrollHorizontally="true"
                 tools:text="Content"/>
         </RelativeLayout>
 
@@ -105,10 +109,10 @@
             android:background="?attr/card_normal"
             android:paddingTop="@dimen/nextup_view_padding_small"
             android:paddingStart="@dimen/nextup_view_padding"
-            android:paddingBottom="@dimen/nextup_view_padding_small"
             android:paddingEnd="@dimen/nextup_view_padding"
-            android:ellipsize="marquee"
-            android:maxLines="4"
+            android:paddingBottom="@dimen/nextup_view_padding_small"
+            android:ellipsize="end"
+            android:maxLines="5"
             tools:text="Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." />
 
     </RelativeLayout>

@@ -88,6 +88,7 @@ public class NextUpView extends Dialog implements View.OnClickListener {
             if (TextUtils.isEmpty(posterURL))
                 posterURL = desc.getIconUri().toString();
             subtitle.setText(bundle.getString(BUNDLE_EXTRA_SUBTITLE));
+            subtitle.setVisibility(subtitle.getText().length() == 0 ? View.GONE : View.VISIBLE);
             content.setText(bundle.getString(BUNDLE_EXTRA_CONTENT));
             minutes.setText(bundle.getString(BUNDLE_EXTRA_MINUTES));
             summary.setText(bundle.getString(BUNDLE_EXTRA_SUMMARY));

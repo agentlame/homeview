@@ -18,6 +18,7 @@ public class NextUpHandler implements NextUpView.Callback {
     private final NextUpView mNextUp;
     private long mCurrentVideoDuration = 0;
     private boolean mWasDismissed = false;
+    private boolean mWasSetup = false;
 
     private final VideoPlayerHandler mPlayerHandler;
 
@@ -28,25 +29,6 @@ public class NextUpHandler implements NextUpView.Callback {
         mPlayerHandler = playerHandler;
         mActivity = activity;
         mNextUp = new NextUpView(activity, this);
-        int margin = mActivity.getResources().getDimensionPixelOffset(R.dimen.nextup_view_margin);
-        WindowManager.LayoutParams dialog = mNextUp.getWindow().getAttributes();
-        dialog.gravity = Gravity.BOTTOM ;
-        dialog.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-        dialog.horizontalMargin = margin;
-        dialog.verticalMargin = margin;
-        dialog.windowAnimations = R.style.dialog_animation;
-        mNextUp.getWindow().setAttributes(dialog);
-        mNextUp.setOnKeyListener(new Dialog.OnKeyListener() {
-
-            @Override
-            public boolean onKey(DialogInterface arg, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_BACK) {
-                    dismiss();
-                    return true;
-                }
-                return false;
-            }
-        });
     }
 
     public void fillNextUp(long threshold, MediaSession.QueueItem item, long currentVideoDuration) {
@@ -83,7 +65,34 @@ public class NextUpHandler implements NextUpView.Callback {
         }
     }
 
-    private void show() { mNextUp.show(); }
+    private void show() {
+
+        if (!mWasSetup) {
+            int margin = mActivity.getResources().getDimensionPixelOffset(R.dimen.nextup_view_margin);
+            WindowManager.LayoutParams dialog = mNextUp.getWindow().getAttributes();
+            //dialog.gravity = Gravity.BOTTOM;
+            dialog.y = margin + dialog.height;
+            dialog.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+            dialog.horizontalMargin = margin;
+            dialog.verticalMargin = margin;
+            dialog.windowAnimations = R.style.dialog_animation;
+            mNextUp.getWindow().setAttributes(dialog);
+            mNextUp.setOnKeyListener(new Dialog.OnKeyListener() {
+
+                @Override
+                public boolean onKey(DialogInterface arg, int keyCode, KeyEvent event) {
+                    if (keyCode == KeyEvent.KEYCODE_BACK) {
+                        dismiss();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            mWasSetup = true;
+        }
+
+        mNextUp.show();
+    }
 
     public boolean dismiss() {
 
