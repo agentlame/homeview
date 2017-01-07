@@ -95,8 +95,9 @@ public class HubInfo implements Parcelable {
         }
 
         RowData settings = map.get(PlexItemRow.SETTINGS_ROW_KEY);
-        int addIndex = settings != null ? settings.currentIndex : rowsAdapter.size();
         if (hubs != null) {
+
+            int addIndex = 1;
             for (HubInfo hub : hubs) {
 
                 RowData row = map.get(hub.key);
@@ -110,9 +111,12 @@ public class HubInfo implements Parcelable {
                     row = new RowData(hub.key, addIndex, item);
                     map.put(hub.key, row);
                     lifeCycleMgr.put(hub.key, item);
-                    rowsAdapter.add(addIndex++, item);
+                    rowsAdapter.add(addIndex, item);
                 }
+                else
+                    row.currentIndex = addIndex;
                 ((PlexItemRow)row.data).update();
+                ++addIndex;
             }
         }
     }
