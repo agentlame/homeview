@@ -135,6 +135,11 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
     }
 
     @Override
+    public String getPlaybackDescription(Context context) {
+        return "";
+    }
+
+    @Override
     public String getCardImageURL() {
         return mPosterURL;
     }

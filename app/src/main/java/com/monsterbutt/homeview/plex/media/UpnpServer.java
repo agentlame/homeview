@@ -39,6 +39,11 @@ public class UpnpServer extends PlexVideoItem {
     }
 
     @Override
+    public String getPlaybackDescription(Context context) {
+        return "";
+    }
+
+    @Override
     public String getCardImageURL() {
 
         String path = "";

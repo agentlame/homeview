@@ -1,82 +1,35 @@
 package com.monsterbutt.homeview.presenters;
 
-import android.support.v17.leanback.app.PlaybackControlGlue;
-import android.support.v17.leanback.widget.Presenter;
-import android.text.TextUtils;
+import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.player.PlaybackControlHelper;
+import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.ui.android.AbstractDetailsDescriptionPresenter;
 
-public class PlaybackDetailsPresenter extends Presenter {
+public class PlaybackDetailsPresenter extends AbstractDetailsDescriptionPresenter {
 
-    public static class ViewHolder extends Presenter.ViewHolder {
-
-        public TextView getTitle() { return mTitle; }
-        public TextView getSubtitle() { return mSubtitle; }
-        public TextView getBody() { return mBody; }
-
-        private final TextView mTitle;
-        private final TextView mSubtitle;
-        private final TextView mBody;
-
-        public ViewHolder(final View view) {
-            super(view);
-            mTitle = (TextView) view.findViewById(android.support.v17.leanback.R.id.lb_details_description_title);
-            mSubtitle = (TextView) view.findViewById(android.support.v17.leanback.R.id.lb_details_description_subtitle);
-            mBody = (TextView) view.findViewById(android.support.v17.leanback.R.id.lb_details_description_body);
-        }
+    public PlaybackDetailsPresenter(Context context, PlexServer server) {
+        super(context, server);
     }
 
-    protected void onBindDescription(PlaybackDetailsPresenter.ViewHolder viewHolder, Object object) {
-        PlaybackControlGlue glue = (PlaybackControlGlue) object;
-        if (glue.hasValidMedia()) {
-            viewHolder.getTitle().setText(glue.getMediaTitle());
-            viewHolder.getSubtitle().setText(glue.getMediaSubtitle());
-        } else {
-            viewHolder.getTitle().setText("");
-            viewHolder.getSubtitle().setText("");
-        }
+    @Override
+    protected void onBindDescription(AbstractDetailsDescriptionPresenter.ViewHolder viewHolder, Object object) {
+        PlaybackControlHelper glue = (PlaybackControlHelper) object;
+        boolean hasMedia = glue.hasValidMedia();
+        viewHolder.getTitle().setText(hasMedia ? glue.getMediaTitle() : "");
+        viewHolder.getSubtitle().setText(hasMedia ? glue.getMediaSubtitle() : "");
+        //viewHolder.getBody().setText(hasMedia ? glue.getMediaDescription() : "");
+        viewHolder.hasStudio(setImage(context, viewHolder.getStudio(), server.makeServerURLForCodec("studio", glue.getMediaStudio())));
+        viewHolder.hasRating(setImage(context, viewHolder.getRating(), server.makeServerURLForCodec("contentRating", glue.getMediaRating())));
     }
 
     @Override
     public final ViewHolder onCreateViewHolder(ViewGroup parent) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.lb_playback_details, parent, false);
-        return new ViewHolder(v);
+        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.lb_playback_details, parent, false));
     }
 
-    @Override
-    public final void onBindViewHolder(Presenter.ViewHolder viewHolder, Object item) {
-        ViewHolder vh = (ViewHolder) viewHolder;
-        onBindDescription(vh, item);
-
-        boolean hasTitle = true;
-        if (TextUtils.isEmpty(vh.mTitle.getText())) {
-            vh.mTitle.setVisibility(View.GONE);
-            hasTitle = false;
-        } else {
-            vh.mTitle.setVisibility(View.VISIBLE);
-        }
-
-        boolean hasSubtitle = true;
-        if (TextUtils.isEmpty(vh.mSubtitle.getText())) {
-            vh.mSubtitle.setVisibility(View.GONE);
-            hasSubtitle = false;
-        } else {
-            vh.mSubtitle.setVisibility(View.VISIBLE);
-        }
-
-        if (TextUtils.isEmpty(vh.mBody.getText())) {
-            vh.mBody.setVisibility(View.GONE);
-        } else {
-            vh.mBody.setVisibility(View.VISIBLE);
-        }
-    }
-
-    @Override
-    public void onUnbindViewHolder(Presenter.ViewHolder viewHolder) {}
 
 }

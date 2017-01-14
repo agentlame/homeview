@@ -1,5 +1,6 @@
 package com.monsterbutt.homeview.ui.android;
 
+import android.content.Context;
 import android.support.v17.leanback.widget.DetailsOverviewRow;
 import android.support.v17.leanback.widget.PlaybackControlsRow;
 import android.support.v17.leanback.widget.Presenter;
@@ -11,9 +12,19 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.plex.PlexServer;
 
 public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
+
+    protected PlexServer server;
+    protected Context context;
+
+    public AbstractDetailsDescriptionPresenter(Context context, PlexServer server) {
+        this.context = context;
+        this.server = server;
+    }
 
     /**
      * The ViewHolder for the {@link AbstractDetailsDescriptionPresenter}.
@@ -23,7 +34,6 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
         private final TextView mSubtitle;
         private final TextView mContent;
         private final TextView mBody;
-        private final TextView mDuration;
         private final TextView mGenre;
         private final ImageView mStudio;
         private final ImageView mRating;
@@ -39,7 +49,6 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
             mSubtitle = (TextView) view.findViewById(R.id.lb_details_description_subtitle);
             mBody = (TextView) view.findViewById(R.id.lb_details_description_body);
             mContent = (TextView) view.findViewById(R.id.lb_details_description_content);
-            mDuration = (TextView) view.findViewById(R.id.lb_details_description_duration);
             mGenre = (TextView) view.findViewById(R.id.lb_details_description_genre);
             mStudio = (ImageView) view.findViewById(R.id.lb_details_description_studio);
             mRating = (ImageView) view.findViewById(R.id.lb_details_description_rating);
@@ -63,9 +72,6 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
             return mContent;
         }
 
-        public TextView getDuration() {
-            return mDuration;
-        }
 
         public TextView getGenre() {
             return mGenre;
@@ -90,11 +96,10 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
             return mFlagView;
         }
     }
+
     @Override
-    public final ViewHolder onCreateViewHolder(ViewGroup parent) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.lb_details_description, parent, false);
-        return new ViewHolder(v);
+    public ViewHolder onCreateViewHolder(ViewGroup parent) {
+        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.lb_details_description, parent, false));
     }
 
     @Override
@@ -105,21 +110,32 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
         setTextViewVisibility(vh.mTitle);
         setTextViewVisibility(vh.mBody);
         setTextViewVisibility(vh.mContent);
-        setTextViewVisibility(vh.mDuration);
         setTextViewVisibility(vh.mSubtitle);
         setTextViewVisibility(vh.mGenre);
         setImageViewVisibility(vh.mStudio, vh.mHasStudio);
         setImageViewVisibility(vh.mRating, vh.mHasRating);
     }
 
+    protected boolean setImage(Context context, ImageView image, String path) {
+
+        boolean ret = !TextUtils.isEmpty(path);
+        if (ret)
+            Glide.with(context).load(path).into(image);
+        else if (image != null)
+            image.setImageDrawable(null);
+        return ret;
+    }
+
     private void setImageViewVisibility(ImageView view, boolean viewHasDrawable) {
 
-        view.setVisibility(viewHasDrawable ? View.VISIBLE : View.GONE);
+        if (view != null)
+            view.setVisibility(viewHasDrawable ? View.VISIBLE : View.GONE);
     }
 
     private void setTextViewVisibility(TextView view) {
 
-        view.setVisibility(TextUtils.isEmpty(view.getText()) ? View.GONE : View.VISIBLE);
+        if (view != null)
+            view.setVisibility(TextUtils.isEmpty(view.getText()) ? View.GONE : View.VISIBLE);
     }
 
     /**

@@ -68,7 +68,7 @@ public class Video extends AbstractPlexObject implements Parcelable {
 	@Attribute(required=false)
 	private int viewCount;
 	
-	@Attribute(required=false)
+	@Attribute(name="tagline", required=false)
 	private String tagLine;
 	
 	@Attribute(required=false)

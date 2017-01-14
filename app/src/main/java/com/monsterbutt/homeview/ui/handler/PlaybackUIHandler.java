@@ -51,7 +51,7 @@ public class PlaybackUIHandler extends MediaController.Callback {
         if (intentVideo != null)
             video = intentVideo.toVideo(activity);
 
-        mGlue = new PlaybackControlHelper(activity, mFragment, video, currentVideoHandler);
+        mGlue = new PlaybackControlHelper(activity, mFragment, video, mServer, currentVideoHandler);
         PlaybackControlsRowPresenter controlsRowPresenter = mGlue.createControlsRowAndPresenter();
         PlaybackControlsRow controlsRow = mGlue.getControlsRow();
         ClassPresenterSelector ps = new ClassPresenterSelector();
@@ -120,7 +120,7 @@ public class PlaybackUIHandler extends MediaController.Callback {
         if (video != null) {
             metadataBuilder.putString(MediaMetadata.METADATA_KEY_MEDIA_ID, Long.toString(video.getRatingKey()) + "");
             metadataBuilder.putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, video.getPlaybackTitle(context));
-            metadataBuilder.putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, video.getPlaybackSubtitle(context));
+            metadataBuilder.putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, video.getPlaybackDescription(context));
             metadataBuilder.putString(MediaMetadata.METADATA_KEY_DISPLAY_DESCRIPTION, video.getPlaybackSubtitle(context));
             metadataBuilder.putString(MediaMetadata.METADATA_KEY_DISPLAY_ICON_URI, video.getPlaybackImageURL());
             metadataBuilder.putLong(MediaMetadata.METADATA_KEY_DURATION, video.getDurationMs());

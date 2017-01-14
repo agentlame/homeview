@@ -208,7 +208,7 @@ public class CurrentVideoHandler implements PlexServerTaskCaller,
         bundle.putLong(NextUpView.BUNDLE_EXTRA_VIEWEDOFFSET, v.getViewedOffset());
 
         MediaDescription desc = new MediaDescription.Builder()
-                .setDescription(v.getPlaybackSubtitle(mActivity))
+                .setDescription(v.getPlaybackDescription(mActivity))
                 .setExtras(bundle)
                 .setMediaId(Long.toString(v.getRatingKey()) + "")
                 .setMediaUri(Uri.parse(v.getVideoPath(mServer)))

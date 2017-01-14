@@ -15,33 +15,18 @@
 package com.monsterbutt.homeview.presenters;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.view.View;
-import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.ui.android.AbstractDetailsDescriptionPresenter;
 
 public class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPresenter {
 
-    private PlexServer server;
-    private Context context;
     public DetailsDescriptionPresenter(Context context, PlexServer server) {
-        this.context = context;
-        this.server = server;
+        super(context, server);
     }
 
-    private boolean setImage(ImageView image, String path) {
-
-        boolean ret = !TextUtils.isEmpty(path);
-        if (ret)
-            Glide.with(context).load(path).into(image);
-        else
-            image.setImageDrawable(null);
-        return ret;
-    }
     @Override
     protected void onBindDescription(ViewHolder viewHolder, Object item) {
 
@@ -52,9 +37,8 @@ public class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPrese
             viewHolder.getSubtitle().setText(video.getDetailSubtitle(context));
             viewHolder.getBody().setText(video.getSummary());
             viewHolder.getGenre().setText(video.getDetailGenre(context));
-            viewHolder.getDuration().setText(video.getDetailDuration(context));
-            viewHolder.hasStudio(setImage(viewHolder.getStudio(), video.getDetailStudioPath(server)));
-            viewHolder.hasRating(setImage(viewHolder.getRating(), video.getDetailRatingPath(server)));
+            viewHolder.hasStudio(setImage(context, viewHolder.getStudio(), video.getDetailStudioPath(server)));
+            viewHolder.hasRating(setImage(context, viewHolder.getRating(), video.getDetailRatingPath(server)));
             viewHolder.getContent().setText(video.getDetailContent(context));
             boolean watched = video.getWatchedState() == PlexLibraryItem.WatchedState.Watched;
             viewHolder.getWatched().setVisibility(watched ? View.INVISIBLE : View.VISIBLE);

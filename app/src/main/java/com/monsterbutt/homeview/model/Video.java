@@ -47,6 +47,7 @@ public final class Video extends CardObject implements Parcelable {
     public final String cardImageUrl;
     public final String videoUrl;
     public final String studio;
+    public final String rating;
     public final String key;
     public final String filePath;
     public final String serverPath;
@@ -66,6 +67,7 @@ public final class Video extends CardObject implements Parcelable {
             final String bgImageUrl,
             final String cardImageUrl,
             final String studio,
+            final String rating,
             final String key,
             final String filePath,
             final String serverPath,
@@ -91,6 +93,7 @@ public final class Video extends CardObject implements Parcelable {
             poster = cardImageUrl.replace(SearchImagesProvider.CONTENT_URI, "");
         this.cardImageUrl = poster;
         this.studio = studio;
+        this.rating = rating;
         this.key = key;
         this.filePath = filePath;
         this.serverPath = serverPath;
@@ -111,6 +114,7 @@ public final class Video extends CardObject implements Parcelable {
         cardImageUrl = in.readString();
         videoUrl = in.readString();
         studio = in.readString();
+        rating = in.readString();
         key = in.readString();
         filePath = in.readString();
         serverPath = in.readString();
@@ -156,6 +160,7 @@ public final class Video extends CardObject implements Parcelable {
         dest.writeString(cardImageUrl);
         dest.writeString(videoUrl);
         dest.writeString(studio);
+        dest.writeString(rating);
         dest.writeString(key);
         dest.writeString(filePath);
         dest.writeString(serverPath);
@@ -256,6 +261,7 @@ public final class Video extends CardObject implements Parcelable {
         private String cardImageUrl = "";
         private String videoUrl = "";
         private String studio = "";
+        private String rating = "";
         private String key = "";
         private String filePath = "";
         private String serverPath = "";
@@ -310,6 +316,11 @@ public final class Video extends CardObject implements Parcelable {
             return this;
         }
 
+        public VideoBuilder rating(String rating) {
+            this.rating = rating;
+            return this;
+        }
+
         public VideoBuilder key(String key) {
             this.key = key;
             return this;
@@ -355,12 +366,13 @@ public final class Video extends CardObject implements Parcelable {
                     Long.parseLong(desc.getMediaId()),
                     "", // Category - not provided by MediaDescription.
                     String.valueOf(desc.getTitle()),
-                    "",
+                    String.valueOf(desc.getSubtitle()),
                     String.valueOf(desc.getDescription()),
                     "", // Media URI - not provided by MediaDescription.
                     "", // Background Image URI - not provided by MediaDescription.
                     String.valueOf(desc.getIconUri()),
-                    String.valueOf(desc.getSubtitle()),
+                    "",
+                    "",
                     "",
                     "",
                     "",
@@ -383,6 +395,7 @@ public final class Video extends CardObject implements Parcelable {
                     bgImageUrl,
                     cardImageUrl,
                     studio,
+                    rating,
                     key,
                     filePath,
                     serverPath,

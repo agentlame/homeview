@@ -40,6 +40,9 @@ public class UpnpContainer extends PlexVideoItem {
     }
 
     @Override
+    public String getPlaybackDescription(Context context) { return ""; }
+
+    @Override
     public String getCardImageURL() {
 
         List<DIDLObject.Property> properties = mContainer.getProperties();

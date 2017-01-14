@@ -270,12 +270,17 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     public long getDurationInMin() {
-       return mVideo.getDuration() / MillisecondInMinutes;
+        long ret = mVideo.getDuration() / MillisecondInMinutes;
+        long secondsLeft = (mVideo.getDuration() / 1000) % 60;
+        if (secondsLeft > 29)
+            ++ret;
+        return ret;
     }
     public String getStudio() { return mVideo.getStudio(); }
 
     public abstract String getPlaybackTitle(Context context);
     public abstract String getPlaybackSubtitle(Context context);
+    public abstract String getPlaybackDescription(Context context);
     public abstract String getPlaybackImageURL();
 
     @Override
@@ -542,12 +547,13 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
 
         return new com.monsterbutt.homeview.model.Video.VideoBuilder()
                 .title(getPlaybackTitle(context))
-                .description(getPlaybackSubtitle(context))
+                .description(getPlaybackDescription(context))
+                .subtitle(getPlaybackSubtitle(context))
                 .cardImageUrl(getPlaybackImageURL())
                 .duration(getDurationMs())
                 .studio(getStudio())
+                .rating(getContentRating())
                 .id(getRatingKey())
-                .subtitle(getCardContent(context))
                 .build();
     }
 

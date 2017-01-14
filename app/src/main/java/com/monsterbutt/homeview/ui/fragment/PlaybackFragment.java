@@ -154,12 +154,4 @@ public class PlaybackFragment
     public boolean backPressed() {
         return mCurrentVideoHandler.getNextUpHandler().dismiss();
     }
-
-    /*@Override
-    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
-
-        mPlayerHandler.pipModeChanged(isInPictureInPictureMode);
-        if (!isInPictureInPictureMode)
-            tickle();
-    }*/
 }

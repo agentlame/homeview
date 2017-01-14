@@ -24,6 +24,7 @@ import android.view.KeyEvent;
 import com.google.android.exoplayer2.C;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.model.Video;
+import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.presenters.PlaybackDetailsPresenter;
 import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
 import com.monsterbutt.homeview.ui.handler.VideoPlayerHandler;
@@ -35,6 +36,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     Drawable mMediaArt;
     private boolean mIsPlaying;
     private int mSpeed;
+    private final PlexServer mServer;
     private PlaybackFragment mFragment;
     private VideoPlayerHandler mPlaybackHandler;
     private MediaController.TransportControls mTransportControls;
@@ -75,12 +77,13 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
         void progressUpdate(int playbackState, long timeInMs);
     }
 
-    public PlaybackControlHelper(Context context, PlaybackFragment fragment, Video video, ProgressUpdateCallback callback) {
+    public PlaybackControlHelper(Context context, PlaybackFragment fragment, Video video, PlexServer server, ProgressUpdateCallback callback) {
 
         super(context, fragment, SEEK_SPEEDS);
 
         mPIPAction = new PIPAction(context);
         mFragment = fragment;
+        mServer = server;
         mPlaybackHandler = fragment.getPlaybackHandler();
         fragment.setInputEventHandler(mPlaybackHandler);
         mVideo = video;
@@ -110,11 +113,11 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
         }
     }
 
-    private PlaybackControlsRowPresenter makeControlsRowAndPresenter() {
+    private PlaybackControlsRowPresenter makeControlsRowAndPresenter(Context context, PlexServer server) {
         PlaybackControlsRow controlsRow = new PlaybackControlsRow(this);
         setControlsRow(controlsRow);
 
-        return new PlaybackControlsRowPresenter(new PlaybackDetailsPresenter()) {
+        return new PlaybackControlsRowPresenter(new PlaybackDetailsPresenter(context, server)) {
             @Override
             protected void onBindRowViewHolder(RowPresenter.ViewHolder vh, Object item) {
                 super.onBindRowViewHolder(vh, item);
@@ -132,7 +135,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     @TargetApi(24)
     @Override
     public PlaybackControlsRowPresenter createControlsRowAndPresenter() {
-        PlaybackControlsRowPresenter presenter = makeControlsRowAndPresenter();
+        PlaybackControlsRowPresenter presenter = makeControlsRowAndPresenter(mFragment.getActivity(), mServer);
 
         ArrayObjectAdapter adapter = new ArrayObjectAdapter(new ControlButtonPresenterSelector());
         getControlsRow().setSecondaryActionsAdapter(adapter);
@@ -190,7 +193,28 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
         if (!isMetadataSet())
             return "";
+        return mVideo != null ? mVideo.subtitle : "";
+    }
+
+    public String getMediaDescription() {
+
+        if (!isMetadataSet())
+            return "";
         return mVideo != null ? mVideo.description : "";
+    }
+
+    public String getMediaStudio() {
+
+        if (!isMetadataSet())
+            return "";
+        return mVideo != null ? mVideo.studio : "";
+    }
+
+    public String getMediaRating() {
+
+        if (!isMetadataSet())
+            return "";
+        return mVideo != null ? mVideo.rating : "";
     }
 
     @Override
@@ -272,11 +296,12 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     public void onMetadataChanged() {
         MediaMetadata metadata = mFragment.getActivity().getMediaController().getMetadata();
         if (metadata != null) {
-            mVideo = new Video.VideoBuilder().buildFromMediaDesc(metadata.getDescription());
+            if (mVideo == null || mVideo.id != Long.parseLong(metadata.getDescription().getMediaId()))
+                mVideo = new Video.VideoBuilder().buildFromMediaDesc(metadata.getDescription());
+
             int duration = (int) metadata.getLong(MediaMetadata.METADATA_KEY_DURATION);
             getControlsRow().setTotalTime(duration);
-            mMediaArt = new BitmapDrawable(mFragment.getResources(),
-                    metadata.getBitmap(MediaMetadata.METADATA_KEY_ART));
+            mMediaArt = new BitmapDrawable(mFragment.getResources(), metadata.getBitmap(MediaMetadata.METADATA_KEY_ART));
         }
         super.onMetadataChanged();
     }
