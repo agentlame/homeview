@@ -211,6 +211,8 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     public String getContentRating() {
+        if (mVideo == null)
+            return "";
         return mVideo.getContentRating();
     }
 
@@ -276,7 +278,11 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
             ++ret;
         return ret;
     }
-    public String getStudio() { return mVideo.getStudio(); }
+    public String getStudio() {
+        if (mVideo == null)
+            return "";
+        return mVideo.getStudio();
+    }
 
     public abstract String getPlaybackTitle(Context context);
     public abstract String getPlaybackSubtitle(Context context);
