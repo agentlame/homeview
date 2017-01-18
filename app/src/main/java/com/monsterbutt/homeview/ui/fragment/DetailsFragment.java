@@ -119,14 +119,15 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         mSelectionHandler = new CardSelectionHandler(this, this, this, mServer, mItem, img);
 
         mBackgroundURL = getActivity().getIntent().getStringExtra(DetailsActivity.BACKGROUND);
-        if (!mBackgroundURL.startsWith("http")) {
-            if (mServer.getServerURL().endsWith("/") && mBackgroundURL.startsWith("/"))
-                mBackgroundURL = mServer.getServerURL() + mBackgroundURL.substring(1);
-            else
-                mBackgroundURL = mServer.getServerURL() + mBackgroundURL;
-        }
-        if (!TextUtils.isEmpty(mBackgroundURL))
+        if (!TextUtils.isEmpty(mBackgroundURL)) {
+            if (!mBackgroundURL.startsWith("http")) {
+                if (mServer.getServerURL().endsWith("/") && mBackgroundURL.startsWith("/"))
+                    mBackgroundURL = mServer.getServerURL() + mBackgroundURL.substring(1);
+                else
+                    mBackgroundURL = mServer.getServerURL() + mBackgroundURL;
+            }
             mSelectionHandler.updateBackground(mBackgroundURL, true);
+        }
         mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
         mLifeCycleMgr.put(WatchedStatusHandler.key, new WatchedStatusHandler(mServer, this));
         mLifeCycleMgr.put(ThemeHandler.key, mThemeHandler);
