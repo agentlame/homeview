@@ -13,6 +13,11 @@ public class PgsSubtitle implements Subtitle {
   private final Cue[] cues;
   private final long[] cueTimesUs;
 
+  public PgsSubtitle() {
+    this.cues = null;
+    this.cueTimesUs = new long[0];
+  }
+
   public PgsSubtitle(Cue[] cues, long[] cueTimesUs) {
     this.cues = cues;
     this.cueTimesUs = cueTimesUs;
@@ -39,7 +44,7 @@ return cueTimesUs.length;
   @Override
   public List<Cue> getCues(long timeUs) {
     int index = Util.binarySearchFloor(cueTimesUs, timeUs, true, false);
-    if (index == -1 || cues[index] == null) {
+    if (index == -1 || cues == null || cues[index] == null) {
       // timeUs is earlier than the start of the first cue, or we have an empty cue.
       return Collections.emptyList();
     }

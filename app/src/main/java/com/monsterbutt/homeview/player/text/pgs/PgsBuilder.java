@@ -52,7 +52,7 @@ public class PgsBuilder {
         holder = new Holder();
         break;
       default:
-        buffer.skipBytes(sectionLength);
+        buffer.skipBytes(Math.min(sectionLength, buffer.bytesLeft()));
         break;
     }
     return true;
@@ -61,7 +61,7 @@ public class PgsBuilder {
   public Subtitle build() {
 
     if (list.isEmpty())
-      return null;
+      return new PgsSubtitle();
 
     Cue[] cues = new Cue[list.size()];
     long[] cueStartTimes = new long[list.size()];
