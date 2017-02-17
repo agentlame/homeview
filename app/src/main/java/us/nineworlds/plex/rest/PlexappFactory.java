@@ -290,7 +290,7 @@ public class PlexappFactory {
 				con.setRequestProperty("X-Plex-Device-Vendor", Build.MANUFACTURER);
 				con.setRequestProperty("X-Plex-Platform", "Android");
 				con.setRequestProperty("X-Plex-Provides", "player,controller");
-				con.setRequestProperty("X-Plex-Client-Platform", "Homeview for Plex");
+				con.setRequestProperty("X-Plex-Client-Platform", "Homeview");
 				con.setRequestProperty("X-Plex-Platform-Version", Build.VERSION.RELEASE);
 			}
 			int responseCode = con.getResponseCode();
