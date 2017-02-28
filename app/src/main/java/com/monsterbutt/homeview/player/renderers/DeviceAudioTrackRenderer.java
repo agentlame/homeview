@@ -20,6 +20,7 @@ public class DeviceAudioTrackRenderer extends MediaCodecAudioRenderer {
 
     private PlexVideoItem mItem = null;
     private final AudioCapabilities mCaps;
+    private final boolean usePassthroughAudio;
 
     public DeviceAudioTrackRenderer(MediaCodecSelector mediaCodecSelector,
                                      DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
@@ -28,12 +29,17 @@ public class DeviceAudioTrackRenderer extends MediaCodecAudioRenderer {
                                      MediaCodecCapabilities mcc) {
 
         super(mediaCodecSelector, drmSessionManager, playClearSamplesWithoutKeys, eventHandler,
-                eventListener, mcc.usePassthroughAudioIfAvailable() ? mcc.getSystemAudioCapabilities() : null);
+                eventListener, mcc.getSystemAudioCapabilities());
+        usePassthroughAudio = mcc.usePassthroughAudioIfAvailable();
         mCaps = mcc.getSystemAudioCapabilities();
     }
 
     public void prepareVideo(PlexVideoItem item) {
         mItem = item;
+    }
+
+    protected boolean allowPassthrough(String mimeType) {
+        return usePassthroughAudio && super.allowPassthrough(mimeType);
     }
 
     @Override
