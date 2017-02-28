@@ -10,6 +10,7 @@ import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
+import com.google.android.exoplayer2.audio.BufferProcessor;
 import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
@@ -54,8 +55,10 @@ public class HomeViewPlayer extends SimpleExoPlayer {
     protected void buildAudioRenderers(Context context, Handler mainHandler,
                                        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
                                        @ExtensionRendererMode int extensionRendererMode, AudioRendererEventListener eventListener,
-                                       ArrayList<Renderer> out) {
-        super.buildAudioRenderers(context, mainHandler, drmSessionManager, extensionRendererMode, eventListener, out);
+                                       BufferProcessor[] bufferProcessors, ArrayList<Renderer> out) {
+
+        super.buildAudioRenderers(context, mainHandler, drmSessionManager, extensionRendererMode,
+                                    eventListener, bufferProcessors, out);
         mDeviceAudioRenderer = new DeviceAudioTrackRenderer(MediaCodecSelector.DEFAULT,
                 drmSessionManager, true, mainHandler, eventListener, MediaCodecCapabilities.getInstance(context));
 
@@ -81,7 +84,8 @@ public class HomeViewPlayer extends SimpleExoPlayer {
 
         private final Context context;
         private final String userAgent;
-        public DataSourceFactory(Context context) {
+
+        DataSourceFactory(Context context) {
             this.context = context;
             this.userAgent = Util.getUserAgent(context, "HomeView");
         }

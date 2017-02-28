@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class PgsBuilder {
+class PgsBuilder {
 
   private static final int SECTION_PALETTE = 0x14;
   private static final int SECTION_BITMAP_PICTURE = 0x15;
@@ -30,7 +30,7 @@ public class PgsBuilder {
   private List<Holder> list = new ArrayList<>();
   private Holder holder = new Holder();
 
-  public boolean readNextSection(ParsableByteArray buffer) {
+  boolean readNextSection(ParsableByteArray buffer) {
 
     if (buffer.bytesLeft() < 3)
       return false;
@@ -78,21 +78,21 @@ public class PgsBuilder {
     private int[] colors = null;
     private ByteBuffer rle = null;
 
-    public  Bitmap bitmap = null;
-    public int plane_width = 0;
-    public int plane_height = 0;
-    public int bitmap_width = 0;
-    public int bitmap_height = 0;
+    Bitmap bitmap = null;
+    int plane_width = 0;
+    int plane_height = 0;
+    int bitmap_width = 0;
+    int bitmap_height = 0;
     public int x = 0;
     public int y = 0;
-    public long start_time = 0;
+    long start_time = 0;
 
     public Cue build() {
       if (rle == null || !createBitmap(new ParsableByteArray(rle.array(), rle.position())))
         return null;
       float left = (float) x / plane_width;
       float top = (float) y / plane_height;
-      return new Cue(bitmap, left, top, plane_width);
+      return new Cue(bitmap, left, Cue.ANCHOR_TYPE_START, top, Cue.ANCHOR_TYPE_START, (float) bitmap_width / plane_width);
     }
 
     private void parsePaletteIndexes(ParsableByteArray buffer, int dataSize) {

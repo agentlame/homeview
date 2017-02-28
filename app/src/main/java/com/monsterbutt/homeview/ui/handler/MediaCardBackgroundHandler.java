@@ -126,7 +126,8 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
         synchronized (this) {
 
             mBackgroundManager = BackgroundManager.getInstance(mActivity);
-            mBackgroundManager.attach(mActivity.getWindow());
+            if (!mBackgroundManager.isAttached())
+                mBackgroundManager.attach(mActivity.getWindow());
             mActivity.getWindowManager().getDefaultDisplay().getMetrics(mMetrics);
 
             if (!TextUtils.isEmpty(mBackgroundURL))

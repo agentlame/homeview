@@ -33,13 +33,13 @@ println "API : ${ApiVersion}"
 
 android {
 
-    compileSdkVersion 24
-    buildToolsVersion '24.0.2'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         applicationId "com.monsterbutt.homeview"
         minSdkVersion 23
-        targetSdkVersion 24
+        targetSdkVersion 25
         archivesBaseName = "homeview"
 
         versionName appVersionStr
@@ -106,16 +106,16 @@ dependencies {
     compile project(':library')
     compile project(':extension-ffmpeg')
 
-    compile 'com.android.support:recyclerview-v7:24.2.0'
-    compile 'com.android.support:leanback-v17:24.2.0'
-    compile 'com.android.support:appcompat-v7:24.2.0'
+    compile 'com.android.support:recyclerview-v7:25.2.0'
+    compile 'com.android.support:leanback-v17:25.2.0'
+    compile 'com.android.support:appcompat-v7:25.2.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile('org.simpleframework:simple-xml:2.7.+') {
         exclude module: 'stax'
         exclude module: 'stax-api'
         exclude module: 'xpp3'
     }
-    compile 'com.android.support:design:24.2.0'
+    compile 'com.android.support:design:25.2.0'
 
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.21'
     compile group: 'org.fourthline.cling', name: 'cling-core', version:'2.1.1'
