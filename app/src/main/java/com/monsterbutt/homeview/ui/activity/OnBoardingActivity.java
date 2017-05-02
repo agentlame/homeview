@@ -40,7 +40,7 @@ public class OnBoardingActivity extends Activity implements PlexServerTaskCaller
 
         if (requestCode == ServerStatusHandler.SERVER_CHOICE_RESULT) {
 
-            PlexServer server = PlexServerManager.getInstance(getApplicationContext()).getSelectedServer();
+            PlexServer server = PlexServerManager.getInstance(getApplicationContext(), this).getSelectedServer();
             if (server == null || !server.isValid())
                 setResults(null);
         }

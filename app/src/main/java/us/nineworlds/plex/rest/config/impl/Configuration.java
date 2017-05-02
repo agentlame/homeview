@@ -23,6 +23,12 @@
 
 package us.nineworlds.plex.rest.config.impl;
 
+import android.content.Context;
+import android.os.Build;
+import android.text.TextUtils;
+
+import java.net.HttpURLConnection;
+
 import us.nineworlds.plex.rest.config.IConfiguration;
 
 /**
@@ -34,6 +40,10 @@ public class Configuration implements IConfiguration {
 	private String host;
 	
 	private String port;
+
+	private String serverToken;
+	private String appVersion;
+	private String deviceId;
 
 	/* (non-Javadoc)
 	 * @see com.github.kingargyle.plexapp.config.IConfiguration#getHost()
@@ -63,4 +73,34 @@ public class Configuration implements IConfiguration {
 		this.port = port;
 	}
 
+	public String getDeviceId() { return deviceId;}
+	public void setDeviceId(String id) {
+		deviceId = id;
+	}
+
+	public String getAppVersion() { return appVersion;}
+	public void setAppVersion(String version) {
+		appVersion = version;
+	}
+	public String getServerToken() { return serverToken;}
+	public void setServerToken(String token) {
+		serverToken = token;
+	}
+
+	public void fillRequestProperties(HttpURLConnection con) {
+
+		if (!TextUtils.isEmpty(getDeviceId())) {
+			con.setRequestProperty("X-Plex-Product", "Homeview");
+			con.setRequestProperty("X-Plex-Client-Identifier", getDeviceId());
+			con.setRequestProperty("X-Plex-Device", android.os.Build.MODEL);
+			con.setRequestProperty("X-Plex-Device-Name", Build.DEVICE);
+			con.setRequestProperty("X-Plex-Version", getAppVersion());
+			con.setRequestProperty("X-Plex-Model", Build.DEVICE);
+			con.setRequestProperty("X-Plex-Device-Vendor", Build.MANUFACTURER);
+			con.setRequestProperty("X-Plex-Platform", "AndroidTV");
+			con.setRequestProperty("X-Plex-Provides", "player,controller");
+			con.setRequestProperty("X-Plex-Client-Platform", "Android TV");
+			con.setRequestProperty("X-Plex-Platform-Version", Build.VERSION.RELEASE);
+		}
+	}
 }

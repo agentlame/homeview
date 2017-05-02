@@ -53,35 +53,35 @@ public class ResourcePaths {
 	}
 	
 	public String getLibraryURL() {
-		return getHostPort() + LIBRARY_PATH;
+		return getHostPort() + LIBRARY_PATH + "?" + getToken();
 	}
 
 	public String getLibraryURL(String key) {
-		return getHostPort() + LIBRARY_PATH + key + "/";
+		return getHostPort() + LIBRARY_PATH + key + "/"  + "?" + getToken();
 	}
 	
 	public String getSectionsURL() {
-		return getHostPort() + SECTIONS_PATH;
+		return getHostPort() + SECTIONS_PATH + "?" + getToken();
 	}
 	
 	public String getSectionsURL(String key) {
-		return getHostPort() + SECTIONS_PATH + key + "/";
+		return getHostPort() + SECTIONS_PATH + key + "?" + getToken();
 	}
 	
 	public String getSectionsURL(String key, String category) {
-		return getHostPort() + SECTIONS_PATH + key + "/" + category + "/";
+		return getHostPort() + SECTIONS_PATH + key + "/" + category + "?" + getToken();
 	}
 	
 	public String getSectionsURL(String key, String category, String secondaryCategory) {
-		return getHostPort() + SECTIONS_PATH + key + "/" + category + "/";
+		return getHostPort() + SECTIONS_PATH + key + "/" + category + "?" + getToken();
 	}
 
 	public String getHubsURL(String sectionId) {
-		return getHostPort() + HUBS_PATH + SECTIONS + sectionId;
+		return getHostPort() + HUBS_PATH + SECTIONS + sectionId  + "?" + getToken();
 	}
 
 	public String getHubsURL() {
-		return getHostPort() + HUBS_PATH + "?excludeMusic=1&excludePhotos=1&excludePlaylists=1";
+		return getHostPort() + HUBS_PATH + "?" + getToken() + "&excludeMusic=1&excludePhotos=1&excludePlaylists=1";
 	}
 	
 	protected String getHostPort() {
@@ -93,6 +93,8 @@ public class ResourcePaths {
 		String mark = "?";
 		if (key.contains("?"))
 			mark = "&";
+		else
+			mark += getToken() + "&";
 		return getHostPort() + key + mark + "includeChapters=1";
 	}
 	
@@ -108,32 +110,37 @@ public class ResourcePaths {
 		String mark = "?";
 		if (key.contains("?"))
 			mark = "&";
+		else
+			mark +=  getToken() + "&";
 
 		String ret = getHostPort() + key + mark + "includeChapters=1&checkFiles=1&includeExtras=1&includeRelated=1&includeRelatedCount=0";
 		if (key.endsWith("all") && key.startsWith("/library/sections/"))
 			ret = ret.replace("&checkFiles=1", "");
 		return ret;
 	}
-	
+
+	public String getToken() {
+		return "X-Plex-Token=" + config.getServerToken();
+	}
 	
 	public String getWatchedUrl(String key, String ratingKey) {
-		return getRoot() + ":/scrobble?identifier=com.plexapp.plugins.library&key=" + ratingKey + "&ratingKey=" + ratingKey;
+		return getRoot() + ":/scrobble?" + getToken() + "&identifier=com.plexapp.plugins.library&key=" + ratingKey + "&ratingKey=" + ratingKey;
 	}
 	
 	public String getUnwatchedUrl(String key, String ratingKey) {
-		return getRoot() + ":/unscrobble?identifier=com.plexapp.plugins.library&key=" + ratingKey + "&ratingKey=" + ratingKey;
+		return getRoot() + ":/unscrobble?" + getToken() + "&identifier=com.plexapp.plugins.library&key=" + ratingKey + "&ratingKey=" + ratingKey;
 	}
 	
 	public String getProgressUrl(String key, String ratingKey, String offset) {
-		String offseturl = getRoot() + ":/progress?time=" + offset + "&key=" + ratingKey + "&ratingKey=" + ratingKey + "&identifier=com.plexapp.plugins.library";
-		//String offseturl = getRoot() + ":/timeline?time=" + offset + "&key=" + ratingKey + "&ratingKey=" + ratingKey + "&identifier=com.plexapp.plugins.library";
+		String offseturl = getRoot() + ":/progress?" + getToken() + "&time=" + offset + "&key=" + ratingKey + "&ratingKey=" + ratingKey + "&identifier=com.plexapp.plugins.library";
+		//String offseturl = getRoot() + ":/timeline?" + getToken() + "&time=" + offset + "&key=" + ratingKey + "&ratingKey=" + ratingKey + "&identifier=com.plexapp.plugins.library";
 
 		return offseturl;
 	}
 
 	private String encodeSearchQuery(String key, String type, String query) {
 
-		return String.format("%ssearch?type=%s&query=%s", getSectionsURL(key), type, Uri.encode(query));
+		return String.format("%ssearch?" + getToken() + "&type=%s&query=%s", getSectionsURL(key), type, Uri.encode(query));
 	}
 	
 	public String getMovieSearchURL(String key, String query) {
@@ -158,7 +165,7 @@ public class ResourcePaths {
 		} catch (Exception ex) {
 			
 		}
-		String mediaTagURL = getHostPort() + "/system/bundle/media/flags/" + resourceType + "/" + encodedResourceName;//+ "?t=" + identifier;
+		String mediaTagURL = getHostPort() + "/system/bundle/media/flags/" + resourceType + "/" + encodedResourceName + "?" + getToken();//+ "?"t=" + identifier;
 		return mediaTagURL;
 	}
 
@@ -175,7 +182,7 @@ public class ResourcePaths {
     		// If there is an exception encoding the url just return the original url
     		return url;
     	}
-        return getHostPort() + "/photo/:/transcode?url=" + encodedUrl + "&width=" + width + "&height=" + height;
+        return getHostPort() + "/photo/:/transcode?" + getToken() + "&url=" + encodedUrl + "&width=" + width + "&height=" + height;
     }
 	
 }

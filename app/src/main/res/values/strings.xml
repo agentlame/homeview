@@ -249,4 +249,13 @@
     <string name="filter_title">Filter Options</string>
     <string name="sort_title">Sort Options</string>
 
+    <string name="plex_login_title">Login to Server from Plex.tv</string>
+    <string name="plex_login_description">Enter your credentials</string>
+    <string name="plex_login_hint">Login</string>
+    <string name="plex_password_hint">Password</string>
+    <string name="plex_login_button">Done</string>
+    <string name="plex_login_cancel">Cancel</string>
+    <string name="plex_login_nonempty">Please fill out login and password fields</string>
+    <string name="plex_login_failed">Failed to get token for server</string>
+
 </resources>

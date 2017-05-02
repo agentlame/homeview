@@ -43,7 +43,7 @@ public class SectionHubFragment extends BrowseFragment implements PlexItemRow.Re
         super.onActivityCreated(savedInstanceState);
 
         Activity activity = getActivity();
-        mServer = PlexServerManager.getInstance(activity.getApplicationContext()).getSelectedServer();
+        mServer = PlexServerManager.getInstance(activity.getApplicationContext(), activity).getSelectedServer();
         mSelectionHandler = new CardSelectionHandler(this, mServer);
 
         TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);

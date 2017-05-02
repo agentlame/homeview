@@ -54,14 +54,14 @@ public class PlexappFactory {
 
 	//private static PlexappFactory instance = null;
 
+	private IConfiguration configuration;
 	private ResourcePaths resourcePath = null;
 	private Serializer serializer = null;
-	private String clientId = "";
 
-	public PlexappFactory(IConfiguration config, String clientId) {
+	public PlexappFactory(IConfiguration config) {
 		resourcePath = new ResourcePaths(config);
+		configuration = config;
 		serializer = new Persister();
-		this.clientId = clientId;
 	}
 
 	/*public static PlexappFactory getInstance(IConfiguration config) {
@@ -71,6 +71,7 @@ public class PlexappFactory {
 		return instance;
 	}*/
 
+	public String getToken() { return resourcePath.getToken(); }
 	/**
 	 * Retrieve the root metadata from the Plex Media Server.
 	 * 
@@ -247,7 +248,7 @@ public class PlexappFactory {
 	 */
 	public boolean setWatched(String key, String ratingKey) {
 		String resourceURL = resourcePath.getWatchedUrl(key, ratingKey);
-		return requestSuccessful(resourceURL, null);
+		return requestSuccessful(resourceURL);
 	}
 	
 	/**
@@ -258,12 +259,12 @@ public class PlexappFactory {
 	 */
 	public boolean setUnWatched(String key, String ratingKey) {
 		String resourceURL = resourcePath.getUnwatchedUrl(key, ratingKey);
-		return requestSuccessful(resourceURL, null);
+		return requestSuccessful(resourceURL);
 	}
 	
 	public boolean setProgress(String key, String ratingKey, String offset) {
 		String resourceURL = resourcePath.getProgressUrl(key, ratingKey, offset);
-		return requestSuccessful(resourceURL, null);
+		return requestSuccessful(resourceURL);
 	}
 	
 
@@ -272,27 +273,14 @@ public class PlexappFactory {
 	 * @param
 	 * @return
 	 */
-	protected boolean requestSuccessful(String resourceURL, String clientId) {
+	protected boolean requestSuccessful(String resourceURL) {
 		HttpURLConnection con = null;
 		try {
 			URL url = new URL(resourceURL);
 			con = (HttpURLConnection) url.openConnection();
 			con.setDefaultUseCaches(false);
 
-			if (!TextUtils.isEmpty(clientId)) {
-
-				con.setRequestProperty("X-Plex-Product", "Homeview-Android");
-				con.setRequestProperty("X-Plex-Client-Identifier", clientId);
-				con.setRequestProperty("X-Plex-Device", android.os.Build.MODEL);
-				con.setRequestProperty("X-Plex-Device-Name", "Homeview");
-				con.setRequestProperty("X-Plex-Version", "1.0.0");
-				con.setRequestProperty("X-Plex-Model", Build.BOARD);
-				con.setRequestProperty("X-Plex-Device-Vendor", Build.MANUFACTURER);
-				con.setRequestProperty("X-Plex-Platform", "Android");
-				con.setRequestProperty("X-Plex-Provides", "player,controller");
-				con.setRequestProperty("X-Plex-Client-Platform", "Homeview for Plex");
-				con.setRequestProperty("X-Plex-Platform-Version", Build.VERSION.RELEASE);
-			}
+			configuration.fillRequestProperties(con);
 			int responseCode = con.getResponseCode();
 			if (responseCode == 200) {
 				return true;

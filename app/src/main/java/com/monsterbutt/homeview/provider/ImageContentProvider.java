@@ -26,7 +26,7 @@ public class ImageContentProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
 
-        server = PlexServerManager.getInstance(getContext().getApplicationContext()).getSelectedServer();
+        server = PlexServerManager.getInstance(getContext().getApplicationContext(), null).getSelectedServer();
         return true;
     }
 

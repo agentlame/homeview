@@ -96,7 +96,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         TextView text = (TextView) tv.findViewById(android.support.v17.leanback.R.id.title_text);
         text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 
-        mServer = PlexServerManager.getInstance(getActivity()).getSelectedServer();
+        mServer = PlexServerManager.getInstance(getActivity(), getActivity()).getSelectedServer();
         mSelectionHandler = new CardSelectionHandler(this);
         if (mServer != null)
             mSelectionHandler.setServer(mServer);
@@ -154,7 +154,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         if (requestCode == ServerStatusHandler.SERVER_CHOICE_RESULT) {
 
-            PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
+            PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext(), getActivity()).getSelectedServer();
             if (server != null && server.isValid())
                 setSelectedServer(server);
             else

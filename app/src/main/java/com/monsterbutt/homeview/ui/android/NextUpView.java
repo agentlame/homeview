@@ -96,7 +96,7 @@ public class NextUpView extends Dialog implements View.OnClickListener {
         }
         if (!TextUtils.isEmpty(posterURL)) {
 
-            PlexServer server = PlexServerManager.getInstance(getContext().getApplicationContext()).getSelectedServer();
+            PlexServer server = PlexServerManager.getInstance(getContext().getApplicationContext(), null).getSelectedServer();
             Glide.with(getContext())
                     .load(server.makeServerURL(posterURL))
                     .into(poster);

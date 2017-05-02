@@ -73,7 +73,7 @@ public class UpdateRecommendationsService extends IntentService {
     protected void onHandleIntent(Intent intent) {
 
         Context context = getApplicationContext();
-        PlexServer server = PlexServerManager.getInstance(context).getSelectedServer();
+        PlexServer server = PlexServerManager.getInstance(context, null).getSelectedServer();
         if (server == null)
             return;
 

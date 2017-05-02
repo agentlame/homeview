@@ -43,7 +43,7 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
+        PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext(), getActivity()).getSelectedServer();
         CardSelectionHandler selectionHandler = new CardSelectionHandler(this, server);
         mLifeCycleMgr.put(CardSelectionHandler.key, selectionHandler);
 

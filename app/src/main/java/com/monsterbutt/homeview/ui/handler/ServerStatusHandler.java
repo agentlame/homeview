@@ -51,7 +51,7 @@ public class ServerStatusHandler implements UILifecycleManager.LifecycleListener
         mCaller = caller;
         mSkipResume = skipFirstResume;
         mServerCheckTimer = new Timer();
-        mMgr = PlexServerManager.getInstance(mActivity.getApplicationContext());
+        mMgr = PlexServerManager.getInstance(mActivity.getApplicationContext(), activity);
     }
 
     public ServerStatusHandler(Fragment fragment, PlexServerTaskCaller caller,
@@ -63,7 +63,7 @@ public class ServerStatusHandler implements UILifecycleManager.LifecycleListener
         mCaller = caller;
         mSkipResume = skipFirstResume;
         mServerCheckTimer = new Timer();
-        mMgr = PlexServerManager.getInstance(mActivity.getApplicationContext());
+        mMgr = PlexServerManager.getInstance(mActivity.getApplicationContext(), mActivity);
     }
 
     private void checkForPlexServer() {

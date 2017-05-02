@@ -47,7 +47,7 @@ public class MediaContentProvider extends ContentProvider {
     public boolean onCreate() {
         Context context = getContext();
         mContentResolver = context.getContentResolver();
-        mServer = PlexServerManager.getInstance(getContext().getApplicationContext()).getSelectedServer();
+        mServer = PlexServerManager.getInstance(getContext().getApplicationContext(), null).getSelectedServer();
         return true;
     }
 

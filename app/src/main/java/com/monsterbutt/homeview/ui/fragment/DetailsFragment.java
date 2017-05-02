@@ -108,7 +108,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         super.onActivityCreated(savedInstanceState);
 
         Activity activity = getActivity();
-        mServer = PlexServerManager.getInstance(activity.getApplicationContext()).getSelectedServer();
+        mServer = PlexServerManager.getInstance(activity.getApplicationContext(), activity).getSelectedServer();
         mItem = activity.getIntent().getParcelableExtra(DetailsActivity.ITEM);
 
         mThemeHandler = new ThemeHandler(activity, mServer, !(mItem instanceof Movie), false);

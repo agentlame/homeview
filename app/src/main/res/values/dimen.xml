@@ -99,4 +99,6 @@
     <dimen name="lb_playback_controls_padding_top">320dp</dimen>
 
     <dimen name="lb_details_overview_action_items_margin">16dp</dimen>
+
+    <dimen name="lb_login_side_margin">10dp</dimen>
 </resources>

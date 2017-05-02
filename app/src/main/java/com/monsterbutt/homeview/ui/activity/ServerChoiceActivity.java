@@ -13,6 +13,7 @@ import android.widget.Toast;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
+import com.monsterbutt.homeview.ui.android.ServerLoginDialog;
 
 import java.util.List;
 import java.util.Timer;
@@ -37,7 +38,7 @@ public class ServerChoiceActivity extends Activity {
 
         super.onCreate(savedInstanceState);
 
-        mMgr = PlexServerManager.getInstance(getApplicationContext());
+        mMgr = PlexServerManager.getInstance(getApplicationContext(), this);
         final boolean hasServers = null != mMgr.getSelectedServer() || !mMgr.getDiscoveredServers().isEmpty();
         if (null == savedInstanceState) {
 
@@ -110,9 +111,14 @@ public class ServerChoiceActivity extends Activity {
                 List<PlexServer> servers = mMgr.getDiscoveredServers();
                 PlexServer server = servers.get((int) action.getId());
                 if (server != null)
-                    new ServerCheckTask(getActivity()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, server);
+                    getServerToken(server, getActivity());
             }
         }
+    }
+
+    private static void getServerToken(PlexServer server, Activity activity) {
+
+        new ServerCheckTask(activity).getServerToken(server);
     }
 
     public static class ManualStepFragment extends GuidedStepFragment {
@@ -149,7 +155,7 @@ public class ServerChoiceActivity extends Activity {
         public void onGuidedActionClicked(GuidedAction action) {
 
             if (action.getId() == DONE)
-                new ServerCheckTask(getActivity()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new PlexServer("manual", String.format("%s:%s", host, port)));
+                getServerToken(new PlexServer("manual", String.format("%s:%s", host, port), getContext()), getActivity());
             else if (action.getId() == CANCEL)
                 getActivity().finishAfterTransition();
             else if (action.getId() == BACK)
@@ -165,18 +171,22 @@ public class ServerChoiceActivity extends Activity {
         }
     }
 
-    private static class ServerCheckTask extends AsyncTask<PlexServer, Void, Boolean> {
+    private static class ServerCheckTask extends AsyncTask<PlexServer, Void, Boolean> implements ServerLoginDialog.ServerLoginInterface {
 
-        private Activity mActivity;
+        private final Activity mActivity;
 
-        public ServerCheckTask(Activity activity) {
+        ServerCheckTask(Activity activity) {
             mActivity = activity;
+        }
+
+        void getServerToken(PlexServer server) {
+            ServerLoginDialog.login(mActivity, this, server);
         }
 
         @Override
         protected Boolean doInBackground(PlexServer... server) {
 
-            return mMgr.setSelectedServer(server[0]);
+            return mMgr.setSelectedServer(server != null && server.length > 0 ? server[0] : null);
         }
 
         @Override
@@ -186,6 +196,20 @@ public class ServerChoiceActivity extends Activity {
                 mActivity.finishAfterTransition();
             else
                 Toast.makeText(mActivity, mActivity.getString(R.string.invalid_server), Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onLoginAttempted(PlexServer server, boolean succeeded) {
+
+            if (succeeded)
+                executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, server);
+            else
+                Toast.makeText(mActivity, mActivity.getString(R.string.plex_login_failed), Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onLoginCanceled() {
+            // do nothing
         }
     }
 

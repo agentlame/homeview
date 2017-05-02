@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/edit_plex_login"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textEmailAddress"
+        android:layout_marginLeft="@dimen/lb_login_side_margin"
+        android:layout_marginRight="@dimen/lb_login_side_margin"
+        android:hint="@string/plex_login_hint" />
+    <EditText
+        android:id="@+id/edit_plex_pass"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:layout_marginLeft="@dimen/lb_login_side_margin"
+        android:layout_marginRight="@dimen/lb_login_side_margin"
+        android:hint="@string/plex_password_hint"
+        android:imeOptions="actionDone" />
+</LinearLayout>

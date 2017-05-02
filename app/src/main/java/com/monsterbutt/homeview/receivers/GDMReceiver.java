@@ -73,8 +73,8 @@ public class GDMReceiver extends BroadcastReceiver {
             String data = intent.getStringExtra("data").trim();
             int namePos = 6 + data.indexOf("Name: ");
             int crPos = data.indexOf("\r", namePos);
-            PlexServerManager.getInstance(context).addServer(new PlexServer(data.substring(namePos, crPos).trim()
-                                                                            , ip));
+            PlexServerManager.getInstance(context, null).addServer(new PlexServer(data.substring(namePos, crPos).trim()
+                                                                            , ip, context));
         }
         else if (intent.getAction().equals(GDMService.SOCKET_CLOSED)) {
 

@@ -70,7 +70,7 @@ public class PlaybackFragment
         super.onCreate(savedInstanceState);
         Activity activity = getActivity();
         setBackgroundType(BACKGROUND_TYPE);
-        PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext()).getSelectedServer();
+        PlexServer server = PlexServerManager.getInstance(activity.getApplicationContext(), activity).getSelectedServer();
         SimpleExoPlayerView videoFrame = (SimpleExoPlayerView) activity.findViewById(R.id.player_view);
         videoFrame.setUseController(false);
         SubtitleView subtitleView = videoFrame.getSubtitleView();

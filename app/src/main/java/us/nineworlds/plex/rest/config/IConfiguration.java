@@ -23,6 +23,12 @@
 
 package us.nineworlds.plex.rest.config;
 
+import android.content.Context;
+import android.os.Build;
+import android.text.TextUtils;
+
+import java.net.HttpURLConnection;
+
 /**
  * @author dcarver
  *
@@ -48,5 +54,16 @@ public interface IConfiguration {
 	 * @param port the port to set
 	 */
 	public abstract void setPort(String port);
+
+	public abstract String getAppVersion();
+	public abstract void setAppVersion(String version);
+
+	public abstract String getDeviceId();
+	public abstract void setDeviceId(String id);
+
+	public abstract  String getServerToken();
+	public abstract void setServerToken(String token);
+
+	public abstract void fillRequestProperties(HttpURLConnection con);
 
 }
