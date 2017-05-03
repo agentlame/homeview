@@ -104,9 +104,15 @@ public class ResourcePaths {
 	
 	public String getMovieMetaDataURL(String key, boolean getExtra) {
 
-		if (!getExtra)
-			return getHostPort() + key;
-
+		if (!getExtra) {
+			String ret = getHostPort() + key;
+			if (ret.contains("?"))
+				ret += "&";
+			else
+				ret += "?";
+			ret += getToken();
+			return ret;
+		}
 		String mark = "?";
 		if (key.contains("?"))
 			mark = "&";

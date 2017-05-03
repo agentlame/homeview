@@ -614,6 +614,10 @@ public class PlexServer {
         return token != null && !token.isEmpty();
     }
 
+    public String getToken() {
+        return mFactory.getToken();
+    }
+
     public boolean fetchServerToken(String user, String pass) {
         HttpsURLConnection con = null;
         boolean ret = false;
