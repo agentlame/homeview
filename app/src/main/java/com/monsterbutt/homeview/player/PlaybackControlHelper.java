@@ -31,9 +31,9 @@ import com.monsterbutt.homeview.ui.handler.VideoPlayerHandler;
 
 
 public class PlaybackControlHelper extends PlaybackControlGlue {
-    private static final int[] SEEK_SPEEDS = {0}; // A single seek speed for fast-forward / rewind.
+    private static final int[] SEEK_SPEEDS = {PLAYBACK_SPEED_FAST_L0}; // A single seek speed for fast-forward / rewind.
     private static final int DEFAULT_UPDATE_PERIOD = 500;
-    Drawable mMediaArt;
+    private Drawable mMediaArt;
     private boolean mIsPlaying;
     private int mSpeed;
     private final PlexServer mServer;
@@ -86,6 +86,7 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
         mServer = server;
         mPlaybackHandler = fragment.getPlaybackHandler();
         fragment.setInputEventHandler(mPlaybackHandler);
+        setFadingEnabled(true);
         mVideo = video;
         mProgressCallback = callback;
 
@@ -142,8 +143,16 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
         mFastForwardAction = (PlaybackControlsRow.FastForwardAction) getPrimaryActionsAdapter()
                 .lookup(ACTION_FAST_FORWARD);
+        Drawable[] ffDraw = new Drawable[2];
+        ffDraw[0] = mFastForwardAction.getDrawable(0);
+        ffDraw[1] = ffDraw[0];
+        mFastForwardAction.setDrawables(ffDraw);
         mRewindAction = (PlaybackControlsRow.RewindAction) getPrimaryActionsAdapter()
                 .lookup(ACTION_REWIND);
+        Drawable[] rwDraw = new Drawable[2];
+        rwDraw[0] = mRewindAction.getDrawable(0);
+        rwDraw[1] = rwDraw[0];
+        mRewindAction.setDrawables(rwDraw);
 
         presenter.setOnActionClickedListener(new OnActionClickedListener() {
             @Override
@@ -315,8 +324,10 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
         if (action == mFastForwardAction) {
             mTransportControls.fastForward();
+            play(PLAYBACK_SPEED_NORMAL);
         } else if (action == mRewindAction) {
             mTransportControls.rewind();
+            play(PLAYBACK_SPEED_NORMAL);
         } else {
             super.onActionClicked(action);
         }
