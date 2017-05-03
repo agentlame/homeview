@@ -1,7 +1,6 @@
 <About>
 
     <Item title="Homeview" blurb="" path="https://github.com/drhill/homeview">This app is for personal use and is not liable for any damage or mischief you get yourself into.  No support will be given.  Feel free to fork the code from github and create your own flavor</Item>
-    <Item title="Plex for AndroidTV" blurb="" path="https://plex.tv/">The bases for design and Plex server is used as a metadata and fileserver</Item>
     <Item title="serenity-android"
         blurb="Used as influence and adaptation"
         path="https://github.com/NineWorlds/serenity-android">The MIT License (MIT)

@@ -279,7 +279,6 @@ public class PlexappFactory {
 			URL url = new URL(resourceURL);
 			con = (HttpURLConnection) url.openConnection();
 			con.setDefaultUseCaches(false);
-
 			configuration.fillRequestProperties(con);
 			int responseCode = con.getResponseCode();
 			if (responseCode == 200) {
