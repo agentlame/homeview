@@ -271,7 +271,7 @@ public class PlexServer {
                 ret += url;
             String token = mFactory.getToken();
             if (ret.contains("?") && !ret.contains(token))
-                ret.replace("?", "?" + token);
+                ret = ret.replace("?", "?" + token + "&");
             else
                 ret += "?" + token;
         }
@@ -657,6 +657,7 @@ public class PlexServer {
                             String token = reader.nextString();
                             if (token != null && !token.isEmpty()) {
                                 mTokens.put(mServerKey, token);
+                                mConfiguration.setServerToken(token);
                                 ret = true;
                             }
                         } else {

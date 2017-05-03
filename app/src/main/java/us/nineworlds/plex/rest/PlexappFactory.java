@@ -80,6 +80,8 @@ public class PlexappFactory {
 	 */
 	public MediaContainer retrieveRootData() throws Exception {
 		String rootURL = resourcePath.getRoot();
+		if(!resourcePath.getToken().isEmpty())
+			rootURL += "?" + resourcePath.getToken();
 		MediaContainer mediaContainer = serializeResource(rootURL);
 
 		return mediaContainer;

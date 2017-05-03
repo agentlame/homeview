@@ -41,7 +41,7 @@ public class Configuration implements IConfiguration {
 	
 	private String port;
 
-	private String serverToken;
+	private String serverToken = "";
 	private String appVersion;
 	private String deviceId;
 

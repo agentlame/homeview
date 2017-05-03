@@ -126,7 +126,9 @@ public class ResourcePaths {
 	}
 
 	public String getToken() {
-		return "X-Plex-Token=" + config.getServerToken();
+
+		return config.getServerToken() != null || !config.getServerToken().isEmpty() ?
+		"X-Plex-Token=" + config.getServerToken() : "";
 	}
 	
 	public String getWatchedUrl(String key, String ratingKey) {
