@@ -145,10 +145,6 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
 
             if (null != mBackgroundTimer)
                 mBackgroundTimer.cancel();
-
-            if (mBackgroundManager != null)
-                mBackgroundManager.release();
-            mBackgroundManager = null;
         }
     }
 
@@ -157,6 +153,8 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
 
         synchronized (this) {
 
+            if (mBackgroundManager)
+                mBackgroundManager.release();
             mBackgroundManager= null;
         }
     }
