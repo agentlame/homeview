@@ -174,6 +174,7 @@ public class ServerChoiceActivity extends Activity {
     private static class ServerCheckTask extends AsyncTask<PlexServer, Void, Boolean> implements ServerLoginDialog.ServerLoginInterface {
 
         private final Activity mActivity;
+        private boolean isRun = false;
 
         ServerCheckTask(Activity activity) {
             mActivity = activity;
@@ -201,8 +202,13 @@ public class ServerChoiceActivity extends Activity {
         @Override
         public void onLoginAttempted(PlexServer server, boolean succeeded) {
 
-            if (succeeded)
-                executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, server);
+            if (succeeded) {
+                ServerCheckTask task = this;
+                if (isRun)
+                    task = new ServerCheckTask(mActivity);
+                isRun = true;
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, server);
+            }
             else
                 Toast.makeText(mActivity, mActivity.getString(R.string.plex_login_failed), Toast.LENGTH_LONG).show();
         }

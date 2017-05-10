@@ -117,7 +117,7 @@ public class PlaybackUIHandler extends MediaController.Callback {
         final PlexVideoItem video = mFragment.getPlaybackHandler().getCurrentVideo();
         final MediaMetadata.Builder metadataBuilder = new MediaMetadata.Builder();
 
-        if (video != null) {
+        if (video != null && context != null) {
             metadataBuilder.putString(MediaMetadata.METADATA_KEY_MEDIA_ID, Long.toString(video.getRatingKey()) + "");
             metadataBuilder.putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, video.getPlaybackTitle(context));
             metadataBuilder.putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, video.getPlaybackDescription(context));
@@ -132,29 +132,31 @@ public class PlaybackUIHandler extends MediaController.Callback {
         else
             metadataBuilder.putLong(MediaMetadata.METADATA_KEY_DURATION, 32400000);
 
-        Resources res = context.getResources();
-        int cardWidth = res.getDimensionPixelSize(R.dimen.playback_overlay_width);
-        int cardHeight = res.getDimensionPixelSize(R.dimen.playback_overlay_height);
+        if (context != null) {
+            Resources res = context.getResources();
+            int cardWidth = res.getDimensionPixelSize(R.dimen.playback_overlay_width);
+            int cardHeight = res.getDimensionPixelSize(R.dimen.playback_overlay_height);
 
-        String url = "";
-        if (video != null) {
+            String url = "";
+            if (video != null) {
 
-            if (video instanceof UpnpItem)
-                url = video.getPlaybackImageURL();
-            else if (mServer != null)
-                url =  mServer.makeServerURL(video.getPlaybackImageURL());
+                if (video instanceof UpnpItem)
+                    url = video.getPlaybackImageURL();
+                else if (mServer != null)
+                    url = mServer.makeServerURL(video.getPlaybackImageURL());
+            }
+            Glide.with(context)
+             .load(Uri.parse(url))
+             .asBitmap()
+             .centerCrop()
+             .error(getActivity().getDrawable(R.drawable.default_video_cover))
+             .into(new SimpleTarget<Bitmap>(cardWidth, cardHeight) {
+                 @Override
+                 public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
+                     metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ART, bitmap);
+                     mFragment.getPlaybackHandler().setMetadata(metadataBuilder.build());
+                 }
+             });
         }
-        Glide.with(context)
-                .load(Uri.parse(url))
-                .asBitmap()
-                .centerCrop()
-                .error(getActivity().getDrawable(R.drawable.default_video_cover))
-                .into(new SimpleTarget<Bitmap>(cardWidth, cardHeight) {
-                    @Override
-                    public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
-                        metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ART, bitmap);
-                        mFragment.getPlaybackHandler().setMetadata(metadataBuilder.build());
-                    }
-                });
     }
 }

@@ -295,11 +295,13 @@ public class VideoPlayerHandler implements ExoPlayer.EventListener,
                 mActivity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 mPlayer.setPlayWhenReady(true);
                 mMediaSessionHandler.setPlaybackState(PlaybackState.STATE_PLAYING);
+                mActivity.requestVisibleBehind(true);
             }
         } else {
             mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
             mPlayer.setPlayWhenReady(false);
             mMediaSessionHandler.setPlaybackState(PlaybackState.STATE_PAUSED);
+            mActivity.requestVisibleBehind(false);
         }
     }
 

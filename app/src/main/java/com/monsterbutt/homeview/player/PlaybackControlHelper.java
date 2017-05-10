@@ -159,8 +159,8 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
             public void onActionClicked(Action action) {
                 if (action == mPIPAction)
                     mFragment.getActivity().enterPictureInPictureMode();
-                else
-                    dispatchAction(action);
+                //else
+                //    dispatchAction(action);
             }
         });
 

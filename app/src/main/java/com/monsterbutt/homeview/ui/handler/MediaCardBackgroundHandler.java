@@ -71,7 +71,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
                                             GlideAnimation<? super GlideDrawable> glideAnimation) {
                     synchronized (this) {
                         mSetting = false;
-                        if (resource != null)
+                        if (resource != null && mBackgroundManager != null)
                             mBackgroundManager.setDrawable(resource);
                     }
                 }
@@ -145,12 +145,20 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
 
             if (null != mBackgroundTimer)
                 mBackgroundTimer.cancel();
+
+            if (mBackgroundManager != null)
+                mBackgroundManager.release();
+            mBackgroundManager = null;
         }
     }
 
     @Override
     public void onDestroyed() {
 
+        synchronized (this) {
+
+            mBackgroundManager= null;
+        }
     }
 
     private class UpdateBackgroundTask extends TimerTask {

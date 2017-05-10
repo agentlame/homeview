@@ -81,7 +81,7 @@ public class Movie extends PlexVideoItem implements Parcelable {
         long duration = getDurationInMin();
         if (duration > 0) {
             return String.format("%s %s %s",
-             date, context.getString(R.string.mid_dot), getDetailDuration(context));
+             date, context == null ? "\u00B7" : context.getString(R.string.mid_dot), getDetailDuration(context));
         }
         return date;
     }
