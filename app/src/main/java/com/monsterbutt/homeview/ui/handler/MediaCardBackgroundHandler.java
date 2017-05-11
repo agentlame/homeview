@@ -153,7 +153,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
 
         synchronized (this) {
 
-            if (mBackgroundManager)
+            if (mBackgroundManager != null)
                 mBackgroundManager.release();
             mBackgroundManager= null;
         }
