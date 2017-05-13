@@ -150,13 +150,6 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
 
     @Override
     public void onDestroyed() {
-
-        synchronized (this) {
-
-            if (mBackgroundManager != null)
-                mBackgroundManager.release();
-            mBackgroundManager= null;
-        }
     }
 
     private class UpdateBackgroundTask extends TimerTask {

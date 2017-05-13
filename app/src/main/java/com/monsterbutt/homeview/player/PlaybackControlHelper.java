@@ -42,6 +42,9 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
     private MediaController.TransportControls mTransportControls;
     private PlaybackControlsRow.FastForwardAction mFastForwardAction;
     private PlaybackControlsRow.RewindAction mRewindAction;
+    private PlaybackControlsRow.SkipNextAction mSkipNextAction;
+    private PlaybackControlsRow.SkipPreviousAction mSkipPreviousAction;
+    private PlaybackControlsRow.PlayPauseAction mPlayPauseAction;
 
     private boolean mMetadataSet = false;
 
@@ -141,6 +144,12 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
         ArrayObjectAdapter adapter = new ArrayObjectAdapter(new ControlButtonPresenterSelector());
         getControlsRow().setSecondaryActionsAdapter(adapter);
 
+        mSkipNextAction = (PlaybackControlsRow.SkipNextAction) getPrimaryActionsAdapter()
+         .lookup(ACTION_SKIP_TO_NEXT);
+        mSkipPreviousAction= (PlaybackControlsRow.SkipPreviousAction) getPrimaryActionsAdapter()
+         .lookup(ACTION_SKIP_TO_PREVIOUS);
+        mPlayPauseAction = (PlaybackControlsRow.PlayPauseAction) getPrimaryActionsAdapter()
+         .lookup(ACTION_PLAY_PAUSE);
         mFastForwardAction = (PlaybackControlsRow.FastForwardAction) getPrimaryActionsAdapter()
                 .lookup(ACTION_FAST_FORWARD);
         Drawable[] ffDraw = new Drawable[2];
@@ -159,8 +168,8 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
             public void onActionClicked(Action action) {
                 if (action == mPIPAction)
                     mFragment.getActivity().enterPictureInPictureMode();
-                //else
-                //    dispatchAction(action);
+                else
+                    dispatchAction(action);
             }
         });
 
@@ -324,10 +333,19 @@ public class PlaybackControlHelper extends PlaybackControlGlue {
 
         if (action == mFastForwardAction) {
             mTransportControls.fastForward();
-            play(PLAYBACK_SPEED_NORMAL);
+         //   play(PLAYBACK_SPEED_NORMAL);
         } else if (action == mRewindAction) {
             mTransportControls.rewind();
-            play(PLAYBACK_SPEED_NORMAL);
+         //   play(PLAYBACK_SPEED_NORMAL);
+        } else if (action == mSkipNextAction) {
+  //          skipToNext();
+        } else if (action == mSkipPreviousAction) {
+//            skipToPrevious();
+        } else if (action == mPlayPauseAction) {
+      /*      if (mIsPlaying)
+                pausePlayback();
+            else
+                startPlayback(PLAYBACK_SPEED_NORMAL);*/
         } else {
             super.onActionClicked(action);
         }
