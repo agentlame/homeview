@@ -5,12 +5,13 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.2'
+        classpath 'com.android.tools.build:gradle:2.2.0'
         classpath 'com.novoda:bintray-release:0.2.7'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
 }
+
 
 allprojects {
     repositories {
@@ -19,11 +20,15 @@ allprojects {
     project.ext {
         compileSdkVersion=25
         targetSdkVersion=23
-        buildToolsVersion='24.0.2'
+        minSdkVersion=23
+        buildToolsVersion='25.0.3'
+        supportLibraryVersion='25.3.1'
+        dexmakerVersion = '1.2'
+        mockitoVersion = '1.9.5'
         releaseRepoName = 'exoplayer'
         releaseUserOrg = 'google'
         releaseGroupId = 'com.google.android.exoplayer'
-        releaseVersion = 'r2.0.4'
+        releaseVersion = 'r2.4.0'
         releaseWebsite = 'https://github.com/google/ExoPlayer'
     }
 }
@@ -34,7 +39,7 @@ task clean(type: Delete) {
 
 ext {
     compileSdkVersion = 25
-    buildToolsVersion = '24.0.2'
+    buildToolsVersion = '25.0.3'
 }
 
 def architectures = [ arm:"armeabi-v7a", x86:"x86" ]

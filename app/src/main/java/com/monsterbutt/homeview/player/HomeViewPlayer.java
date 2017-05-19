@@ -3,14 +3,15 @@ package com.monsterbutt.homeview.player;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 
-import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
-import com.google.android.exoplayer2.audio.BufferProcessor;
+import com.google.android.exoplayer2.audio.AudioProcessor;
 import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
@@ -33,51 +34,29 @@ import java.util.ArrayList;
 
 public class HomeViewPlayer extends SimpleExoPlayer {
 
+    static public HomeViewPlayer createPlayer(Context context, TrackSelector trackSelector, LoadControl loadControl) {
+        return new HomeViewPlayer(new HomeViewRendererFactory(context), trackSelector, loadControl);
+    }
 
-    private DeviceAudioTrackRenderer mDeviceAudioRenderer;
+    private HomeViewRendererFactory mFactory;
 
-    public HomeViewPlayer(Context context,
-                             com.google.android.exoplayer2.trackselection.TrackSelector trackSelector,
+    private HomeViewPlayer(HomeViewRendererFactory renderersFactory, TrackSelector trackSelector,
                              LoadControl loadControl) {
-        super(context, trackSelector, loadControl, null,
-                EXTENSION_RENDERER_MODE_ON, ExoPlayerFactory.DEFAULT_ALLOWED_VIDEO_JOINING_TIME_MS);
+        super(renderersFactory, trackSelector, loadControl);
+        mFactory = renderersFactory;
     }
 
     public void prepare(PlexVideoItem item, PlexServer server, Context context, ExtractorMediaSource.EventListener listener) {
+        prepare(item, server, context, listener, false, false);
+    }
 
-        mDeviceAudioRenderer.prepareVideo(item);
+    public void prepare(PlexVideoItem item, PlexServer server, Context context, ExtractorMediaSource.EventListener listener,
+                        boolean resetPosition, boolean resetState) {
+        mFactory.mDeviceAudioRenderer.prepareVideo(item);
         super.prepare(new ExtractorMediaSource(Uri.parse(item.getVideoPath(server)),
-                new DataSourceFactory(context),
-                new DefaultExtractorsFactory(), null, listener));
-    }
-
-    @Override
-    protected void buildAudioRenderers(Context context, Handler mainHandler,
-                                       DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
-                                       @ExtensionRendererMode int extensionRendererMode, AudioRendererEventListener eventListener,
-                                       BufferProcessor[] bufferProcessors, ArrayList<Renderer> out) {
-
-        super.buildAudioRenderers(context, mainHandler, drmSessionManager, extensionRendererMode,
-                                    eventListener, bufferProcessors, out);
-        mDeviceAudioRenderer = new DeviceAudioTrackRenderer(MediaCodecSelector.DEFAULT,
-                drmSessionManager, true, mainHandler, eventListener, MediaCodecCapabilities.getInstance(context));
-
-        for(Renderer renderer : out) {
-
-            if (renderer instanceof MediaCodecAudioRenderer) {
-                int index = out.indexOf(renderer);
-                out.remove(index);
-                out.add(index, mDeviceAudioRenderer);
-                break;
-            }
-        }
-    }
-
-    @Override
-    protected void buildTextRenderers(Context context, Handler mainHandler,
-                                                @ExtensionRendererMode int extensionRendererMode, TextRenderer.Output output,
-                                                ArrayList<Renderer> out) {
-        out.add(new TextRenderer(output, mainHandler.getLooper(), DEFAULT_SUBS));
+         new DataSourceFactory(context),
+         new DefaultExtractorsFactory(), null, listener)
+         , resetPosition, resetState);
     }
 
     private class DataSourceFactory implements DataSource.Factory {
@@ -151,4 +130,43 @@ public class HomeViewPlayer extends SimpleExoPlayer {
         }
 
     };
+
+    private static class HomeViewRendererFactory extends DefaultRenderersFactory {
+
+        DeviceAudioTrackRenderer mDeviceAudioRenderer;
+
+        HomeViewRendererFactory(Context context) {
+            super(context, null, EXTENSION_RENDERER_MODE_ON);
+        }
+
+        @Override
+        protected void buildAudioRenderers(Context context,
+                                           DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
+                                           AudioProcessor[] audioProcessors, Handler eventHandler,
+                                           AudioRendererEventListener eventListener, @ExtensionRendererMode int extensionRendererMode,
+                                           ArrayList<Renderer> out) {
+
+            super.buildAudioRenderers(context, drmSessionManager, audioProcessors, eventHandler,
+             eventListener, extensionRendererMode, out);
+            mDeviceAudioRenderer = new DeviceAudioTrackRenderer(MediaCodecSelector.DEFAULT,
+             drmSessionManager, true, eventHandler, eventListener, MediaCodecCapabilities.getInstance(context));
+
+            for(Renderer renderer : out) {
+
+                if (renderer instanceof MediaCodecAudioRenderer) {
+                    int index = out.indexOf(renderer);
+                    out.remove(index);
+                    out.add(index, mDeviceAudioRenderer);
+                    break;
+                }
+            }
+        }
+
+        @Override
+        protected void buildTextRenderers(Context context, TextRenderer.Output output,
+                                          Looper outputLooper, @ExtensionRendererMode int extensionRendererMode,
+                                          ArrayList<Renderer> out) {
+            out.add(new TextRenderer(output, outputLooper, DEFAULT_SUBS));
+        }
+    }
 }

@@ -21,39 +21,41 @@ public class MediaTrackType implements Parcelable {
     private final static int Forced = 4;
 
     private final int streamType;
-    private final boolean hasOffTrack;
     private final String baseLangCode;
     private Stream selected = null;
+    private Stream defaultStream = null;
     private List<Stream> streams = new ArrayList<>();
 
     public MediaTrackType(Context context, MediaCodecCapabilities capabilities, String baseLangCode, int streamType) {
 
         this.streamType = streamType;
         this.baseLangCode = baseLangCode;
-
-        if (streamType == Stream.Subtitle_Stream) {
-
-            us.nineworlds.plex.rest.model.impl.Stream off = new us.nineworlds.plex.rest.model.impl.Stream();
-            off.setStreamType(Stream.Subtitle_Stream);
-            off.setLanguage(context != null ? context.getString(R.string.subs_off) : "Off");
-            off.setLanguageCode(baseLangCode);
-            streams.add(new Stream(off, TrackSelector.TrackTypeOff, capabilities));
-            hasOffTrack = true;
-        }
-        else
-            hasOffTrack = false;
     }
 
     protected MediaTrackType(Parcel in) {
         streams = in.createTypedArrayList(Stream.CREATOR);
         streamType = in.readInt();
-        hasOffTrack = in.readByte() != 0;
         baseLangCode = in.readString();
         int select = in.readInt();
-        if (select < 0)
-            selected = null;
-        else
-            selected = streams.get(select);
+        selected = select < 0 ? null : streams.get(select);
+
+        for (Stream stream : streams) {
+            if (evaluateDefault(stream))
+                break;
+        }
+    }
+
+    private boolean evaluateDefault(Stream stream) {
+        if (stream.isDefault()) {
+            if (stream.getLanguageCode() != null && stream.getLanguageCode().equalsIgnoreCase(baseLangCode)) {
+                if (defaultStream == null || !defaultStream.getLanguageCode().equalsIgnoreCase(baseLangCode)) {
+                    defaultStream = stream;
+                    return true;
+                }
+            } else if (defaultStream == null)
+                defaultStream = stream;
+        }
+        return false;
     }
 
     public static final Creator<MediaTrackType> CREATOR = new Creator<MediaTrackType>() {
@@ -98,8 +100,9 @@ public class MediaTrackType implements Parcelable {
 
     public void add(MediaCodecCapabilities capabilities, us.nineworlds.plex.rest.model.impl.Stream stream) {
 
-        int index = hasOffTrack ? streams.size() - 1 : streams.size();
+        int index = streams.size();
         streams.add(new Stream(stream, index, capabilities));
+        evaluateDefault(streams.get(streams.size()-1));
     }
 
     @Override
@@ -111,7 +114,6 @@ public class MediaTrackType implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeTypedList(streams);
         dest.writeInt(streamType);
-        dest.writeByte((byte) (hasOffTrack ? 1 : 0));
         dest.writeString(baseLangCode);
         dest.writeInt(selected == null ? -1 : streams.indexOf(selected));
     }
@@ -144,10 +146,8 @@ public class MediaTrackType implements Parcelable {
 
         // for subs we are always off unless forced or picked manually
         if (getStreamType() == Stream.Subtitle_Stream) {
-            if (streams.size() == 1)
-                streams.clear();
-            else if (0 == (Forced & getTrackChoice(selected)))
-                selected = streams.get(0);
+            if (streams.size() > 0 && 0 == (Forced & getTrackChoice(selected)))
+                selected = null;
         }
     }
 
@@ -165,6 +165,7 @@ public class MediaTrackType implements Parcelable {
         MediaTrackSelector.StreamChoiceArrayAdapter adapter = new MediaTrackSelector.StreamChoiceArrayAdapter(context, server, list);
         for(Stream stream : streams)
             list.add(new Stream.StreamChoice(context, stream == selected, stream));
+        list.add(0, new Stream.StreamChoiceDisable(context, selected == null));
 
         return adapter;
     }

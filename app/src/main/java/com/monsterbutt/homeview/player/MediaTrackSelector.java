@@ -2,6 +2,7 @@ package com.monsterbutt.homeview.player;
 
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
@@ -15,6 +16,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.source.TrackGroup;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Stream;
@@ -53,6 +56,13 @@ public class MediaTrackSelector implements Parcelable {
     public Stream getSelectedTrack(int streamType) {
 
         return mTracks.getSelectedTrack(streamType);
+    }
+
+    public void disableTrackType(TrackSelector selector, int streamType ) {
+
+        mTracks.setSelectedTrack(streamType, TrackSelector.TrackTypeOff);
+        if (selector != null)
+            selector.setSelectionOverride(streamType == Stream.Subtitle_Stream ? C.TRACK_TYPE_TEXT : C.TRACK_TYPE_AUDIO, null);
     }
 
     public void setSelectedTrack(TrackSelector selector, int streamType, int displayIndex) {
@@ -136,16 +146,20 @@ public class MediaTrackSelector implements Parcelable {
 
             CheckBox checkBox = (CheckBox) rowView.findViewById(R.id.currentcheckbox);
             checkBox.setChecked(item.isCurrentSelection());
-            ImageView image = (ImageView) rowView.findViewById(R.id.codecimage);
+            final ImageView image = (ImageView) rowView.findViewById(R.id.codecimage);
             String path = item.getCodecImage(server);
             if (!TextUtils.isEmpty(path)) {
 
+                image.setVisibility(View.VISIBLE);
                 Glide.with(context)
                         .load(path)
                         .into(image);
             }
-            else
-                image.setImageDrawable(item.getDrawable());
+            else {
+                Drawable draw = item.getDrawable();
+                image.setVisibility(draw != null ? View.VISIBLE : View.INVISIBLE);
+                image.setImageDrawable(draw);
+            }
 
             TextView desc = (TextView) rowView.findViewById(R.id.codecdesc);
             desc.setText(item.toString());

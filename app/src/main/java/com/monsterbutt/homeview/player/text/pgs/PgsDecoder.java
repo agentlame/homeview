@@ -14,7 +14,7 @@ public class PgsDecoder extends SimpleSubtitleDecoder {
   }
 
   @Override
-  protected Subtitle decode(byte[] data, int size) throws SubtitleDecoderException {
+  protected Subtitle decode(byte[] data, int size, boolean reset) throws SubtitleDecoderException {
     ParsableByteArray buffer = new ParsableByteArray(data, size);
     PgsBuilder builder = new PgsBuilder();
     do {

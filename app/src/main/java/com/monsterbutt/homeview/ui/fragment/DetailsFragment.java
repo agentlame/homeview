@@ -48,13 +48,14 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.monsterbutt.homeview.player.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.media.Movie;
+import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.tasks.ToggleWatchedStateTask;
 import com.monsterbutt.homeview.presenters.DetailsDescriptionPresenter;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.activity.PlayerActivity;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
@@ -126,6 +127,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                 else
                     mBackgroundURL = mServer.getServerURL() + mBackgroundURL;
             }
+            mBackgroundURL += "?" + mServer.getToken();
             mSelectionHandler.updateBackground(mBackgroundURL, true);
         }
         mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
@@ -247,7 +249,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     public Bundle getPlaySelectionBundle(boolean cardIsScene) {
         Bundle extras = new Bundle();
         if (mTracks != null)
-            extras.putParcelable(PlaybackActivity.TRACKS, mTracks);
+            extras.putParcelable(PlayerActivity.TRACKS, mTracks);
         mThemeHandler.getPlaySelectionBundle(extras);
         return extras;
     }
@@ -263,26 +265,36 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
             @Override
             public void onClick(DialogInterface dialog, int which) {
 
-                mTracks.setSelectedTrack(null, trackType, which);
+                Stream.StreamChoice stream = ((CodecCard) card).getAdapter().getItem(which);
+                if (stream == null || stream.isCurrentSelection())
+                    return;
+
+                int index = -1;
+                if (stream instanceof Stream.StreamChoiceDisable)
+                    mTracks.disableTrackType(null, trackType);
+                else {
+                    index = Integer.parseInt(stream.stream.getIndex()) - 1;
+                    mTracks.setSelectedTrack(null, trackType, index);
+                }
                 ArrayObjectAdapter adapter = (ArrayObjectAdapter) mCodecRow.getAdapter();
-                int index = adapter.indexOf(card);
-                if (0 <= index) {
-                    adapter.replace(index, new CodecCard(getActivity(),
-                            mTracks.getSelectedTrack(trackType),
+                int cardIndex = adapter.indexOf(card);
+                if (0 <= cardIndex) {
+                    adapter.replace(cardIndex, new CodecCard(getActivity(),
+                            stream.stream,
                             trackType,
                             mTracks.getCount(trackType)));
 
-                    adapter.notifyArrayItemRangeChanged(index, 1);
+                    adapter.notifyArrayItemRangeChanged(cardIndex, 1);
                 }
                 dialog.dismiss();
             }
         };
     }
 
-    static class MovieDetailsOverviewLogoPresenter extends DetailsOverviewLogoPresenter {
+    private static class MovieDetailsOverviewLogoPresenter extends DetailsOverviewLogoPresenter {
 
         private final boolean usePoster;
-        public MovieDetailsOverviewLogoPresenter(boolean usePoster) {
+        MovieDetailsOverviewLogoPresenter(boolean usePoster) {
             this.usePoster = usePoster;
         }
 
@@ -335,7 +347,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
             return R.layout.lb_fullwidth_details_overview;
         }
 
-        public DetailPresenter(Presenter detailsPresenter, DetailsOverviewLogoPresenter logoPresenter) {
+        DetailPresenter(Presenter detailsPresenter, DetailsOverviewLogoPresenter logoPresenter) {
             super(detailsPresenter, logoPresenter);
         }
     }
@@ -373,7 +385,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         private final PlexServer server;
 
-        public LoadMetadataTask(PlexServer server) {
+        LoadMetadataTask(PlexServer server) {
             this.server = server;
         }
 
@@ -431,7 +443,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     private class HubList extends ArrayList<Hub> {
 
-        public HubList(List<Hub> list) {
+        HubList(List<Hub> list) {
             if (list != null && !list.isEmpty())
                this.addAll(list);
         }

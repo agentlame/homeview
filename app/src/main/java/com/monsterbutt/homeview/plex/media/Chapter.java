@@ -13,7 +13,7 @@ import android.view.View;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.Utils;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.activity.PlayerActivity;
 
 import java.util.List;
 
@@ -51,6 +51,9 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
             return new Chapter[size];
         }
     };
+
+    @Override
+    public long getDuration() { return mChapter.getEndTimeOffset() - mChapter.getStartTimeOffset(); }
 
     @Override
     public String getKey() {
@@ -187,10 +190,11 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
     @Override
     public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
-        Intent intent = new Intent(fragment.getActivity(), PlaybackActivity.class);
-        intent.putExtra(PlaybackActivity.KEY, key);
-        intent.putExtra(PlaybackActivity.START_OFFSET, mChapter.getStartTimeOffset());
-        intent.putExtra(PlaybackActivity.VIDEO, mVideo);
+        Intent intent = new Intent(fragment.getActivity(), PlayerActivity.class);
+        intent.setAction(PlayerActivity.ACTION_VIEW);
+        intent.putExtra(PlayerActivity.KEY, key);
+        intent.putExtra(PlayerActivity.START_OFFSET, mChapter.getStartTimeOffset());
+        intent.putExtra(PlayerActivity.VIDEO, mVideo);
         if (extras != null)
             intent.putExtras(extras);
 
@@ -200,7 +204,7 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
             bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     fragment.getActivity(),
                     transitionView,
-                    PlaybackActivity.SHARED_ELEMENT_NAME).toBundle();
+                    PlayerActivity.SHARED_ELEMENT_NAME).toBundle();
         }
         fragment.startActivity(intent, bundle);
         return true;

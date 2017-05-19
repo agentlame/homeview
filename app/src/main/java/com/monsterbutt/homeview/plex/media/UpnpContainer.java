@@ -19,7 +19,7 @@ import java.util.List;
 @SuppressLint("ParcelCreator")
 public class UpnpContainer extends PlexVideoItem {
 
-    final Container mContainer;
+    private final Container mContainer;
 
     public UpnpContainer(Container container) {
         super();
@@ -35,7 +35,7 @@ public class UpnpContainer extends PlexVideoItem {
     }
 
     @Override
-    public String getPlaybackSubtitle(Context context) {
+    public String getPlaybackSubtitle(Context context, boolean includeMins) {
         return getCardContent(context);
     }
 
@@ -91,7 +91,7 @@ public class UpnpContainer extends PlexVideoItem {
 
     @Override
     public String getWideCardContent(Context context) {
-        return getPlaybackSubtitle(context);
+        return getPlaybackSubtitle(context, false);
     }
 
     @Override

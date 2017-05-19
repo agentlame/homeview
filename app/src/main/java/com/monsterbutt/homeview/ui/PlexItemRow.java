@@ -5,13 +5,17 @@ import android.os.AsyncTask;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
+import android.support.v17.leanback.widget.Presenter;
 
+import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
+import com.monsterbutt.homeview.presenters.CodecCard;
+import com.monsterbutt.homeview.presenters.CodecPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.settings.SettingsManager;
@@ -65,11 +69,12 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
         this(context, server, header, new CardPresenter(server, listener), callback, hash, useWatchedState, useScene, hub);
     }
 
-    private PlexItemRow(Context context, PlexServer server, String header, CardPresenter presenter,
+    private PlexItemRow(Context context, PlexServer server, String header, Presenter presenter,
                         RefreshAllCallback callback, int hash, boolean useWatchedState,
                         boolean useScene, HubInfo hub) {
         super(new HeaderItem(hash, header), new ArrayObjectAdapter(presenter));
-        presenter.setLongClickWatchStatusCallback(this);
+        if (presenter instanceof CardPresenter)
+            ((CardPresenter)presenter).setLongClickWatchStatusCallback(this);
         this.server = server;
         this.context = context;
         this.adapter = (ArrayObjectAdapter) getAdapter();
@@ -255,6 +260,17 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
                 list.add(useScene ? new SceneCard(context, item) : new PosterCard(context, item));
         }
         return list;
+    }
+
+    public static PlexItemRow buildCodecItemsRow(Context context, PlexServer server, String header,
+                                                 MediaTrackSelector.StreamChoiceArrayAdapter choices,
+                                                 int streamType) {
+
+        PlexItemRow row = new PlexItemRow(context, server, header, new CodecPresenter(server), null,
+                                            header.hashCode(), false, true, null);
+        for (int i = 0; i < choices.getCount(); ++i)
+            row.adapter.add(new CodecCard(context, choices.getItem(i), streamType));
+        return row;
     }
 
     public static PlexItemRow buildChildItemsRow(Context context, PlexServer server, String header,

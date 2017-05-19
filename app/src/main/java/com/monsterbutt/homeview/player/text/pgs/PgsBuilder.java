@@ -92,7 +92,8 @@ class PgsBuilder {
         return null;
       float left = (float) x / plane_width;
       float top = (float) y / plane_height;
-      return new Cue(bitmap, left, Cue.ANCHOR_TYPE_START, top, Cue.ANCHOR_TYPE_START, (float) bitmap_width / plane_width);
+      return new Cue(bitmap, left, Cue.ANCHOR_TYPE_START, top, Cue.ANCHOR_TYPE_START,
+       (float) bitmap_width / plane_width, (float) bitmap_height / plane_height);
     }
 
     private void parsePaletteIndexes(ParsableByteArray buffer, int dataSize) {

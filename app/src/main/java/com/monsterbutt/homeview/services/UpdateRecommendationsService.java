@@ -12,7 +12,7 @@ import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.activity.PlayerActivity;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.RecommendationBuilder;
 import com.monsterbutt.homeview.Utils;
@@ -53,7 +53,7 @@ public class UpdateRecommendationsService extends IntentService {
         public final String group;
         public final PlexVideoItem object;
         private final int index;
-        public GroupedObject(String group, PlexVideoItem object, int index) {
+        GroupedObject(String group, PlexVideoItem object, int index) {
             this.group = group;
             this.object = object;
             this.index = index;
@@ -227,11 +227,12 @@ public class UpdateRecommendationsService extends IntentService {
 
     private PendingIntent buildPendingIntent(PlexVideoItem video) {
 
-        Intent playbackIntent = new Intent(this, PlaybackActivity.class);
-        playbackIntent.putExtra(PlaybackActivity.KEY, video.getKey());
-        playbackIntent.putExtra(PlaybackActivity.VIDEO, video);
+        Intent playbackIntent = new Intent(this, PlayerActivity.class);
+        playbackIntent.setAction(PlayerActivity.ACTION_VIEW);
+        playbackIntent.putExtra(PlayerActivity.KEY, video.getKey());
+        playbackIntent.putExtra(PlayerActivity.VIDEO, video);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(PlaybackActivity.class);
+        stackBuilder.addParentStack(PlayerActivity.class);
         stackBuilder.addNextIntent(playbackIntent);
         // Ensure a unique PendingIntents, otherwise all
         // recommendations end up with the same PendingIntent

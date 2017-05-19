@@ -19,4 +19,25 @@
         <item name="android:windowEnterAnimation">@anim/slide_in_up</item>
         <item name="android:windowExitAnimation">@anim/slide_out_down</item>
     </style>
+
+    <style name="ExoMediaButton.PictureInPicture">
+        <item name="android:src">@drawable/ic_picture_in_picture_white_24dp</item>
+        <item name="android:contentDescription">@string/exo_controls_pip_description</item>
+    </style>
+
+
+    <style name="ExoMediaButton.Chapters">
+        <item name="android:src">@drawable/ic_playlist_play_white_24dp</item>
+        <item name="android:contentDescription">@string/exo_controls_chapters_description</item>
+    </style>
+
+    <style name="ExoMediaButton.Audio">
+        <item name="android:src">@drawable/ic_audiotrack_white_24dp</item>
+        <item name="android:contentDescription">@string/exo_controls_audio_description</item>
+    </style>
+
+    <style name="ExoMediaButton.Subtitle">
+        <item name="android:src">@drawable/ic_subtitles_white_24dp</item>
+        <item name="android:contentDescription">@string/exo_controls_subtitles_description</item>
+    </style>
 </resources>

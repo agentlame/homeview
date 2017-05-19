@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.monsterbutt.homeview.settings.SettingsManager;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.activity.PlayerActivity;
 
 public class StartPosition {
 
@@ -13,10 +13,10 @@ public class StartPosition {
     private final PlaybackStartType mPlaybackStartType;
     private long mVideoOffset;
 
-    public StartPosition(Context context, Intent intent, long videoOffset) {
+    public StartPosition(Context context, long startPosition, long videoOffset) {
 
         mVideoOffset = videoOffset;
-        mStartPosition = intent.getLongExtra(PlaybackActivity.START_OFFSET, -1);
+        mStartPosition = startPosition;
 
         String startKey = SettingsManager.getInstance(context).getString("preferences_playback_resume");
         switch(startKey) {

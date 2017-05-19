@@ -73,22 +73,23 @@ public class Movie extends PlexVideoItem implements Parcelable {
     }
 
     @Override
-    public String getPlaybackSubtitle(Context context) {
-
-        String date = Utils.convertDateToText(context, mVideo.getOriginallyAvailableDate());
-        if (TextUtils.isEmpty(date))
-            date = TextUtils.isEmpty(getYear()) ? "" : getYear();
-        long duration = getDurationInMin();
-        if (duration > 0) {
-            return String.format("%s %s %s",
-             date, context == null ? "\u00B7" : context.getString(R.string.mid_dot), getDetailDuration(context));
-        }
-        return date;
+    public String getPlaybackDescription(Context context) {
+        return mVideo == null ? "" : mVideo.getSummary();
     }
 
     @Override
-    public String getPlaybackDescription(Context context) {
-        return getTagline();
+    public String getPlaybackSubtitle(Context context, boolean includeMins) {
+
+        String date = mVideo != null ? Utils.convertDateToText(context, mVideo.getOriginallyAvailableDate()) : "";
+        if (TextUtils.isEmpty(date))
+            date = TextUtils.isEmpty(getYear()) ? "" : getYear();
+        long duration = getDurationInMin();
+        if (includeMins && duration > 0) {
+            if (!TextUtils.isEmpty(date))
+                date += " " + context.getString(R.string.mid_dot) + " ";
+            date += duration + " " + context.getString(R.string.minutes_abbrev);
+        }
+        return date;
     }
 
     public String getPlaybackImageURL() {
@@ -110,6 +111,6 @@ public class Movie extends PlexVideoItem implements Parcelable {
     @Override
     public String getDetailContent(Context context) {
 
-        return getPlaybackSubtitle(context);
+        return getTagline();
     }
 }

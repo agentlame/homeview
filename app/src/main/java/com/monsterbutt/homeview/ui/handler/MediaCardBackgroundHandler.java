@@ -43,7 +43,6 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
 
     private String mBackgroundURL = "";
 
-
     public MediaCardBackgroundHandler(Activity activity) {
 
         mActivity = activity;

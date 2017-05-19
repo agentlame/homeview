@@ -49,11 +49,12 @@ public class DetailsActivity extends HomeViewActivity {
 
             if (data.toString().equals("homeview://plex/playback")) {
 
-                Intent next = new Intent(this, PlaybackActivity.class);
-                next.putExtra(PlaybackActivity.KEY, key);
-                PlexVideoItem vid = intent.getParcelableExtra(PlaybackActivity.VIDEO);
+                Intent next = new Intent(this, PlayerActivity.class);
+                next.setAction(PlayerActivity.ACTION_VIEW);
+                next.putExtra(PlayerActivity.KEY, key);
+                PlexVideoItem vid = intent.getParcelableExtra(PlayerActivity.VIDEO);
                 if (vid != null)
-                    next.putExtra(PlaybackActivity.VIDEO, vid);
+                    next.putExtra(PlayerActivity.VIDEO, vid);
                 startActivity(next);
             }
         }

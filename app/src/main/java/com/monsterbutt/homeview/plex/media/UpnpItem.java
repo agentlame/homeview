@@ -18,7 +18,7 @@ import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.ui.PlexItemRow;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.activity.PlayerActivity;
 
 import org.fourthline.cling.support.model.DIDLObject;
 import org.fourthline.cling.support.model.Res;
@@ -28,12 +28,12 @@ import java.util.List;
 
 public class UpnpItem  extends PlexVideoItem implements Parcelable {
 
-    final String mTitle;
-    final String mKey;
-    String mPosterURL = "";
-    String mFilePath = "";
-    long mDuration = 0;
-    boolean mIsMovie;
+    private final String mTitle;
+    private final String mKey;
+    private String mPosterURL = "";
+    private String mFilePath = "";
+    private long mDuration = 0;
+    private boolean mIsMovie;
 
     public UpnpItem(Item item) {
 
@@ -82,7 +82,7 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
         }
     }
 
-    protected UpnpItem(Parcel in) {
+    private UpnpItem(Parcel in) {
         super();
         mTitle = in.readString();
         mKey = in.readString();
@@ -130,7 +130,7 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
     }
 
     @Override
-    public String getPlaybackSubtitle(Context context) {
+    public String getPlaybackSubtitle(Context context, boolean includeMins) {
         return getCardContent(context);
     }
 
@@ -171,7 +171,7 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
 
     @Override
     public String getWideCardContent(Context context) {
-        return getPlaybackSubtitle(context);
+        return getPlaybackSubtitle(context, false);
     }
 
     @Override
@@ -218,8 +218,9 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
             return false;
         }
 
-        Intent intent = new Intent(fragment.getActivity(), PlaybackActivity.class);
-        intent.putExtra(PlaybackActivity.VIDEO, this);
+        Intent intent = new Intent(fragment.getActivity(), PlayerActivity.class);
+        intent.setAction(PlayerActivity.ACTION_VIEW);
+        intent.putExtra(PlayerActivity.VIDEO, this);
         if (extras != null)
             intent.putExtras(extras);
         Bundle bundle = null;
@@ -228,7 +229,7 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
             bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     fragment.getActivity(),
                     transitionView,
-                    PlaybackActivity.SHARED_ELEMENT_NAME).toBundle();
+                    PlayerActivity.SHARED_ELEMENT_NAME).toBundle();
         }
         fragment.startActivity(intent, bundle);
         return true;

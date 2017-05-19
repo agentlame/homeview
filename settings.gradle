@@ -1,7 +1,15 @@
 include ':app'
-include ':library'
+include ':library-core'
+include ':library-dash'
+include ':library-hls'
+include ':library-smoothstreaming'
+include ':library-ui'
 include ':extension-ffmpeg'
 
 
-project(':library').projectDir = new File(settingsDir, 'ExoPlayer/library')
+project(':library-core').projectDir = new File(settingsDir, 'ExoPlayer/library/core')
+project(':library-dash').projectDir = new File(settingsDir, 'ExoPlayer/library/dash')
+project(':library-hls').projectDir = new File(settingsDir, 'ExoPlayer/library/hls')
+project(':library-smoothstreaming').projectDir = new File(settingsDir, 'ExoPlayer/library/smoothstreaming')
+project(':library-ui').projectDir = new File(settingsDir, 'ExoPlayer/library/ui')
 project(':extension-ffmpeg').projectDir = new File(settingsDir, 'ExoPlayer/extensions/ffmpeg')

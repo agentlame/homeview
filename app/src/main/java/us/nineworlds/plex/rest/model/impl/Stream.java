@@ -184,6 +184,10 @@ public class Stream implements Parcelable {
 		return height;
 	}
 
+	public void setHeight(String height) {
+		this.height = height;
+	}
+
 	public void setCodec(String codec) {
 		this.codec = codec;
 	}

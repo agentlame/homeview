@@ -22,7 +22,7 @@ import com.monsterbutt.homeview.provider.MediaContentProvider;
 import com.monsterbutt.homeview.provider.SearchImagesProvider;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.activity.DetailsActivity;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.activity.PlayerActivity;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
@@ -45,14 +45,12 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     protected PlexVideoItem(Parcel in) {
 
         mVideo = new Video(in);
-        mShouldPlayFirst = in.readInt() == 1;
         mWatchedState = PlexVideoItem.getWatchedState(mVideo);
     }
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         mVideo.writeToParcel(dest, flags);
-        dest.writeInt( mShouldPlayFirst ? 1 : 0);
     }
 
     @Override
@@ -73,7 +71,6 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     protected final Video mVideo;
-    private  boolean mShouldPlayFirst = false;
     private WatchedState mWatchedState;
 
     protected PlexVideoItem() {
@@ -116,9 +113,6 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         }
         return state;
     }
-
-    public boolean shouldPlaybackFirst() { return mShouldPlayFirst; }
-    public void setShouldPlayFirst(boolean value) { mShouldPlayFirst = value; }
 
     @Override
     public String getKey() {
@@ -285,7 +279,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     public abstract String getPlaybackTitle(Context context);
-    public abstract String getPlaybackSubtitle(Context context);
+    public abstract String getPlaybackSubtitle(Context context, boolean includeMins);
     public abstract String getPlaybackDescription(Context context);
     public abstract String getPlaybackImageURL();
 
@@ -377,9 +371,10 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     @Override
     public boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView) {
 
-        Intent intent = new Intent(fragment.getActivity(), PlaybackActivity.class);
-        intent.putExtra(PlaybackActivity.KEY, getKey());
-        intent.putExtra(PlaybackActivity.VIDEO, this);
+        Intent intent = new Intent(fragment.getActivity(), PlayerActivity.class);
+        intent.setAction(PlayerActivity.ACTION_VIEW);
+        intent.putExtra(PlayerActivity.KEY, getKey());
+        intent.putExtra(PlayerActivity.VIDEO, this);
         if (extras != null)
             intent.putExtras(extras);
 
@@ -389,7 +384,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
             bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     fragment.getActivity(),
                     transitionView,
-                    PlaybackActivity.SHARED_ELEMENT_NAME).toBundle();
+                    PlayerActivity.SHARED_ELEMENT_NAME).toBundle();
         }
         fragment.startActivity(intent, bundle);
 
@@ -487,8 +482,11 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     private boolean addTrackTypeToCodec(Context context, ArrayObjectAdapter adapter, int trackType, MediaTrackSelector selector) {
 
         Stream stream = selector.getSelectedTrack(trackType);
-        if (stream != null)
+        if (stream != null) {
+            if (trackType == Stream.Video_Stream)
+                stream.setHeight(getMedia().get(0).getVideoResolution());
             adapter.add(new CodecCard(context, stream, trackType, selector.getCount(trackType)));
+        }
         return (stream != null);
     }
 
@@ -554,7 +552,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return new com.monsterbutt.homeview.model.Video.VideoBuilder()
                 .title(getPlaybackTitle(context))
                 .description(getPlaybackDescription(context))
-                .subtitle(getPlaybackSubtitle(context))
+                .subtitle(getPlaybackSubtitle(context, false))
                 .cardImageUrl(getPlaybackImageURL())
                 .duration(getDurationMs())
                 .studio(getStudio())

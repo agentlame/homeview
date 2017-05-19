@@ -1,10 +1,10 @@
 package com.monsterbutt.homeview.ui.handler;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,16 +12,14 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.StartPosition;
-import com.monsterbutt.homeview.ui.fragment.PlaybackFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ResumeChoiceHandler implements DialogInterface.OnClickListener,
+class ResumeChoiceHandler implements DialogInterface.OnClickListener,
                                             DialogInterface.OnDismissListener,
                                             DialogInterface.OnCancelListener,
                                             Runnable {
@@ -32,7 +30,7 @@ public class ResumeChoiceHandler implements DialogInterface.OnClickListener,
         public final int drawable;
         public final String text;
 
-        public ResumeChoice(int id, int drawable, String text) {
+        ResumeChoice(int id, int drawable, String text) {
 
             this.id = id;
             this.drawable = drawable;
@@ -45,14 +43,15 @@ public class ResumeChoiceHandler implements DialogInterface.OnClickListener,
         private final List<ResumeChoice> values;
         private final Context context;
 
-        public ResumeChoiceArrayAdapter(Context context, List<ResumeChoice> values) {
+        ResumeChoiceArrayAdapter(Context context, List<ResumeChoice> values) {
             super(context, R.layout.lb_aboutitem, values);
             this.context = context;
             this.values = values;
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View row, ViewGroup parent) {
+        public View getView(int position, View row, @NonNull ViewGroup parent) {
 
             View rowView = row;
             if (rowView == null) {
@@ -68,36 +67,33 @@ public class ResumeChoiceHandler implements DialogInterface.OnClickListener,
         }
     }
 
-    public static void askUser(PlaybackFragment fragment, SimpleExoPlayer player, long lastVideoOffset, int timeout) {
+    static void askUser(Context context, SimpleExoPlayer player, long lastVideoOffset, int timeout) {
 
-        new ResumeChoiceHandler(fragment, player, lastVideoOffset, timeout);
+        new ResumeChoiceHandler(context, player, lastVideoOffset, timeout);
     }
 
-    private static ResumeChoiceArrayAdapter getResumeChoiceAdapter(Activity activity) {
+    private static ResumeChoiceArrayAdapter getResumeChoiceAdapter(Context context) {
 
         List<ResumeChoice> list = new ArrayList<>();
-        list.add(new ResumeChoice(0, R.drawable.ic_slow_motion_video_white_48dp, activity.getString(R.string.playback_start_dialog_resume)));
-        list.add(new ResumeChoice(1, R.drawable.ic_play_circle_outline_white_48dp, activity.getString(R.string.playback_start_dialog_begin)));
-        return new ResumeChoiceArrayAdapter(activity, list);
+        list.add(new ResumeChoice(0, R.drawable.ic_slow_motion_video_white_48dp, context.getString(R.string.playback_start_dialog_resume)));
+        list.add(new ResumeChoice(1, R.drawable.ic_play_circle_outline_white_48dp, context.getString(R.string.playback_start_dialog_begin)));
+        return new ResumeChoiceArrayAdapter(context, list);
     }
 
 
-    private PlaybackFragment fragment;
     private Handler handler  = new Handler();
     private AlertDialog alert;
     private SimpleExoPlayer player;
     private long lastVideoOffset;
 
-    private ResumeChoiceHandler(PlaybackFragment fragment, SimpleExoPlayer player, long lastVideoOffset, int timeout) {
+    private ResumeChoiceHandler(Context context, SimpleExoPlayer player, long lastVideoOffset, int timeout) {
 
-        this.fragment = fragment;
         this.player = player;
         this.lastVideoOffset = lastVideoOffset;
-        Activity activity = fragment.getActivity();
-        alert = new AlertDialog.Builder(activity, R.style.AlertDialogStyle)
+        alert = new AlertDialog.Builder(context, R.style.AlertDialogStyle)
                 .setIcon(R.drawable.launcher)
                 .setTitle(R.string.playback_start_dialog)
-                .setAdapter(getResumeChoiceAdapter(activity), this)
+                .setAdapter(getResumeChoiceAdapter(context), this)
                 .setOnDismissListener(this)
                 .create();
         alert.show();
@@ -111,25 +107,8 @@ public class ResumeChoiceHandler implements DialogInterface.OnClickListener,
             final StartPosition.PlaybackStartType val = StartPosition.PlaybackStartType.values()[which];
             if (val == StartPosition.PlaybackStartType.Begining)
                 return;
-            fragment.getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
+            player.seekTo(lastVideoOffset);
 
-                    switch (player.getPlaybackState()) {
-
-                        case ExoPlayer.STATE_READY:
-                        case ExoPlayer.STATE_ENDED:
-                        case ExoPlayer.STATE_BUFFERING:
-                        case ExoPlayer.STATE_IDLE:
-
-                            player.seekTo(lastVideoOffset);
-                            fragment.tickle();
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            });
         }
     }
 

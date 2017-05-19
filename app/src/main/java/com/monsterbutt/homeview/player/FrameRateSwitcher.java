@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
@@ -13,29 +14,23 @@ import android.view.WindowManager;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.settings.SettingsManager;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 public class FrameRateSwitcher {
 
     private static class RefreshRateSwitchReceiver extends BroadcastReceiver {
 
-        private class TimeOutTask extends TimerTask {
-
-            @Override
-            public void run() {
-
-                notifySwitchOccurred(true);
-            }
-        }
-
-        private class DelayTask extends TimerTask {
-
+        Handler handler = new Handler();
+        Runnable delayTask = new Runnable() {
             @Override
             public void run() {
                 listener.shouldPlay(true);
             }
-        }
+        };
+        Runnable timeOutTask = new Runnable() {
+            @Override
+            public void run() {
+                notifySwitchOccurred(true);
+            }
+        };
 
         private final static String intentVal = "android.media.action.HDMI_AUDIO_PLUG";
 
@@ -43,7 +38,7 @@ public class FrameRateSwitcher {
         private final FrameRateSwitcherListener listener;
         private boolean isPlugged = true;
         private final long delayValue;
-        Timer timeoutTimer;
+
         private static final String lock = "lock";
         private static final String Tag = "RRSwitcherReceiver";
 
@@ -59,13 +54,9 @@ public class FrameRateSwitcher {
 
             Log.i(Tag, "setReady");
             synchronized (lock) {
-
-                if (timeoutTimer != null)
-                    timeoutTimer.cancel();
-
-                timeoutTimer = new Timer();
-                timeoutTimer.schedule(new TimeOutTask(),
-                        SettingsManager.getInstance(activity).getLong("preferences_device_refreshrate_timeout"));
+                handler.removeCallbacks(timeOutTask);
+                handler.postDelayed(timeOutTask,
+                 SettingsManager.getInstance(activity).getLong("preferences_device_refreshrate_timeout"));
             }
         }
 
@@ -98,21 +89,21 @@ public class FrameRateSwitcher {
 
             synchronized (lock) {
 
-                if (timeoutTimer != null)
-                   timeoutTimer.cancel();
-                timeoutTimer = null;
+                handler.removeCallbacks(timeOutTask);
+                handler.removeCallbacks(delayTask);
                 if (timedOut)
                     Log.i(Tag, "Timed out");
                 if (delayValue == 0)
                     listener.shouldPlay(true);
                 else
-                    new Timer().schedule(new DelayTask(), delayValue);
+                    handler.postDelayed(delayTask, delayValue);
             }
         }
 
         public void unregister() {
             Log.i(Tag, "Unregistering Receiver");
-            activity.unregisterReceiver(this);
+            if (!activity.isDestroyed() && !activity.isFinishing())
+                activity.unregisterReceiver(this);
         }
     }
 
@@ -131,11 +122,6 @@ public class FrameRateSwitcher {
     private static final float DIGITAL_60 = (float) 60.0;
 
     private static final String Tag = "FrameRateSwitcher";
-
-    public Display.Mode oldMode;
-    public Display.Mode newMode;
-
-    public float preferredFrameRate;
 
     private final RefreshRateSwitchReceiver receiver;
     private final boolean changeDisplayRate;
@@ -269,12 +255,13 @@ public class FrameRateSwitcher {
             WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
             Display display = wm.getDefaultDisplay();
             final Display.Mode[] modes = display.getSupportedModes();
-            preferredFrameRate = convertFrameRate(item.getMedia().get(0).getVideoFrameRate());
+            float preferredFrameRate = convertFrameRate(item.getMedia().get(0).getVideoFrameRate());
             final int requestMode = getBestFrameRate(modes, preferredFrameRate);
             WindowManager.LayoutParams params = activity.getWindow().getAttributes();
             final int currentModeId = params.preferredDisplayModeId;
             if (currentModeId >= 0 && currentModeId < modes.length) {
-                oldMode = modes[currentModeId];
+                Display.Mode oldMode = modes[currentModeId];
+                Display.Mode newMode;
                 if (requestMode != -1) {
                     newMode = modes[requestMode];
                     if (oldMode.getRefreshRate() != newMode.getRefreshRate()) {
@@ -285,8 +272,9 @@ public class FrameRateSwitcher {
                         receiver.setReady();
                         return true;
                     }
-                } else
-                    newMode = modes[currentModeId];
+                }
+                //else
+                //    newMode = modes[currentModeId];
                 Log.i(Tag, "Frame rate left alone");
             }
         }

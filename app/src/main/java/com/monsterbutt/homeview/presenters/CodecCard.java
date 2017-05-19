@@ -51,55 +51,114 @@ public class CodecCard extends PosterCard {
     private CodecIconHolder iconB;
     private int trackType;
     private int totalTracksForType;
+    private Stream.StreamChoice stream;
+
+    private MediaTrackSelector.StreamChoiceArrayAdapter adapter = null;
 
     public CodecCard(Context context, Media media) {
         super(context, null);
 
+        stream = null;
         trackType = 0;
         totalTracksForType = 0;
         decoder = "";
-
         title = "";
         subtitle = "";
         iconA = new CodecIconHolder(VideoFormat.VideoFrameRate, media.getVideoFrameRate());
         iconB = new CodecIconHolder(VideoFormat.VideoAspectRatio, media.getAspectRatio());
     }
 
-    public CodecCard(Context context, Stream stream, int trackType, int totalTracksForType) {
-        super(context, null);
 
+    public CodecCard(Context context, Stream stream, int trackType, int totalTracksForType) {
+        this(context, stream, trackType, totalTracksForType, false);
+    }
+
+    public CodecCard(Context context, Stream.StreamChoice choice, int trackType) {
+        this(context, choice.stream, trackType, 1, true);
+        stream = choice;
+    }
+
+    public CodecCard(Context context, Stream stream, int trackType, int totalTracksForType, boolean codecOnly) {
+
+        super(context, null);
+        this.stream = null;
         this.trackType = trackType;
         this.totalTracksForType = totalTracksForType;
-        this.decoder = stream.getDecodeStatusText(context);
+        this.decoder = stream != null ? stream.getDecodeStatusText(context) : "";
+
+        String isDefault = stream != null && stream.isDefault() ? context != null ? context.getString(R.string.Default) : "Default" : "";
+        String midDot = context != null ? " " + context.getString(R.string.mid_dot) + " ": " \u00B7 ";
 
         switch (trackType) {
 
             case Stream.Video_Stream:
 
-                title = "";
-                subtitle = "";
-                iconA = new CodecIconHolder(VideoFormat.VideoCodec, stream.getCodec());
-                iconB = new CodecIconHolder(VideoFormat.VideoResolution, stream.getHeight());
+                if (stream == null) {
+                    title = context.getString(R.string.selection_disabled);
+                    subtitle = "";
+                    iconA = new CodecIconHolder("", "", context.getDrawable(R.drawable.ic_video_label_white_48dp));
+                    iconB = null;
+                }
+                else {
+                    title = "";
+                    subtitle = "";
+                    iconA = new CodecIconHolder(VideoFormat.VideoCodec, stream.getCodec());
+                    iconB = codecOnly ? null : new CodecIconHolder(VideoFormat.VideoResolution, stream.getHeight());
+                }
                 break;
 
             case Stream.Audio_Stream:
 
-                title = stream.getTitle();
-                subtitle = stream.getLanguage();
-                if (TextUtils.isEmpty(title)) {
-                    title = subtitle;
+                if (stream == null) {
+                    title = context.getString(R.string.selection_disabled);
                     subtitle = "";
+                    iconA = new CodecIconHolder("", "", context.getDrawable(R.drawable.ic_audiotrack_white_36dp));
+                    iconB = null;
                 }
-                iconA = new CodecIconHolder(Stream.AudioCodec, stream.getCodecAndProfile());
-                iconB = new CodecIconHolder(Stream.AudioChannels, stream.getChannels());
+                else {
+                    title = stream.getTitle();
+                    subtitle = stream.getLanguage();
+                    if (TextUtils.isEmpty(title)) {
+                        title = subtitle;
+                        subtitle = "";
+                    }
+                    if (!TextUtils.isEmpty(isDefault)) {
+                        if (TextUtils.isEmpty(title))
+                            title = isDefault;
+                        else if (TextUtils.isEmpty(subtitle))
+                            subtitle = isDefault;
+                        else
+                            subtitle += midDot + isDefault;
+                    }
+                    iconA = new CodecIconHolder(Stream.AudioCodec, stream.getCodecAndProfile());
+                    iconB = codecOnly ? null : new CodecIconHolder(Stream.AudioChannels, stream.getChannels());
+                }
                 break;
 
             case Stream.Subtitle_Stream:
 
-                title = stream.getLanguage();
-                subtitle = stream.isForced() ? context != null ? context.getString(R.string.Forced) : "Forced" : "";
-                iconA = new CodecIconHolder("", stream.getCodec(), context != null ? context.getDrawable(R.drawable.ic_speaker_notes_white_48dp) : null);
-                iconB = null;
+                if (stream == null) {
+                    title = context.getString(R.string.selection_disabled);
+                    subtitle = "";
+                    iconA = new CodecIconHolder("", "", context.getDrawable(R.drawable.ic_subtitles_white_36dp));
+                    iconB = null;
+                }
+                else {
+                    title = stream.getLanguage();
+                    subtitle = stream.isForced() ? context != null ? context.getString(R.string.Forced) : "Forced" : "";
+                    if (!TextUtils.isEmpty(subtitle) && TextUtils.isEmpty(title))
+                        title = subtitle;
+                    if (!TextUtils.isEmpty(isDefault)) {
+                        if (TextUtils.isEmpty(title))
+                            title = isDefault;
+                        else if (TextUtils.isEmpty(subtitle))
+                            subtitle = isDefault;
+                        else
+                            subtitle += midDot + isDefault;
+                    }
+                    iconA = new CodecIconHolder("", stream.getCodec(), context != null ? context.getDrawable(R.drawable.ic_subtitles_white_36dp) : null);
+                    iconB = null;
+                }
                 break;
 
             default:
@@ -111,6 +170,8 @@ public class CodecCard extends PosterCard {
                 break;
         }
     }
+
+    public Stream.StreamChoice getStream() { return stream; }
 
     @Override
     public String getTitle() {
@@ -176,15 +237,19 @@ public class CodecCard extends PosterCard {
                 listener.getDialogOnClickListener(this, getTrackType()) : null;
         MediaTrackSelector selector = listener != null ?
                 listener.getSelector() : null;
-        if (getTotalTracksForType() > 1 && selector != null && callback != null) {
-            AlertDialog dialog = new AlertDialog.Builder(activity, R.style.AlertDialogStyle)
+        if (selector != null && callback != null) {
+
+            adapter = selector.getTracks(activity, server, getTrackType());
+            new AlertDialog.Builder(activity, R.style.AlertDialogStyle)
                     .setIcon(R.drawable.launcher)
                     .setTitle(R.string.track_dialog)
-                    .setAdapter(selector.getTracks(activity, server, getTrackType()), callback)
-                    .create();
-            dialog.show();
+                    .setAdapter(adapter, callback)
+                    .create()
+                    .show();
         }
     }
+
+    public MediaTrackSelector.StreamChoiceArrayAdapter getAdapter() { return adapter; }
 
     @Override
     public boolean equals(Object obj) {

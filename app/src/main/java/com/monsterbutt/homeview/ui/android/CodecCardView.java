@@ -113,9 +113,7 @@ public class CodecCardView extends BaseCardView {
     }
 
     public boolean isSubtitleTextEmpty() {
-        if (mSubtitleView == null)
-            return true;
-        return mSubtitleView.getText().toString().isEmpty();
+      return mSubtitleView == null || mSubtitleView.getText().toString().isEmpty();
     }
 
     public void setDecoderText(CharSequence text) {

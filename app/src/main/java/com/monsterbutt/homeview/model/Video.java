@@ -256,7 +256,7 @@ public final class Video extends CardObject implements Parcelable {
         private String category = "";
         private String title = "";
         private String subtitle = "";
-        private String desc = "";
+        private String description = "";
         private String bgImageUrl = "";
         private String cardImageUrl = "";
         private String videoUrl = "";
@@ -291,8 +291,8 @@ public final class Video extends CardObject implements Parcelable {
             return this;
         }
 
-        public VideoBuilder description(String desc) {
-            this.desc = desc;
+        public VideoBuilder description(String description) {
+            this.description = description;
             return this;
         }
 
@@ -390,7 +390,7 @@ public final class Video extends CardObject implements Parcelable {
                     category,
                     title,
                     subtitle,
-                    desc,
+                    description,
                     videoUrl,
                     bgImageUrl,
                     cardImageUrl,

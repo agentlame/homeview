@@ -1,5 +1,8 @@
 package com.monsterbutt.homeview.player;
 
+import android.util.Log;
+
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.RendererCapabilities;
@@ -9,16 +12,19 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 
+import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_APPLICATION;
+import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_AUDIO;
+import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_TEXT;
+import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_VIDEO;
+
 public class TrackSelector extends DefaultTrackSelector {
 
     public final static int TrackTypeOff = -1;
 
     private TrackGroupArray[] mTracks;
     private RendererCapabilities[] mRenderers;
+    private TrackSelection[] mSelections;
 
-    public TrackSelector() {
-        super(null);
-    }
 
     public void setSelectionOverride(int type, String trackId) {
 
@@ -67,12 +73,31 @@ public class TrackSelector extends DefaultTrackSelector {
                                 setSelectionOverride(rendererIndex, trackGroupArray, override);
                                 break;
                             }
-                        } catch (ExoPlaybackException e) {}
+                        } catch (ExoPlaybackException e) {
+                            Log.d("HomeViewTrackSelector", e.getMessage());
+                        }
                     }
                 }
             }
         }
     }
+
+    public int getSelectedTrackId(int type) {
+
+        if (mSelections != null) {
+            for (TrackSelection sel : mSelections) {
+                if (sel != null && sel.length() > 0) {
+                    Format format = sel.getSelectedFormat();
+                    if ((type == C.TRACK_TYPE_AUDIO && format.sampleMimeType.startsWith(BASE_TYPE_AUDIO))
+                     || (type == C.TRACK_TYPE_TEXT && (format.sampleMimeType.startsWith(BASE_TYPE_APPLICATION) || format.sampleMimeType.startsWith(BASE_TYPE_TEXT)))
+                     || (type == C.TRACK_TYPE_VIDEO && format.sampleMimeType.startsWith(BASE_TYPE_VIDEO)))
+                        return Integer.parseInt(format.id);
+                }
+            }
+        }
+        return -1;
+    }
+
     @Override
     protected TrackSelection[] selectTracks(RendererCapabilities[] rendererCapabilities,
                                             TrackGroupArray[] rendererTrackGroupArrays, int[][][] rendererFormatSupports)
@@ -80,6 +105,7 @@ public class TrackSelector extends DefaultTrackSelector {
 
         mRenderers = rendererCapabilities;
         mTracks = rendererTrackGroupArrays;
-        return super.selectTracks(rendererCapabilities, rendererTrackGroupArrays, rendererFormatSupports);
+        mSelections = super.selectTracks(rendererCapabilities, rendererTrackGroupArrays, rendererFormatSupports);
+        return mSelections;
     }
 }

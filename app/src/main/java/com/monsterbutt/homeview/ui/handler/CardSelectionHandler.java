@@ -29,7 +29,7 @@ import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.ui.activity.DetailsActivity;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.activity.PlayerActivity;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.android.ImageCardView;
 
@@ -69,7 +69,7 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
         this(fragment, null, null, null, server, null, null, true);
     }
 
-    public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener,
+    CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener,
                                 Chapter.OnClickListenerHandler chapterListener, PlexServer server) {
         this(fragment, cardListener, null, chapterListener, server, null, null, false);
     }
@@ -121,7 +121,7 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
             ((HomeViewActivity) act).setPlayKeyListener(this);
     }
 
-    public void setCodecClickListener(CodecCard.OnClickListenerHandler codecListener) {
+    void setCodecClickListener(CodecCard.OnClickListenerHandler codecListener) {
         mCodecClickListener = codecListener;
     }
 
@@ -205,11 +205,13 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
                 Class cls;
                 String urlKey;
                 String sharedKey;
+                String action = "";
                 if (video.category != null && (video.category.equals(Movie.TYPE) || video.category.equals(Episode.TYPE))) {
 
-                    cls = PlaybackActivity.class;
-                    urlKey = PlaybackActivity.KEY;
-                    sharedKey = PlaybackActivity.SHARED_ELEMENT_NAME;
+                    cls = PlayerActivity.class;
+                    action = PlayerActivity.ACTION_VIEW;
+                    urlKey = PlayerActivity.KEY;
+                    sharedKey = PlayerActivity.SHARED_ELEMENT_NAME;
                 }
                 else {
                     cls = DetailsActivity.class;
@@ -217,6 +219,7 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
                     sharedKey = DetailsActivity.SHARED_ELEMENT_NAME;
                 }
                 Intent intent = new Intent(act, cls);
+                intent.setAction(action);
                 intent.putExtra(urlKey, video.videoUrl);
                 Bundle bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(act, mCurrentCardTransitionImage, sharedKey).toBundle();
                 act.startActivity(intent, bundle);

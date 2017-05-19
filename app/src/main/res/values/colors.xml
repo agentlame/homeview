@@ -5,6 +5,9 @@
     <color name="search_opaque">#ffaa3f</color>
     <color name="selected_background">#ffaa3f</color>
     <color name="detail_background">#0096a6</color>
+
+    <color name="playback_ui_metadata_background">#727272</color>
+
     <color name="soft_opaque">#30000000</color>
     <color name="img_soft_opaque">#30FF0000</color>
     <color name="img_full_opaque">#00000000</color>
@@ -25,5 +28,8 @@
     <color name="BlueGrey.PrimaryText">#212121</color>
     <color name="BlueGrey.SecondaryText">#727272</color>
     <color name="BlueGrey.DividerColor">#B6B6B6</color>
+
+    <color name="Playback_Gradient_Start">#FF000000</color>
+    <color name="Playback_Gradient_End">#00000000</color>
 
 </resources>

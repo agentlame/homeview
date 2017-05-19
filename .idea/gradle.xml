@@ -9,7 +9,11 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/ExoPlayer/extensions/ffmpeg" />
-            <option value="$PROJECT_DIR$/ExoPlayer/library" />
+            <option value="$PROJECT_DIR$/ExoPlayer/library/core" />
+            <option value="$PROJECT_DIR$/ExoPlayer/library/dash" />
+            <option value="$PROJECT_DIR$/ExoPlayer/library/hls" />
+            <option value="$PROJECT_DIR$/ExoPlayer/library/smoothstreaming" />
+            <option value="$PROJECT_DIR$/ExoPlayer/library/ui" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>

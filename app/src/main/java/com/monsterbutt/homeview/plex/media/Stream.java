@@ -31,10 +31,35 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     private final static String Profile_DTS_MA = "ma";
     private final static String Profile_DTS_HR = "hra";
 
+    public final static class StreamChoiceDisable extends StreamChoice {
+
+        public StreamChoiceDisable(Context context, boolean isCurrent) {
+            super(context, isCurrent, null);
+        }
+
+        @Override
+        public Drawable getDrawable() { return null; }
+
+        @Override
+        public String getCodecImage(PlexServer server) { return ""; }
+
+        @Override
+        public String getDecoderStatus() { return ""; }
+
+        @Override
+        public String toString() { return context.getString(R.string.Disable); }
+    }
 
     final us.nineworlds.plex.rest.model.impl.Stream mStream;
-    final private MediaCodecCapabilities.DecodeType mDecodeStatus;
-    private int mTrackTypeIndex;
+    final MediaCodecCapabilities.DecodeType mDecodeStatus;
+    int mTrackTypeIndex;
+
+    protected Stream() {
+        mStream = null;
+        mTrackTypeIndex = TrackSelector.TrackTypeOff;
+        mDecodeStatus = MediaCodecCapabilities.DecodeType.Hardware;
+    }
+
     public Stream (us.nineworlds.plex.rest.model.impl.Stream stream, int trackIndex, MediaCodecCapabilities capabilities) {
         mStream = stream;
         mTrackTypeIndex = trackIndex;
@@ -268,6 +293,8 @@ public class Stream extends PlexLibraryItem implements Parcelable {
         String profile = getProfile();
         if (codec.equals("pcm"))
             codec = profile;
+        else if (codec.equals("aac"))
+            codec = codec;
         else if (!TextUtils.isEmpty(profile))
             codec += "-" + profile;
         return codec;
@@ -277,6 +304,10 @@ public class Stream extends PlexLibraryItem implements Parcelable {
 
     public String getHeight() {
         return mStream.getHeight();
+    }
+
+    public void setHeight(String height) {
+        mStream.setHeight(height);
     }
 
     public String getLanguage() {
@@ -345,9 +376,9 @@ public class Stream extends PlexLibraryItem implements Parcelable {
 
     public static class StreamChoice {
 
-        private final Stream stream;
+        public final Stream stream;
         private final boolean isCurrent;
-        private final Context context;
+        protected final Context context;
 
         public StreamChoice(Context context, boolean isCurrent, Stream stream) {
 
@@ -360,7 +391,7 @@ public class Stream extends PlexLibraryItem implements Parcelable {
 
             switch(stream.getTrackType()) {
                 case Subtitle_Stream:
-                    return context.getDrawable(R.drawable.ic_speaker_notes_white_48dp);
+                    return context.getDrawable(R.drawable.ic_subtitles_white_36dp);
                 case Video_Stream:
                     return context.getDrawable(R.drawable.ic_video_label_white_48dp);
                 case Audio_Stream:

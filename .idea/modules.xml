@@ -5,7 +5,11 @@
       <module fileurl="file://$PROJECT_DIR$/HomeView.iml" filepath="$PROJECT_DIR$/HomeView.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/ffmpeg/extension-ffmpeg.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/ffmpeg/extension-ffmpeg.iml" />
-      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/library.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/core/library-core.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/core/library-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/dash/library-dash.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/dash/library-dash.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/hls/library-hls.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/hls/library-hls.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/smoothstreaming/library-smoothstreaming.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/smoothstreaming/library-smoothstreaming.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/ui/library-ui.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/ui/library-ui.iml" />
     </modules>
   </component>
 </project>

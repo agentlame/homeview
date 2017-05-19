@@ -18,7 +18,7 @@ import org.fourthline.cling.model.meta.RemoteDeviceIdentity;
 @SuppressLint("ParcelCreator")
 public class UpnpServer extends PlexVideoItem {
 
-    final Device mDevice;
+    private final Device mDevice;
 
     public UpnpServer(Device device) {
         super();
@@ -34,7 +34,7 @@ public class UpnpServer extends PlexVideoItem {
     }
 
     @Override
-    public String getPlaybackSubtitle(Context context) {
+    public String getPlaybackSubtitle(Context context, boolean includeMins) {
         return getCardContent(context);
     }
 
@@ -77,7 +77,7 @@ public class UpnpServer extends PlexVideoItem {
         return getHost();
     }
 
-    public String getHost() {
+    private String getHost() {
         if (mDevice.getIdentity() instanceof RemoteDeviceIdentity) {
 
             RemoteDeviceIdentity rdi = (RemoteDeviceIdentity) mDevice.getIdentity();
@@ -86,7 +86,7 @@ public class UpnpServer extends PlexVideoItem {
         return "";
     }
 
-    public String getServerURL() {
+    private String getServerURL() {
 
         String host = getHost();
         if (!TextUtils.isEmpty(host)) {
@@ -108,7 +108,7 @@ public class UpnpServer extends PlexVideoItem {
 
     @Override
     public String getWideCardContent(Context context) {
-        return getPlaybackSubtitle(context);
+        return getPlaybackSubtitle(context, false);
     }
 
     @Override

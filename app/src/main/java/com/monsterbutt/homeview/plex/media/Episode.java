@@ -133,27 +133,38 @@ public class Episode extends PlexVideoItem implements Parcelable {
 
     @Override
     public String getPlaybackDescription(Context context) {
-        return Utils.convertDateToText(context, mVideo.getOriginallyAvailableDate());
+      return mVideo == null ? "" : mVideo.getSummary();
+    }
+
+    private String getPlaybackSubtitleExt(Context context, boolean includeMins) {
+
+        String date = mVideo != null ? Utils.convertDateToText(context, mVideo.getOriginallyAvailableDate()) : "";
+        long duration = getDurationInMin();
+        if (includeMins && duration > 0) {
+            if (!TextUtils.isEmpty(date))
+                date += " " + context.getString(R.string.mid_dot) + " ";
+            date += duration + " " + context.getString(R.string.minutes_abbrev);
+        }
+        return date;
     }
 
     @Override
-    public String getPlaybackSubtitle(Context context) {
+    public String getPlaybackSubtitle(Context context, boolean includeMins) {
 
-        String duration = getDetailDuration(context);
-        if (!TextUtils.isEmpty(duration))
-            duration = String.format("%s %s", context.getString(R.string.mid_dot),duration);
+        String ret = "";
 
+        String release = getPlaybackSubtitleExt(context, includeMins);
         String showName = getShowName();
         String season = getSeasonNum();
         if (!TextUtils.isEmpty(showName) && !TextUtils.isEmpty(season))
-            return String.format("%s %s %s %s %s", showName, context.getString(R.string.mid_dot),
-                    context.getString(R.string.Season), season, duration);
-        if (!TextUtils.isEmpty(showName))
-            return String.format("%s %s", showName, duration);
-        if (!TextUtils.isEmpty(season))
-            return String.format("%s %s %s", context.getString(R.string.Season), season, duration);
+            ret = String.format("%s %s %s %s", showName, context.getString(R.string.mid_dot),
+                    context.getString(R.string.Season), season);
+        else if (!TextUtils.isEmpty(showName))
+            ret= String.format("%s", showName);
+        else if (!TextUtils.isEmpty(season))
+            ret = String.format("%s %s", context.getString(R.string.Season), season);
 
-        return duration;
+        return TextUtils.isEmpty(release) ? ret : ret + " " + context.getString(R.string.mid_dot) + " " + release;
     }
 
     @Override
