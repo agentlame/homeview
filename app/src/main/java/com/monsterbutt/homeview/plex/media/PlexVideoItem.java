@@ -258,7 +258,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     public List<Media> getMedia() {
-        return mVideo.getMedias();
+        return mVideo != null ? mVideo.getMedias() : null;
     }
 
     public WatchedState getWatchedState() {
@@ -605,7 +605,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     public String getDetailStudioPath(PlexServer server) { return server.makeServerURLForCodec("studio", getStudio()); }
 
     @Override
-    public String getDetailRatingPath(PlexServer server) { return server.makeServerURLForCodec("contentRating", mVideo.getContentRating()); }
+    public String getDetailRatingPath(PlexServer server) { return mVideo != null ? server.makeServerURLForCodec("contentRating", mVideo.getContentRating()) : "";}
 
     @Override
     public String getDetailGenre(Context context) {

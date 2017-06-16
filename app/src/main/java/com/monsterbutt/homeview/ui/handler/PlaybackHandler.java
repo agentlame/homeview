@@ -367,7 +367,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     else if (task instanceof GetVideoQueueTask) {
       GetVideoQueueTask queueTask = (GetVideoQueueTask) task;
       synchronized (this) {
-        if (queueTask.mCurrent.getRatingKey() == currentVideo.getRatingKey()) {
+        if (queueTask.mCurrent != null && queueTask.mCurrent.getRatingKey() == currentVideo.getRatingKey()) {
           previousVideo = queueTask.mPrevious;
           nextVideo = queueTask.mNext;
           setNextUpPopup();
