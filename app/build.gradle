@@ -102,10 +102,11 @@ repositories {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
+    //compile project(':test-utils')
     compile project(':library-core')
     compile project(':library-hls')
-    compile project(':library-dash')
-    compile project(':library-smoothstreaming')
+    //compile project(':library-dash')
+    //compile project(':library-smoothstreaming')
     compile project(':library-ui')
     compile project(':extension-ffmpeg')
 
