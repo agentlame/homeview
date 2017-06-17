@@ -17,6 +17,7 @@ import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -604,8 +605,9 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
       if (fragment != null) {
         caller.selectionViewState(true);
-        activity.findViewById(R.id.selection_fragment).setVisibility(View.VISIBLE);
-        activity.findViewById(R.id.selection_fragment).requestFocus();
+        View view = activity.findViewById(R.id.selection_fragment);
+        view.setVisibility(View.VISIBLE);
+        view.requestFocus();
         activity.getFragmentManager().beginTransaction().add(R.id.selection_fragment, fragment, getTag()).commit();
       }
       else

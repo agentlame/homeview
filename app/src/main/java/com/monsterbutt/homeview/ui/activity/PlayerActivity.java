@@ -1,6 +1,5 @@
 package com.monsterbutt.homeview.ui.activity;
 
-
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
@@ -16,6 +15,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextClock;
@@ -76,6 +76,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   public static final String FILTER = "filter";
   public static final String SHARED_ELEMENT_NAME = "hero";
 
+
   private SimpleExoPlayerView simpleExoPlayerView;
 
   private boolean needRetrySource;
@@ -97,6 +98,9 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   private ImageView resolution;
   private ImageView frameRate;
   private ImageView aspectRatio;
+
+  private View controls;
+  private View clock;
 
   // Activity lifecycle
 
@@ -136,6 +140,8 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
         player.next();
       }
     });
+    controls = findViewById(R.id.controls_section);
+    clock = findViewById(R.id.current_time);
 
     poster = (ImageView) findViewById(R.id.posterImage);
     video = (ImageView) findViewById(R.id.videoImage);
@@ -291,10 +297,20 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   public void onVisibilityChange(int visibility) {
     Log.d(Tag, "Visibility Changed: " + visibility);
 
+    boolean wasVisible = isControllerVisible();
     boolean visible = visibility == View.VISIBLE;
     setControllerIsVisible(visible);
     if (visible && player != null)
         updateTimeRemaining(player.getTimeLeft());
+
+    if (!wasVisible && visible) {
+      clock.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in));
+      controls.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_up));
+    }
+    else if(wasVisible && !visible) {
+      clock.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_out));
+      controls.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_down));
+    }
   }
 
   // Internal methods
@@ -440,6 +456,8 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
         }
       }
     }
+    else
+      errorString = getString(R.string.video_error_unknown_error);
     if (errorString != null) {
       showToast(errorString);
     }
