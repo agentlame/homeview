@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:animateLayoutChanges="true">
 
     <RelativeLayout
@@ -46,6 +45,7 @@
 
         <ImageView
             android:id="@+id/posterImage"
+            android:transitionName="hero"
             style="?attr/imageCardViewImageStyle"
             tools:src="@drawable/default_video_cover"
             android:layout_width="@dimen/POSTER_WIDTH"
