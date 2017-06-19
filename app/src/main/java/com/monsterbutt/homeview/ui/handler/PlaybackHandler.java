@@ -225,6 +225,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     boolean ret = false;
     if (pausedTemp) {
       pausedTemp = false;
+      checkInitialTrack(Stream.Subtitle_Stream, C.TRACK_TYPE_TEXT);
       ret = true;
     }
     return ret;
@@ -455,7 +456,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       if (currentTrackId != (wantedIndex + 1))
         tracks.setSelectedTrack(trackSelector, streamId, wantedIndex-1);
     }
-    else if (currentTrackId != -1)
+    else
       tracks.disableTrackType(trackSelector, streamId);
   }
 
