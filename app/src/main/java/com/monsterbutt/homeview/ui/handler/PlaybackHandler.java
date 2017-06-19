@@ -17,7 +17,6 @@ import android.support.v17.leanback.widget.Row;
 import android.support.v17.leanback.widget.RowPresenter;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -104,6 +103,9 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   private MediaTrackSelector tracks;
 
+  private final ExoPlayer.EventListener eventListener;
+  private final SimpleExoPlayerView view;
+
   private final TrackSelector trackSelector;
   private TrackGroupArray lastSeenTrackGroupArray;
 
@@ -152,36 +154,22 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
 
   public PlaybackHandler(Invoker caller, ExoPlayer.EventListener eventListener, SimpleExoPlayerView view, Handler handler) {
+
     this.caller = caller;
     this.mainHandler = handler;
-    Context context = caller.getValidContext();
-    server = PlexServerManager.getInstance(context.getApplicationContext(), null).getSelectedServer();
+    server = PlexServerManager.getInstance(caller.getValidContext().getApplicationContext(), null).getSelectedServer();
 
     Log.d(Tag, "Initializing Player");
-
     clearResumePosition();
     lastSeenTrackGroupArray = null;
     trackSelector = new TrackSelector();
-
-    player = HomeViewPlayer.createPlayer(context, trackSelector, new DefaultLoadControl());
-    player.addListener(eventListener);
-
-    EventLogger eventLogger = new EventLogger(trackSelector);
-    player.addListener(eventLogger);
-    player.setAudioDebugListener(eventLogger);
-    player.setVideoDebugListener(eventLogger);
-    player.setMetadataOutput(eventLogger);
-
-    trackSelector.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
-
-    view.setPlayer(player);
-    player.setPlayWhenReady(false);
+    this.eventListener = eventListener;
+    this.view = view;
   }
 
   public void playVideo(PlexVideoItem video, Intent intent) {
 
     this.intent = intent;
-    long startOffset = intent != null ? intent.getLongExtra(PlayerActivity.START_OFFSET, -1) : -1;
     MediaTrackSelector chosenTracks = intent != null ? (MediaTrackSelector) intent.getParcelableExtra(PlayerActivity.TRACKS) : null;
     if (video == null)
       new GetVideoTask(this, server).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
@@ -189,17 +177,16 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     else if (video.selectedHasMissingData())
       new GetFullInfo(intent).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, video.getKey());
     else
-      playVideo(video, startOffset, chosenTracks,  null);
+      playVideo(video, chosenTracks,  null);
   }
 
-  private void playVideo(PlexVideoItem video, long startOffset, MediaTrackSelector chosenTracks, MediaTrackSelector readTracks) {
+  private void playVideo(PlexVideoItem video, MediaTrackSelector chosenTracks, MediaTrackSelector readTracks) {
     Context context = caller.getValidContext();
     if (context == null)
       return;
-    else if (player == null)
-      return;
     else if (video == null) {
-      player.stop();
+      if (player != null)
+        player.stop();
       return;
     } else if (currentVideo != null && video.getRatingKey() == currentVideo.getRatingKey())
       return;
@@ -208,19 +195,9 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     tracks = loadChangedTracks ? chosenTracks : readTracks;
 
     synchronized (this) {
+
       mainHandler.removeCallbacks(nextUpRunnable);
       currentVideo = video;
-      StartPosition startPosition = new StartPosition(context, startOffset, video.getViewedOffset());
-
-      Log.d(Tag, "Playing video, seek Position: " + resumePosition);
-      boolean haveResumePosition = resumeWindow != C.INDEX_UNSET;
-      if (haveResumePosition)
-        player.seekTo(resumeWindow, resumePosition);
-      else if (startPosition.getStartPosition() > 0)
-        player.seekTo(startPosition.getStartPosition());
-      else if (startPosition.getStartType() == StartPosition.PlaybackStartType.Ask
-       && startPosition.getVideoOffset() > 0)
-        ResumeChoiceHandler.askUser(context, player, startPosition.getVideoOffset(), CHOOSER_TIMEOUT);
 
       updateMetadata(context);
 
@@ -228,7 +205,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
         switcher.unregister();
       switcher = new FrameRateSwitcher((Activity) context, this);
       if (!switcher.setDisplayRefreshRate(video))
-        initiatePlayOfVideo(haveResumePosition);
+        initiatePlayOfVideo(resumeWindow != C.INDEX_UNSET);
     }
     new GetVideoQueueTask(this, server).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, video.getKey());
   }
@@ -255,6 +232,31 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   private void initiatePlayOfVideo(boolean haveResumePosition) {
 
+    Context context = caller.getValidContext();
+
+    long startOffset = intent != null ? intent.getLongExtra(PlayerActivity.START_OFFSET, -1) : -1;
+    StartPosition startPosition = new StartPosition(context, startOffset, currentVideo.getViewedOffset());
+
+    player = HomeViewPlayer.createPlayer(context, trackSelector, new DefaultLoadControl());
+    player.addListener(eventListener);
+
+    EventLogger eventLogger = new EventLogger(trackSelector);
+    player.addListener(eventLogger);
+    player.setAudioDebugListener(eventLogger);
+    player.setVideoDebugListener(eventLogger);
+    player.setMetadataOutput(eventLogger);
+
+    trackSelector.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
+
+    view.setPlayer(player);
+    Log.d(Tag, "Playing video, seek Position: " + resumePosition);
+    if (haveResumePosition)
+      player.seekTo(resumeWindow, resumePosition);
+    else if (startPosition.getStartPosition() > 0)
+      player.seekTo(startPosition.getStartPosition());
+    else if (startPosition.getStartType() == StartPosition.PlaybackStartType.Ask
+     && startPosition.getVideoOffset() > 0)
+      ResumeChoiceHandler.askUser(context, player, startPosition.getVideoOffset(), CHOOSER_TIMEOUT);
     player.setPlayWhenReady(false);
     pausedTemp = true;
     player.prepare(currentVideo, server, caller.getValidContext(), this, !haveResumePosition, false);
@@ -360,10 +362,9 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       }
       MediaTrackSelector readTracks = item.fillTrackSelector(context,
        Locale.getDefault().getISO3Language(), MediaCodecCapabilities.getInstance(context));
-      long startOffset = intent != null ? intent.getLongExtra(PlayerActivity.START_OFFSET, -1) : -1;
       MediaTrackSelector chosenTracks = intent != null ? (MediaTrackSelector) intent.getParcelableExtra(PlayerActivity.TRACKS) : null;
       loadChangedTracks = chosenTracks != null;
-      playVideo(((GetVideoTask) task).getVideo(), startOffset, chosenTracks,  readTracks);
+      playVideo(((GetVideoTask) task).getVideo(), chosenTracks,  readTracks);
     }
     else if (task instanceof GetVideoQueueTask) {
       GetVideoQueueTask queueTask = (GetVideoQueueTask) task;
@@ -403,9 +404,8 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
           tracks = item.fillTrackSelector(context,
            Locale.getDefault().getISO3Language(), MediaCodecCapabilities.getInstance(context));
 
-        long startOffset = intent != null ? intent.getLongExtra(PlayerActivity.START_OFFSET, -1) : -1;
         MediaTrackSelector chosenTracks = intent != null ? (MediaTrackSelector) intent.getParcelableExtra(PlayerActivity.TRACKS) : null;
-        playVideo(item, startOffset, chosenTracks, tracks);
+        playVideo(item, chosenTracks, tracks);
       }
     }
   }
