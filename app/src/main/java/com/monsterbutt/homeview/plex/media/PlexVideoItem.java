@@ -506,6 +506,18 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return (mVideo != null && mVideo.getChapters() != null && !mVideo.getChapters().isEmpty());
     }
 
+    public long[] getChapters() {
+
+        List<us.nineworlds.plex.rest.model.impl.Chapter> list = mVideo.getChapters();
+        if (list == null || list.isEmpty())
+            return null;
+        long[] ret = new long[list.size()];
+        int i = 0;
+        for (us.nineworlds.plex.rest.model.impl.Chapter chapter : list)
+            ret[i++] = chapter.getStartTimeOffset();
+        return ret;
+    }
+
     public static long START_CHAPTER_THRESHOLD = 5000;
     public static long BAD_CHAPTER_START = -1;
     public long getPreviousChapterStart(long position) {

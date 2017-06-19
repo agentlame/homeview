@@ -282,6 +282,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
             showControls(false);
             return true;
           }
+          break;
 
         case KeyEvent.KEYCODE_MEDIA_NEXT:
           player.next();

@@ -28,6 +28,7 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
+import com.google.android.exoplayer2.ui.DefaultTimeBar;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.EventLogger;
@@ -249,6 +250,9 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
     trackSelector.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
 
+    DefaultTimeBar timeBar = (DefaultTimeBar) view.findViewById(R.id.exo_progress);
+    long[] chapters = currentVideo.getChapters();
+    timeBar.setAdBreakTimesMs(chapters, chapters == null ? 0 : chapters.length);
     view.setPlayer(player);
     Log.d(Tag, "Playing video, seek Position: " + resumePosition);
     if (haveResumePosition)
