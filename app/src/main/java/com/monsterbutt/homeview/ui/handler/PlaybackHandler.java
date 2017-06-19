@@ -175,7 +175,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     trackSelector.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
 
     view.setPlayer(player);
-    player.setPlayWhenReady(true);
+    player.setPlayWhenReady(false);
   }
 
   public void playVideo(PlexVideoItem video, Intent intent) {
@@ -752,7 +752,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
       CodecCard codec = (CodecCard) card;
       Stream.StreamChoice stream = codec.getStream();
-      if (stream == null || stream.isCurrentSelection())
+      if (stream == null)
         return;
 
       if (stream instanceof Stream.StreamChoiceDisable)
