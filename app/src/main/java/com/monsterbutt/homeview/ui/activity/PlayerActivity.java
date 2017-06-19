@@ -283,6 +283,14 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
             return true;
           }
 
+        case KeyEvent.KEYCODE_MEDIA_NEXT:
+          player.next();
+          return true;
+
+        case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+          player.previous();
+          return true;
+
         default:
           break;
       }

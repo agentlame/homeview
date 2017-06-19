@@ -495,7 +495,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
         position = currentVideo.getPreviousChapterStart(player.getCurrentPosition());
       if (position != BAD_CHAPTER_START && player.getCurrentPosition() > START_CHAPTER_THRESHOLD)
         player.seekTo(position);
-      else if (previousVideo != null) {
+      else if (previousVideo != null && player.getCurrentPosition() < START_CHAPTER_THRESHOLD) {
         play(false);
         pausedTemp = true;
         playVideo(previousVideo, null);
