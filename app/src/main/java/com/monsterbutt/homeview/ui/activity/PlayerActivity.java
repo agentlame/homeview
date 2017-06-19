@@ -257,16 +257,16 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
           break;
 
         case KeyEvent.KEYCODE_DPAD_LEFT:
-          if (!isSelectionViewOnTop() && !wasControllerVisible) {
-            player.jumpBack();
-            return true;
-          }
-          break;
-
         case KeyEvent.KEYCODE_DPAD_RIGHT:
-          if (!isSelectionViewOnTop() && !wasControllerVisible) {
-            player.jumpForward();
-            return true;
+          if (!isSelectionViewOnTop()) {
+            if (!wasControllerVisible) {
+              if (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_LEFT)
+                player.jumpBack();
+              else
+                player.jumpForward();
+              return true;
+            }
+            showControls(true);
           }
           break;
 
