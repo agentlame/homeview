@@ -5,4 +5,4 @@
 [submodule "ExoPlayer"]
 	path = ExoPlayer
 	url = https://github.com/drhill/ExoPlayer
-	branch = dev-v2_app_rel
+	branch = dev-v2_homeview
