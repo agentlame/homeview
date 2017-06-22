@@ -568,17 +568,26 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     releaseSelectView();
     selectView = new SwitchTrackView(activity, streamType);
 
+    MediaTrackSelector.StreamChoiceArrayAdapter choices = tracks.getTracks(activity, server, streamType);
+    int selected = 0;
+    for (int i = 0; i < choices.getCount(); ++i) {
+      Stream.StreamChoice choice = choices.getItem(i);
+      if (choice.isCurrentSelection())
+        selected = i;
+    }
     String header = activity.getString(streamType == Stream.Audio_Stream ?
      R.string.exo_controls_audio_description : R.string.exo_controls_subtitles_description);
     ((SwitchTrackView) selectView).setRow(PlexItemRow.buildCodecItemsRow(activity, server, header,
-                                      tracks.getTracks(activity, server, streamType), streamType));
+                                      choices, streamType), selected);
   }
 
   public void selectChapter(Activity activity) {
 
     releaseSelectView();
     selectView = new SelectChapterView(activity);
-    ((SelectChapterView) selectView).setRow(currentVideo.getChildren(activity, server, (SelectChapterView) selectView));
+
+    ((SelectChapterView) selectView).setRow(currentVideo.getChildren(activity, server, (SelectChapterView) selectView)
+    , currentVideo.getCurrentChapter(player.getCurrentPosition()));
   }
 
   public boolean isShowingNextUp() {
@@ -701,9 +710,9 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
     protected abstract void cardClicked(PosterCard card);
 
-    public void setRow(PlexItemRow row) {
+    public void setRow(PlexItemRow row, int initialPosition) {
 
-      setFragment(new SelectionFragment(activity, row, this, getHeight()));
+      setFragment(new SelectionFragment(row, this, initialPosition, getHeight()));
     }
 
     private void clicked(PosterCard card) {
