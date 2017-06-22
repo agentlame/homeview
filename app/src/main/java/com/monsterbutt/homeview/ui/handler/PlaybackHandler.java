@@ -680,7 +680,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
             key += "?" + server.getToken();
             intent.putExtra(ContainerActivity.KEY, key);
             intent.putExtra(ContainerActivity.BACKGROUND, currentVideo.getBackgroundImageURL());
-            intent.putExtra(ContainerActivity.SELECTED, nextVideo.getRatingKey());
+            intent.putExtra(ContainerActivity.SELECTED, Long.toString(nextVideo.getRatingKey()));
             activity.startActivity(intent, null);
             caller.exit();
           }
