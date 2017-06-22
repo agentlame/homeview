@@ -25,6 +25,12 @@
         android:layout_height="match_parent"
         app:controller_layout_id="@layout/lb_playback_ui"/>
 
+    <ProgressBar
+        android:id="@+id/progress_waiting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
+
     <FrameLayout
         android:id="@+id/selection_fragment"
         android:layout_width="match_parent"

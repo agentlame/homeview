@@ -187,7 +187,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="26dp"
                     android:layout_marginTop="4dp"
-                    app:ad_marker_color="@color/BlueGrey.DividerColor"/>
+                    app:ad_marker_color="@color/BlueGrey.DividerColor"
+                    app:played_color="@color/BlueGrey.DarkPrimary"/>
 
 
                 <RelativeLayout

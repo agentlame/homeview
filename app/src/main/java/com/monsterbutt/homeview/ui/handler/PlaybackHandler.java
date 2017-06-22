@@ -82,6 +82,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     void updateMetadata(PlexVideoItem item, Bitmap bitmap, PlexServer server, MediaTrackSelector tracks);
     void selectionViewState(boolean isVisible);
     void showControls(boolean show);
+    void showProgress(boolean show);
     void exit();
   }
 
@@ -170,6 +171,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   public void playVideo(PlexVideoItem video, Intent intent) {
 
+    caller.showProgress(true);
     this.intent = intent;
     MediaTrackSelector chosenTracks = intent != null ? (MediaTrackSelector) intent.getParcelableExtra(PlayerActivity.TRACKS) : null;
     if (video == null)
@@ -182,6 +184,8 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   }
 
   private void playVideo(PlexVideoItem video, MediaTrackSelector chosenTracks, MediaTrackSelector readTracks) {
+
+    caller.showProgress(true);
     Context context = caller.getValidContext();
     if (context == null)
       return;

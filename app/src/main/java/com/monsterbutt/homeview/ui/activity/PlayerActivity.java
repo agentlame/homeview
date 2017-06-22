@@ -18,6 +18,7 @@ import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextClock;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -99,6 +100,8 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   private ImageView frameRate;
   private ImageView aspectRatio;
 
+  private ProgressBar progress_waiting;
+
   private View controls;
   private View clock;
 
@@ -142,6 +145,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     });
     controls = findViewById(R.id.controls_section);
     clock = findViewById(R.id.current_time);
+    progress_waiting = (ProgressBar) findViewById(R.id.progress_waiting);
 
     poster = (ImageView) findViewById(R.id.posterImage);
     video = (ImageView) findViewById(R.id.videoImage);
@@ -370,6 +374,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
         exit();
         break;
       case STATE_READY:
+        showProgress(false);
         adjustFocusForTimeBar(playWhenReady);
         if (playWhenReady)
           onPlayback(player.isPlaying());
@@ -377,6 +382,14 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
           player.play(true);
         break;
     }
+  }
+
+  public void showProgress(boolean show) {
+
+    if (!show && progress_waiting.getVisibility() == View.VISIBLE)
+      progress_waiting.setVisibility(View.GONE);
+    else if (show && progress_waiting.getVisibility() != View.VISIBLE)
+      progress_waiting.setVisibility(View.VISIBLE);
   }
 
   private void adjustFocusForTimeBar(boolean playing) {
