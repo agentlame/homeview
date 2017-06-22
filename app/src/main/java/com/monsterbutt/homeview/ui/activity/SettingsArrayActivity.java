@@ -7,7 +7,6 @@ import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.GuidedStepFragment;
 import android.support.v17.leanback.widget.GuidanceStylist;
 import android.support.v17.leanback.widget.GuidedAction;
-import android.text.TextUtils;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.settings.SettingArray;
@@ -54,6 +53,8 @@ public class SettingsArrayActivity extends Activity {
 
     public static class ArraySelectStepFragment extends GuidedStepFragment {
 
+        private boolean shift = false;
+        private int selectedIndex = 0;
         @Override
         @NonNull
         public GuidanceStylist.Guidance onCreateGuidance(Bundle savedInstanceState) {
@@ -65,15 +66,27 @@ public class SettingsArrayActivity extends Activity {
         }
 
         @Override
+        public void onResume() {
+            super.onResume();
+            if (!shift) {
+                setSelectedActionPosition(selectedIndex);
+                shift = true;
+            }
+        }
+
+        @Override
         public void onCreateActions(@NonNull List<GuidedAction> actions, Bundle savedInstanceState) {
 
             int index = 0;
-
+            String curr = activity.mSetting.currentValue();
             List<SettingArray.ArrayValue> list = new ArrayList<>(activity.values.values());
             Collections.sort(list);
 
-            for (SettingArray.ArrayValue val : list)
+            for (SettingArray.ArrayValue val : list) {
+                if (0 == curr.compareTo(val.key))
+                    selectedIndex = index;
                 addAction(actions, index++, val.value, "");
+            }
             addAction(actions, CANCEL,
                     getResources().getString(R.string.preferences_cancel),
                     getResources().getString(R.string.preferences_cancel_desc));
