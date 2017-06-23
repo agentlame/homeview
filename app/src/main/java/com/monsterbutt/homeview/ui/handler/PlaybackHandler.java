@@ -83,6 +83,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     void selectionViewState(boolean isVisible);
     void showControls(boolean show);
     void showProgress(boolean show);
+    void showError(String msg);
     void exit();
   }
 
@@ -452,7 +453,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     Context context = caller.getValidContext();
     if (context == null)
       return;
-    showToast(R.string.video_error_load_error, msg);
+    caller.showError(context.getString(R.string.video_error_load_error) + " : " + msg);
   }
 
   private void checkInitialTrack(int streamId, int trackType) {
@@ -572,7 +573,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     int selected = 0;
     for (int i = 0; i < choices.getCount(); ++i) {
       Stream.StreamChoice choice = choices.getItem(i);
-      if (choice.isCurrentSelection())
+      if (choice != null && choice.isCurrentSelection())
         selected = i;
     }
     String header = activity.getString(streamType == Stream.Audio_Stream ?
@@ -710,7 +711,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
     protected abstract void cardClicked(PosterCard card);
 
-    public void setRow(PlexItemRow row, int initialPosition) {
+    void setRow(PlexItemRow row, int initialPosition) {
 
       setFragment(new SelectionFragment(row, this, initialPosition, getHeight()));
     }

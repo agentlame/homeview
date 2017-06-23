@@ -39,4 +39,10 @@
         android:background="@drawable/playback_background_low_to_high"
         android:visibility="invisible"/>
 
+    <FrameLayout
+        android:id="@+id/error_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
 </FrameLayout>

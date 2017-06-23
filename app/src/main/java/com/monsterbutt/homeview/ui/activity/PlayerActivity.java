@@ -21,7 +21,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextClock;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -49,6 +48,7 @@ import com.monsterbutt.homeview.plex.media.VideoFormat;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.services.ThemeService;
+import com.monsterbutt.homeview.ui.fragment.ErrorFragment;
 import com.monsterbutt.homeview.ui.handler.PlaybackHandler;
 
 import java.text.SimpleDateFormat;
@@ -340,7 +340,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
         player.playVideo((PlexVideoItem) intent.getParcelableExtra(PlayerActivity.VIDEO), intent);
         needRetrySource = false;
       } else
-        showToast(getString(R.string.unexpected_intent_action, action));
+        showError(getString(R.string.unexpected_intent_action, action));
     }
   }
 
@@ -405,8 +405,18 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
 
   // User controls
 
-  private void showToast(String message) {
-    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+  @Override
+  public void showError(String message) {
+
+    showProgress(false);
+
+    ErrorFragment fragment = new ErrorFragment();
+    Bundle args = new Bundle();
+    args.putString(ErrorFragment.MESSAGE, message);
+    fragment.setArguments(args);
+    View view = findViewById(R.id.error_fragment);
+    view.setVisibility(View.VISIBLE);
+    getFragmentManager().beginTransaction().add(R.id.error_fragment, fragment, "Error").commit();
   }
 
   private static boolean isBehindLiveWindow(ExoPlaybackException e) {
@@ -481,7 +491,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     else
       errorString = getString(R.string.video_error_unknown_error);
     if (errorString != null) {
-      showToast(errorString);
+      showError(errorString);
     }
     needRetrySource = true;
     if (isBehindLiveWindow(e)) {
