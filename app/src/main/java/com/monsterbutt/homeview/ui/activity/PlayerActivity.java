@@ -2,13 +2,18 @@ package com.monsterbutt.homeview.ui.activity;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.media.MediaMetadata;
+import android.media.session.MediaSession;
+import android.media.session.PlaybackState;
 import android.os.Bundle;
 
 import android.os.Handler;
+import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -57,6 +62,9 @@ import java.util.Locale;
 
 import us.nineworlds.plex.rest.model.impl.Media;
 
+import static android.media.session.PlaybackState.STATE_PAUSED;
+import static android.media.session.PlaybackState.STATE_PLAYING;
+import static android.media.session.PlaybackState.STATE_STOPPED;
 import static com.google.android.exoplayer2.ExoPlayer.STATE_BUFFERING;
 import static com.google.android.exoplayer2.ExoPlayer.STATE_ENDED;
 import static com.google.android.exoplayer2.ExoPlayer.STATE_IDLE;
@@ -105,6 +113,9 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   private View controls;
   private View clock;
 
+
+  private MediaSession session;
+
   // Activity lifecycle
 
   @Override
@@ -113,6 +124,12 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     Log.d(Tag, "onCreate");
 
     setContentView(R.layout.player_activity);
+
+    session = new MediaSession(this, "HomeView");
+    session.setSessionActivity(PendingIntent.getActivity(this, 99 /*request code*/,
+     new Intent(this, PlayerActivity.class), PendingIntent.FLAG_UPDATE_CURRENT));
+    session.setCallback(new MediaSessionCallback());
+    session.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS | MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
 
     simpleExoPlayerView = (SimpleExoPlayerView) findViewById(R.id.player_view);
     simpleExoPlayerView.setControllerVisibilityListener(this);
@@ -166,7 +183,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   @Override
   public void onNewIntent(Intent intent) {
     Log.d(Tag, "onNewIntent");
-    releasePlayer();
+    //releasePlayer();
     setIntent(intent);
   }
 
@@ -197,8 +214,10 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
         player.play(false);
       else
         showControls(false);
-    } else
+    }
+    else {
       requestVisibleBehind(false);
+    }
   }
 
   @Override
@@ -346,6 +365,8 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
 
   private void releasePlayer() {
 
+    if (session != null && session.isActive())
+      session.setActive(false);
     if (player != null) {
       Log.d(Tag, "Releasing player");
       player.release();
@@ -378,8 +399,14 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
         adjustFocusForTimeBar(playWhenReady);
         if (playWhenReady)
           onPlayback(player.isPlaying());
-        else if (player.shouldStart())
+        else if (player.shouldStart()) {
           player.play(true);
+          updateTimeRemaining(player.getTimeLeft());
+        }
+        if (player.isPlaying() && !session.isActive())
+          session.setActive(true);
+        else if (!player.isPlaying() && session.isActive())
+          session.setActive(false);
         break;
     }
   }
@@ -553,17 +580,16 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   public void onPlayback(boolean isPlaying) {
 
     player.handlePlaybackChanged(isPlaying);
-    if (isPlaying) {
+    if (isPlaying)
       getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    }
-    else {
+    else
       getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    }
   }
 
   @Override
-  public void updateMetadata(PlexVideoItem item, Bitmap bitmap, PlexServer server, MediaTrackSelector tracks) {
+  public void updateMetadata(PlexVideoItem item, Bitmap bitmap, PlexServer server, MediaTrackSelector tracks, MediaMetadata build) {
 
+    session.setMetadata(build);
     setItem(item, bitmap, server, tracks);
 
     ImageButton chaptersButton = (ImageButton) findViewById(R.id.exo_chapters);
@@ -655,7 +681,6 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
 
   @Override
   public void exit() {
-
     releasePlayer();
     finish();
   }
@@ -715,8 +740,10 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
 
   public void updateTimeRemaining(long timeLeft) {
 
-    String out = " " + new SimpleDateFormat("h:mm", Locale.US).format((new Date()).getTime() + timeLeft);
-    endTime.setText(out);
+    if (timeLeft > 0 && player != null && timeLeft < player.getDuration()) {
+      String out = " " + new SimpleDateFormat("h:mm", Locale.US).format((new Date()).getTime() + timeLeft);
+      endTime.setText(out);
+    }
   }
 
   private void loadImage(ImageView view, String path) {
@@ -727,5 +754,78 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
       view.setVisibility(View.VISIBLE);
       Glide.with(this).load(path).into(view);
     }
+  }
+
+
+  private class MediaSessionCallback extends MediaSession.Callback {
+
+    @Override
+    public void onPlay() {
+      player.play(true);
+    }
+
+    @Override
+    public void onPause() {
+      player.play(false);
+      requestVisibleBehind(false);
+      session.setActive(false);
+    }
+
+    @Override
+    public void onSkipToNext() {
+      player.next();
+    }
+
+    @Override
+    public void onSkipToPrevious() {
+      player.previous();
+    }
+
+    @Override
+    public void onFastForward() {
+      player.jumpForward();
+    }
+
+    @Override
+    public void onRewind() {
+      player.jumpBack();
+    }
+
+    @Override
+    public void onStop() {
+      exit();
+    }
+
+    @Override
+    public void onSeekTo(long pos) {
+      player.seekTo(pos);
+    }
+  }
+
+  @Override
+  public void updateSessionProgress() {
+    long position = player == null ? 0 : player.getCurrentPosition();
+    PlaybackState.Builder stateBuilder = new PlaybackState.Builder();
+    //noinspection WrongConstant
+    stateBuilder.setActions(getAvailableActions());
+    stateBuilder.setState(player == null ? STATE_STOPPED : player.isPlaying() ? STATE_PLAYING : STATE_PAUSED, position, 1.0f);
+    session.setPlaybackState(stateBuilder.build());
+  }
+
+  private @PlaybackStateCompat.Actions
+  long getAvailableActions() {
+    long actions = PlaybackState.ACTION_PLAY_PAUSE;
+    if (player != null) {
+      if (player.isPlaying())
+        actions |= PlaybackState.ACTION_PAUSE;
+      else
+        actions |= PlaybackState.ACTION_PLAY;
+
+      if (player.hasPreviousVideo())
+        actions |= PlaybackState.ACTION_SKIP_TO_PREVIOUS;
+      if (player.hasNextVideo())
+        actions |= PlaybackState.ACTION_SKIP_TO_NEXT;
+    }
+    return actions;
   }
 }

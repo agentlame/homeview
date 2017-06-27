@@ -71,7 +71,8 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
     Context getValidContext();
     void onPlayback(boolean isPlaying);
-    void updateMetadata(PlexVideoItem item, Bitmap bitmap, PlexServer server, MediaTrackSelector tracks);
+    void updateSessionProgress();
+    void updateMetadata(PlexVideoItem item, Bitmap bitmap, PlexServer server, MediaTrackSelector tracks, MediaMetadata build);
     void selectionViewState(boolean isVisible, PlexVideoItem item, PlexServer server, MediaTrackSelector tracks);
     void showControls(boolean show);
     void showProgress(boolean show);
@@ -90,6 +91,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   private PlexVideoItem currentVideo = null;
   private PlexVideoItem previousVideo = null;
   private PlexVideoItem nextVideo = null;
+
 
   private boolean pausedTemp = true;
 
@@ -135,7 +137,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
     @Override
     public void run() {
-
+      caller.updateSessionProgress();
       VideoProgressTask.getTask(server, currentVideo).setProgress(0 == getTimeLeft(), player.getCurrentPosition());
       boolean again;
       synchronized (this) {
@@ -146,6 +148,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     }
   }
   private ProgressRunable runnableProgress = new ProgressRunable();
+
 
   public PlaybackHandler(Invoker caller, ExoPlayer.EventListener eventListener, SimpleExoPlayerView view, Handler handler) {
 
@@ -304,7 +307,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
        @Override
        public void onResourceReady(Bitmap bitmap, GlideAnimation anim) {
          metadataBuilder.putBitmap(MediaMetadata.METADATA_KEY_ART, bitmap);
-         caller.updateMetadata(currentVideo, bitmap, server, tracks);
+         caller.updateMetadata(currentVideo, bitmap, server, tracks, metadataBuilder.build());
        }
      });
   }
@@ -499,6 +502,10 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     }
   }
 
+  public void seekTo(long pos) {
+    player.seekTo(pos);
+  }
+
   public void next() {
     if (currentVideo != null) {
       long position = BAD_CHAPTER_START;
@@ -533,9 +540,11 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     player.seekTo(pos);
   }
 
-  public long getTimeLeft() {
-    return player.getDuration() - player.getCurrentPosition();
-  }
+  public long getDuration() { return player == null ? 0 : player.getDuration(); }
+
+  public long getCurrentPosition() { return player == null ? 0 :  player.getCurrentPosition(); }
+
+  public long getTimeLeft() {  return player == null ? 0 : player.getDuration() - player.getCurrentPosition(); }
 
   private Runnable nextUpRunnable = new NextUpRunnable(this);
   private class NextUpRunnable implements Runnable {
@@ -663,4 +672,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       caller.selectionViewState(isVisible, currentVideo, server, tracks);
   }
 
+  public boolean hasPreviousVideo() { return previousVideo != null;  }
+
+  public boolean hasNextVideo() { return nextVideo != null; }
 }
