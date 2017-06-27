@@ -250,7 +250,7 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
     }
 
     @Override
-    public MediaTrackSelector fillTrackSelector(Context context, String baseLanguageCode, MediaCodecCapabilities capabilities) {
+    public MediaTrackSelector fillTrackSelector(String baseLanguageCode, MediaCodecCapabilities capabilities) {
 
         return null;
     }

@@ -471,11 +471,11 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         row.add(VideoContract.VideoEntry.COLUMN_EXTRA, key);
     }
 
-    public MediaTrackSelector fillTrackSelector(Context context, String baseLanguageCode, MediaCodecCapabilities capabilities) {
+    public MediaTrackSelector fillTrackSelector(String baseLanguageCode, MediaCodecCapabilities capabilities) {
 
         Part part = getMedia().get(0).getVideoPart().get(0);
         if (part.getStreams() != null)
-            return new MediaTrackSelector(context, part.getStreams(), baseLanguageCode, capabilities);
+            return new MediaTrackSelector(part.getStreams(), baseLanguageCode, capabilities);
         return null;
     }
 

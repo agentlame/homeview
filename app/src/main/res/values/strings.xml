@@ -83,8 +83,9 @@
     <string name="extras_row_header">Extras</string>
 
     <string name="action_play">Play</string>
-    <string name="action_watched">Mark as Unwatched</string>
-    <string name="action_unwatched">Mark as Watched</string>
+    <string name="action_mark">Mark as</string>
+    <string name="action_watched">Unwatched</string>
+    <string name="action_unwatched">Watched</string>
 
     <string name="recommendations_max">8</string>
     <string name="recommendations_priority_base">50</string>
@@ -286,5 +287,7 @@
     <string name="exo_controls_chapters_description">Chapters</string>
     <string name="exo_controls_audio_description">Audio Tracks</string>
     <string name="exo_controls_subtitles_description">Subtitle Tracks</string>
+    <string name="subtitle">Subtitle</string>
+    <string name="track">Track</string>
 
 </resources>

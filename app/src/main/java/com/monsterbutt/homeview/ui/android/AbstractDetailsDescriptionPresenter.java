@@ -30,70 +30,55 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
      * The ViewHolder for the {@link AbstractDetailsDescriptionPresenter}.
      */
     public static class ViewHolder extends Presenter.ViewHolder {
-        private final TextView mTitle;
-        private final TextView mSubtitle;
-        private final TextView mContent;
-        private final TextView mBody;
-        private final TextView mGenre;
-        private final ImageView mStudio;
-        private final ImageView mRating;
-        private final ProgressBar mProgress;
-        private final ImageView mFlagView;
 
-        private boolean mHasStudio = false;
-        private boolean mHasRating = false;
+        public final TextView Title;
+        public final TextView Subtitle;
+        public final TextView Description;
+        public final TextView Tagline;
+        public final TextView Genre;
+        public final ImageView Studio;
+        public final ImageView Rating;
+        public final ProgressBar Progress;
+        public final ImageView Watched;
+
+        public final ImageView Resolution;
+        public final ImageView FrameRate;
+        public final ImageView VideoCodec;
+
+        public final ImageView AudioCodec;
+        public final ImageView AudioChannels;
 
         public ViewHolder(final View view) {
             super(view);
-            mTitle = (TextView) view.findViewById(R.id.lb_details_description_title);
-            mSubtitle = (TextView) view.findViewById(R.id.lb_details_description_subtitle);
-            mBody = (TextView) view.findViewById(R.id.lb_details_description_body);
-            mContent = (TextView) view.findViewById(R.id.lb_details_description_content);
-            mGenre = (TextView) view.findViewById(R.id.lb_details_description_genre);
-            mStudio = (ImageView) view.findViewById(R.id.lb_details_description_studio);
-            mRating = (ImageView) view.findViewById(R.id.lb_details_description_rating);
-            mProgress = (ProgressBar) view.findViewById(R.id.progress);
-            mFlagView = (ImageView) view.findViewById(R.id.unwatched);
+
+            Title = (TextView) view.findViewById(R.id.title);
+            Subtitle = (TextView) view.findViewById(R.id.subtitle);
+            Description = (TextView) view.findViewById(R.id.description);
+            Tagline = (TextView) view.findViewById(R.id.tagline);
+            Genre = (TextView) view.findViewById(R.id.genre);
+            Studio = (ImageView) view.findViewById(R.id.studio);
+            Rating = (ImageView) view.findViewById(R.id.ratingImage);
+            Progress = (ProgressBar) view.findViewById(R.id.progress);
+            Watched = (ImageView) view.findViewById(R.id.unwatched);
+            Resolution = (ImageView) view.findViewById(R.id.resolutionImage);
+            FrameRate = (ImageView) view.findViewById(R.id.framerateImage);
+            VideoCodec = (ImageView) view.findViewById(R.id.videoImage);
+            AudioCodec = (ImageView) view.findViewById(R.id.audioImage);
+            AudioChannels = (ImageView) view.findViewById(R.id.channelsImage);
         }
 
-        public TextView getTitle() {
-            return mTitle;
-        }
+        public boolean setImage(Context context, ImageView image, String path) {
 
-        public TextView getSubtitle() {
-            return mSubtitle;
-        }
-
-        public TextView getBody() {
-            return mBody;
-        }
-
-        public TextView getContent() {
-            return mContent;
-        }
-
-
-        public TextView getGenre() {
-            return mGenre;
-        }
-
-        public void hasStudio(boolean hasStudio) { mHasStudio = hasStudio; }
-        public void hasRating(boolean hasRating) { mHasRating = hasRating; }
-
-        public ImageView getStudio() {
-            return mStudio;
-        }
-
-        public ImageView getRating() {
-            return mRating;
-        }
-
-        public ProgressBar getProgress() {
-            return mProgress;
-        }
-
-        public ImageView getWatched() {
-            return mFlagView;
+            boolean ret = !TextUtils.isEmpty(path);
+            if (ret) {
+                image.setVisibility(View.VISIBLE);
+                Glide.with(context).load(path).into(image);
+            }
+            else if (image != null) {
+                image.setVisibility(View.INVISIBLE);
+                image.setImageDrawable(null);
+            }
+            return ret;
         }
     }
 
@@ -106,36 +91,6 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
     public final void onBindViewHolder(Presenter.ViewHolder viewHolder, Object item) {
         ViewHolder vh = (ViewHolder) viewHolder;
         onBindDescription(vh, item);
-
-        setTextViewVisibility(vh.mTitle);
-        setTextViewVisibility(vh.mBody);
-        setTextViewVisibility(vh.mContent);
-        setTextViewVisibility(vh.mSubtitle);
-        setTextViewVisibility(vh.mGenre);
-        setImageViewVisibility(vh.mStudio, vh.mHasStudio);
-        setImageViewVisibility(vh.mRating, vh.mHasRating);
-    }
-
-    protected boolean setImage(Context context, ImageView image, String path) {
-
-        boolean ret = !TextUtils.isEmpty(path);
-        if (ret)
-            Glide.with(context).load(path).into(image);
-        else if (image != null)
-            image.setImageDrawable(null);
-        return ret;
-    }
-
-    private void setImageViewVisibility(ImageView view, boolean viewHasDrawable) {
-
-        if (view != null)
-            view.setVisibility(viewHasDrawable ? View.VISIBLE : View.GONE);
-    }
-
-    private void setTextViewVisibility(TextView view) {
-
-        if (view != null)
-            view.setVisibility(TextUtils.isEmpty(view.getText()) ? View.GONE : View.VISIBLE);
     }
 
     /**

@@ -106,7 +106,7 @@ public class Movie extends PlexVideoItem implements Parcelable {
     }
 
     @Override
-    public String getDetailSubtitle(Context context) { return getTagline(); }
+    public String getDetailSubtitle(Context context) { return getPlaybackSubtitle(context, true); }
 
     @Override
     public String getDetailContent(Context context) {

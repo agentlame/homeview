@@ -1,9 +1,6 @@
 package com.monsterbutt.homeview.presenters;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
@@ -18,11 +15,6 @@ import us.nineworlds.plex.rest.model.impl.Media;
 
 public class CodecCard extends PosterCard {
 
-    public interface OnClickListenerHandler {
-
-        MediaTrackSelector getSelector();
-        DialogInterface.OnClickListener getDialogOnClickListener(final Object card, final int trackType);
-    }
 
     private class CodecIconHolder {
 
@@ -30,13 +22,13 @@ public class CodecCard extends PosterCard {
         public final String type;
         public final String id;
 
-        public CodecIconHolder(String type, String id, Drawable drawable) {
+        CodecIconHolder(String type, String id, Drawable drawable) {
             this.id = id;
             this.type = type;
             this.drawable = drawable;
         }
 
-        public CodecIconHolder(String type, String id) {
+        CodecIconHolder(String type, String id) {
 
             this.id = id;
             this.type = type;
@@ -78,7 +70,7 @@ public class CodecCard extends PosterCard {
         stream = choice;
     }
 
-    public CodecCard(Context context, Stream stream, int trackType, int totalTracksForType, boolean codecOnly) {
+    private CodecCard(Context context, Stream stream, int trackType, int totalTracksForType, boolean codecOnly) {
 
         super(context, null);
         this.stream = null;
@@ -94,9 +86,9 @@ public class CodecCard extends PosterCard {
             case Stream.Video_Stream:
 
                 if (stream == null) {
-                    title = context.getString(R.string.selection_disabled);
+                    title = context != null ? context.getString(R.string.selection_disabled) : "";
                     subtitle = "";
-                    iconA = new CodecIconHolder("", "", context.getDrawable(R.drawable.ic_video_label_white_48dp));
+                    iconA = new CodecIconHolder("", "", context != null ? context.getDrawable(R.drawable.ic_video_label_white_48dp) : null);
                     iconB = null;
                 }
                 else {
@@ -110,9 +102,9 @@ public class CodecCard extends PosterCard {
             case Stream.Audio_Stream:
 
                 if (stream == null) {
-                    title = context.getString(R.string.selection_disabled);
+                    title = context != null ? context.getString(R.string.selection_disabled) : null;
                     subtitle = "";
-                    iconA = new CodecIconHolder("", "", context.getDrawable(R.drawable.ic_audiotrack_white_36dp));
+                    iconA = new CodecIconHolder("", "", context != null ? context.getDrawable(R.drawable.ic_audiotrack_white_36dp) : null);
                     iconB = null;
                 }
                 else {
@@ -138,9 +130,9 @@ public class CodecCard extends PosterCard {
             case Stream.Subtitle_Stream:
 
                 if (stream == null) {
-                    title = context.getString(R.string.selection_disabled);
+                    title = context != null ? context.getString(R.string.selection_disabled) : "";
                     subtitle = "";
-                    iconA = new CodecIconHolder("", "", context.getDrawable(R.drawable.ic_subtitles_white_36dp));
+                    iconA = new CodecIconHolder("", "", context != null ? context.getDrawable(R.drawable.ic_subtitles_white_36dp) : null);
                     iconB = null;
                 }
                 else {
@@ -194,7 +186,7 @@ public class CodecCard extends PosterCard {
         return server.makeServerURLForCodec(iconA.type, iconA.id);
     }
 
-    public String getImageUrlSecondary(PlexServer server) {
+    String getImageUrlSecondary(PlexServer server) {
         if (iconB == null)
             return "";
         return server.makeServerURLForCodec(iconB.type, iconB.id);
@@ -207,7 +199,7 @@ public class CodecCard extends PosterCard {
         return iconA.drawable;
     }
 
-    public Drawable getImageSecondary() {
+    Drawable getImageSecondary() {
         if (iconB == null)
             return null;
         return iconB.drawable;
@@ -223,30 +215,12 @@ public class CodecCard extends PosterCard {
         return R.dimen.codeccard_width;
     }
 
-    public int getTrackType() {
+    int getTrackType() {
         return trackType;
     }
 
-    public int getTotalTracksForType() {
+    int getTotalTracksForType() {
         return totalTracksForType;
-    }
-
-    public void onCardClicked(Activity activity, PlexServer server, OnClickListenerHandler listener) {
-
-        DialogInterface.OnClickListener callback = listener != null ?
-                listener.getDialogOnClickListener(this, getTrackType()) : null;
-        MediaTrackSelector selector = listener != null ?
-                listener.getSelector() : null;
-        if (selector != null && callback != null) {
-
-            adapter = selector.getTracks(activity, server, getTrackType());
-            new AlertDialog.Builder(activity, R.style.AlertDialogStyle)
-                    .setIcon(R.drawable.launcher)
-                    .setTitle(R.string.track_dialog)
-                    .setAdapter(adapter, callback)
-                    .create()
-                    .show();
-        }
     }
 
     public MediaTrackSelector.StreamChoiceArrayAdapter getAdapter() { return adapter; }

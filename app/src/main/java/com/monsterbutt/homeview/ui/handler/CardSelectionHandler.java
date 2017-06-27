@@ -53,46 +53,37 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
     private final Fragment mFragment;
     private final CardSelectionListener mCardListener;
 
-    private CodecCard.OnClickListenerHandler mCodecClickListener = null;
     private final Chapter.OnClickListenerHandler mChapterClickListener;
     private final boolean mUpdateBackgroundOnCardChange;
 
     public CardSelectionHandler(Fragment fragment) {
-        this(fragment, null, null, null,  null, null, null, true);
+        this(fragment, null, null,  null, null, null, true);
     }
 
     public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener) {
-        this(fragment, cardListener, null, null,  null, null, null, true);
+        this(fragment, cardListener, null,  null, null, null, true);
     }
 
     public CardSelectionHandler(Fragment fragment, PlexServer server) {
-        this(fragment, null, null, null, server, null, null, true);
-    }
-
-    CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener,
-                                Chapter.OnClickListenerHandler chapterListener, PlexServer server) {
-        this(fragment, cardListener, null, chapterListener, server, null, null, false);
+        this(fragment, null, null, server, null, null, true);
     }
 
     public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener, PlexServer server) {
-        this(fragment, cardListener, null, null, server, null, null, true);
+        this(fragment, cardListener, null, server, null, null, true);
     }
 
-    public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener,
-                                 CodecCard.OnClickListenerHandler codecListener, PlexServer server,
-                                 PlexLibraryItem mainItem, ImageView mainItemImage) {
-        this(fragment, cardListener, codecListener, null, server, mainItem, mainItemImage, false);
+    public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener, PlexServer server,
+                                PlexLibraryItem mainItem, ImageView mainItemImage) {
+        this(fragment, cardListener, null, server, mainItem, mainItemImage, false);
     }
 
     private CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener,
-                                CodecCard.OnClickListenerHandler codecListener,
                                 Chapter.OnClickListenerHandler chapterListener, PlexServer server,
                                 PlexLibraryItem mainItem, ImageView mainItemImage,
                                 boolean updateBackgroundOnCardChange) {
 
         super(fragment.getActivity());
         mUpdateBackgroundOnCardChange = updateBackgroundOnCardChange;
-        setCodecClickListener(codecListener);
         mCardListener = cardListener;
         mChapterClickListener = chapterListener;
         mServer = server;
@@ -119,10 +110,6 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
         Activity act = fragment.getActivity();
         if (act instanceof HomeViewActivity)
             ((HomeViewActivity) act).setPlayKeyListener(this);
-    }
-
-    void setCodecClickListener(CodecCard.OnClickListenerHandler codecListener) {
-        mCodecClickListener = codecListener;
     }
 
     public void setServer(PlexServer server) {
@@ -234,9 +221,6 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
                     ((CardObject) item).onClicked(mFragment, extra, mCurrentCardTransitionImage);
                 }
             }
-            else if (mCodecClickListener != null)
-                ((CodecCard) item).onCardClicked(act, mServer, mCodecClickListener);
-
         }
     }
 }

@@ -17,33 +17,86 @@ package com.monsterbutt.homeview.presenters;
 import android.content.Context;
 import android.view.View;
 
+import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
+import com.monsterbutt.homeview.plex.media.PlexVideoItem;
+import com.monsterbutt.homeview.plex.media.Stream;
+import com.monsterbutt.homeview.plex.media.VideoFormat;
 import com.monsterbutt.homeview.ui.android.AbstractDetailsDescriptionPresenter;
+
+import us.nineworlds.plex.rest.model.impl.Media;
 
 public class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPresenter {
 
-    public DetailsDescriptionPresenter(Context context, PlexServer server) {
+    public interface Callback {
+
+        MediaTrackSelector getSelector();
+    }
+
+    private Callback callback;
+
+    public DetailsDescriptionPresenter(Context context, PlexServer server, Callback callack) {
         super(context, server);
+        this.callback = callack;
     }
 
     @Override
-    protected void onBindDescription(ViewHolder viewHolder, Object item) {
+    protected void onBindDescription(ViewHolder viewHolder, Object obj) {
 
-        if (item != null && item instanceof PlexLibraryItem) {
+        if (obj != null && obj instanceof PlexLibraryItem) {
 
-            PlexLibraryItem video = (PlexLibraryItem) item;
-            viewHolder.getTitle().setText(video.getDetailTitle(context));
-            viewHolder.getSubtitle().setText(video.getDetailSubtitle(context));
-            viewHolder.getBody().setText(video.getSummary());
-            viewHolder.getGenre().setText(video.getDetailGenre(context));
-            viewHolder.hasStudio(setImage(context, viewHolder.getStudio(), video.getDetailStudioPath(server)));
-            viewHolder.hasRating(setImage(context, viewHolder.getRating(), video.getDetailRatingPath(server)));
-            viewHolder.getContent().setText(video.getDetailContent(context));
+            PlexLibraryItem video = (PlexLibraryItem) obj;
+            viewHolder.Title.setText(video.getDetailTitle(context));
+            viewHolder.Subtitle.setText(video.getDetailSubtitle(context));
+            viewHolder.Description.setText(video.getSummary());
+            viewHolder.Genre.setText(video.getDetailGenre(context));
+            viewHolder.Tagline.setText(video.getDetailContent(context));
+            viewHolder.setImage(context, viewHolder.Studio, video.getDetailStudioPath(server));
+            viewHolder.setImage(context, viewHolder.Rating, video.getDetailRatingPath(server));
             boolean watched = video.getWatchedState() == PlexLibraryItem.WatchedState.Watched;
-            viewHolder.getWatched().setVisibility(watched ? View.INVISIBLE : View.VISIBLE);
+            viewHolder.Watched.setVisibility(watched ? View.INVISIBLE : View.VISIBLE);
             int progress = watched ? 0 : video.getViewedProgress();
-            viewHolder.getProgress().setProgress(progress);
+            viewHolder.Progress.setProgress(progress);
+
+            if (video instanceof PlexVideoItem) {
+
+                PlexVideoItem item = (PlexVideoItem) video;
+                Media media = item.getMedia() != null ? item.getMedia().get(0) : null;
+                if (media != null) {
+                    viewHolder.setImage(context, viewHolder.FrameRate, server.makeServerURLForCodec(VideoFormat.VideoFrameRate, media.getVideoFrameRate()));
+                } else {
+                    viewHolder.FrameRate.setVisibility(View.INVISIBLE);
+                }
+
+                MediaTrackSelector tracks = callback != null ? callback.getSelector() : null;
+                if (tracks != null) {
+                    Stream videoStream = tracks.getSelectedTrack(Stream.Video_Stream);
+                    if (videoStream != null) {
+                        viewHolder.setImage(context, viewHolder.VideoCodec, server.makeServerURLForCodec(VideoFormat.VideoCodec, videoStream.getCodec()));
+                        viewHolder.setImage(context, viewHolder.Resolution, media != null ?
+                         server.makeServerURLForCodec(VideoFormat.VideoResolution, media.getVideoResolution()) : "");
+                    } else {
+                        viewHolder.VideoCodec.setVisibility(View.INVISIBLE);
+                        viewHolder.Resolution.setVisibility(View.INVISIBLE);
+                    }
+
+                    Stream audioStream = tracks.getSelectedTrack(Stream.Audio_Stream);
+                    if (audioStream != null) {
+                        viewHolder.setImage(context, viewHolder.AudioCodec, server.makeServerURLForCodec(Stream.AudioCodec, audioStream.getCodecAndProfile()));
+                        viewHolder.setImage(context, viewHolder.AudioChannels, server.makeServerURLForCodec(Stream.AudioChannels, audioStream.getChannels()));
+                    } else {
+                        viewHolder.AudioCodec.setVisibility(View.INVISIBLE);
+                        viewHolder.AudioChannels.setVisibility(View.INVISIBLE);
+                    }
+                }
+                else {
+                    viewHolder.VideoCodec.setVisibility(View.INVISIBLE);
+                    viewHolder.Resolution.setVisibility(View.INVISIBLE);
+                    viewHolder.AudioCodec.setVisibility(View.INVISIBLE);
+                    viewHolder.AudioChannels.setVisibility(View.INVISIBLE);
+                }
+            }
         }
     }
 }

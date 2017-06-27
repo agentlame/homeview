@@ -14,7 +14,6 @@ import com.google.android.exoplayer2.util.MimeTypes;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.TrackSelector;
-import com.monsterbutt.homeview.plex.PlexServer;
 
 import java.util.List;
 
@@ -33,26 +32,25 @@ public class Stream extends PlexLibraryItem implements Parcelable {
 
     public final static class StreamChoiceDisable extends StreamChoice {
 
-        public StreamChoiceDisable(Context context, boolean isCurrent) {
+        final private int type;
+        public StreamChoiceDisable(Context context, boolean isCurrent, int streamType) {
             super(context, isCurrent, null);
+            type = streamType;
         }
 
         @Override
         public Drawable getDrawable() { return null; }
 
         @Override
-        public String getCodecImage(PlexServer server) { return ""; }
-
-        @Override
-        public String getDecoderStatus() { return ""; }
-
-        @Override
         public String toString() { return context.getString(R.string.Disable); }
+
+        @Override
+        public int getTrackType() { return type; }
     }
 
-    final us.nineworlds.plex.rest.model.impl.Stream mStream;
-    final MediaCodecCapabilities.DecodeType mDecodeStatus;
-    int mTrackTypeIndex;
+    private final us.nineworlds.plex.rest.model.impl.Stream mStream;
+    private final MediaCodecCapabilities.DecodeType mDecodeStatus;
+    private int mTrackTypeIndex;
 
     protected Stream() {
         mStream = null;
@@ -263,11 +261,11 @@ public class Stream extends PlexLibraryItem implements Parcelable {
         dest.writeInt(mTrackTypeIndex);
     }
 
-    public static boolean profileIsDtsHdVariant(String profile) {
+    static boolean profileIsDtsHdVariant(String profile) {
         return profile != null && (profile.equals(Profile_DTS_MA) || profile.equals(Profile_DTS_HR));
     }
 
-    public int getTrackType() {
+    private int getTrackType() {
         return (int) mStream.getStreamType();
     }
 
@@ -294,7 +292,7 @@ public class Stream extends PlexLibraryItem implements Parcelable {
         if (codec.equals("pcm"))
             codec = profile;
         else if (codec.equals("aac"))
-            codec = codec;
+            ;
         else if (!TextUtils.isEmpty(profile))
             codec += "-" + profile;
         return codec;
@@ -340,9 +338,9 @@ public class Stream extends PlexLibraryItem implements Parcelable {
         return mTrackTypeIndex;
     }
 
-    public String getFrameRate () { return mStream.getFrameRate(); }
+    private String getFrameRate () { return mStream.getFrameRate(); }
 
-    public String getAudioChannelLayout() {
+    private String getAudioChannelLayout() {
 
         String ret = mStream.getAudioChannelLayout();
         if (TextUtils.isEmpty(ret))
@@ -401,25 +399,9 @@ public class Stream extends PlexLibraryItem implements Parcelable {
             }
         }
 
-        public String getCodecImage(PlexServer server) {
-
-            String codecType;
-            switch(stream.getTrackType()) {
-                case Video_Stream:
-                    codecType = "videoCodec";
-                    break;
-                case Audio_Stream:
-                    codecType = "audioCodec";
-                    break;
-                default:
-                    return "";
-            }
-            return server.makeServerURLForCodec(codecType, stream.getCodecAndProfile());
-        }
+        public int getTrackType() { return stream.getTrackType(); }
 
         public boolean isCurrentSelection() { return isCurrent; }
-
-        public String getDecoderStatus() { return stream.getDecodeStatusText(context); }
 
         @Override
         public String toString() {

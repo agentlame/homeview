@@ -1,5 +1,6 @@
 package com.monsterbutt.homeview.player;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -12,16 +13,17 @@ import java.util.Map;
 import us.nineworlds.plex.rest.model.impl.Stream;
 
 
-public class MediaTracks implements Parcelable {
+class MediaTracks implements Parcelable {
 
+    @SuppressLint("UseSparseArrays")
     private Map<Integer, MediaTrackType> tracks = new HashMap<>();
     private final String baseLangCode;
 
-    public MediaTracks(String baseLangCode) {
+    MediaTracks(String baseLangCode) {
         this.baseLangCode = baseLangCode;
     }
 
-    protected MediaTracks(Parcel in) {
+    MediaTracks(Parcel in) {
 
         baseLangCode = in.readString();
         int count = in.readInt();
@@ -44,34 +46,18 @@ public class MediaTracks implements Parcelable {
         }
     };
 
-    public void add(Context context, MediaCodecCapabilities capabilities, Stream stream) {
+    public void add(MediaCodecCapabilities capabilities, Stream stream) {
 
         int streamType = (int) stream.getStreamType();
         MediaTrackType type = tracks.get(streamType);
         if (type == null) {
-            type = new MediaTrackType(context, capabilities, baseLangCode, streamType);
+            type = new MediaTrackType(baseLangCode, streamType);
             tracks.put(streamType, type);
         }
         type.add(capabilities, stream);
     }
 
-    public int getSelectedTrackDisplayIndex(int streamType) {
-
-        MediaTrackType type = tracks.get(streamType);
-        if (type == null)
-            return TrackSelector.TrackTypeOff;
-        return type.getSelectedTrackDisplayIndex();
-    }
-
-    public int getSelectedPlayerIndex(int streamType) {
-
-        MediaTrackType type = tracks.get(streamType);
-        if (type == null)
-            return TrackSelector.TrackTypeOff;
-        return type.getSelectedPlayerIndex();
-    }
-
-    public int getCount(int streamType) {
+    int getCount(int streamType) {
         return tracks.containsKey(streamType) ? tracks.get(streamType).getCount() : 0;
     }
 
@@ -88,43 +74,29 @@ public class MediaTracks implements Parcelable {
             type.writeToParcel(dest, flags);
     }
 
-    public void setInitialSelectedTracks() {
+    void setInitialSelectedTracks() {
 
         for (MediaTrackType type : tracks.values())
             type.setInitialSelectedTrack();
     }
 
-    public int setSelectedTrack(int streamType, int displayIndex) {
+     void setSelectedTrack(int streamType, com.monsterbutt.homeview.plex.media.Stream stream) {
 
         MediaTrackType type = tracks.get(streamType);
         if (type == null)
-            return TrackSelector.TrackTypeOff;
-        return type.setSelectedTrack(displayIndex);
+            return;
+        type.setSelectedTrack(stream);
     }
 
-    public MediaTrackSelector.StreamChoiceArrayAdapter getTracks(Context context, PlexServer server, int streamType) {
+    MediaTrackSelector.StreamChoiceArrayAdapter getTracks(Context context, int streamType) {
 
         MediaTrackType type = tracks.get(streamType);
-        return (type == null) ? null : type.getTracks(context, server);
+        return (type == null) ? null : type.getTracks(context);
     }
 
-    public MediaCodecCapabilities.DecodeType getDecodeStatusForSelected(int streamType) {
-
-        MediaTrackType type = tracks.get(streamType);
-        return (type == null) ? MediaCodecCapabilities.DecodeType.Unsupported : type.getDecodeStatusForSelected();
-    }
-
-    public com.monsterbutt.homeview.plex.media.Stream getSelectedTrack(int streamType) {
+    com.monsterbutt.homeview.plex.media.Stream getSelectedTrack(int streamType) {
 
         MediaTrackType type = tracks.get(streamType);
         return (type == null) ? null : type.getSelectedTrack();
-    }
-
-    public boolean isSelectedTrack(int streamType, int displayIndex) {
-
-        MediaTrackType type = tracks.get(streamType);
-        if (type == null)
-            return false;
-        return type.isSelectedTrack(displayIndex);
     }
 }

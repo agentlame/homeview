@@ -2,7 +2,6 @@ package com.monsterbutt.homeview.ui.handler;
 
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -11,12 +10,7 @@ import android.media.MediaMetadata;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.support.v17.leanback.widget.OnItemViewClickedListener;
-import android.support.v17.leanback.widget.Presenter;
-import android.support.v17.leanback.widget.Row;
-import android.support.v17.leanback.widget.RowPresenter;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -51,15 +45,13 @@ import com.monsterbutt.homeview.plex.tasks.GetVideoTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTaskCaller;
 import com.monsterbutt.homeview.plex.tasks.VideoProgressTask;
-import com.monsterbutt.homeview.presenters.CardObject;
-import com.monsterbutt.homeview.presenters.CardPresenter;
-import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.presenters.PosterCard;
-import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.activity.ContainerActivity;
 import com.monsterbutt.homeview.ui.activity.PlayerActivity;
+import com.monsterbutt.homeview.ui.android.SelectView;
+import com.monsterbutt.homeview.ui.android.SelectViewRow;
+import com.monsterbutt.homeview.ui.android.SwitchTrackView;
 import com.monsterbutt.homeview.ui.fragment.NextUpFragment;
-import com.monsterbutt.homeview.ui.fragment.SelectionFragment;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -72,15 +64,15 @@ import static com.monsterbutt.homeview.plex.media.PlexVideoItem.BAD_CHAPTER_STAR
 import static com.monsterbutt.homeview.plex.media.PlexVideoItem.NEXTUP_DISABLED;
 import static com.monsterbutt.homeview.plex.media.PlexVideoItem.START_CHAPTER_THRESHOLD;
 
-public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSource.EventListener, FrameRateSwitcher.FrameRateSwitcherListener {
-
+public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSource.EventListener,
+ FrameRateSwitcher.FrameRateSwitcherListener, SelectView.SelectViewCaller {
 
   public interface Invoker {
 
     Context getValidContext();
     void onPlayback(boolean isPlaying);
     void updateMetadata(PlexVideoItem item, Bitmap bitmap, PlexServer server, MediaTrackSelector tracks);
-    void selectionViewState(boolean isVisible);
+    void selectionViewState(boolean isVisible, PlexVideoItem item, PlexServer server, MediaTrackSelector tracks);
     void showControls(boolean show);
     void showProgress(boolean show);
     void showError(String msg);
@@ -154,7 +146,6 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     }
   }
   private ProgressRunable runnableProgress = new ProgressRunable();
-
 
   public PlaybackHandler(Invoker caller, ExoPlayer.EventListener eventListener, SimpleExoPlayerView view, Handler handler) {
 
@@ -231,7 +222,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     boolean ret = false;
     if (pausedTemp) {
       pausedTemp = false;
-      checkInitialTrack(Stream.Subtitle_Stream, C.TRACK_TYPE_TEXT);
+      checkInitialTrack(Stream.Subtitle_Stream);
       ret = true;
     }
     return ret;
@@ -370,8 +361,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
         new GetFullInfo(intent).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item.getKey());
         return;
       }
-      MediaTrackSelector readTracks = item.fillTrackSelector(context,
-       Locale.getDefault().getISO3Language(), MediaCodecCapabilities.getInstance(context));
+      MediaTrackSelector readTracks = item.fillTrackSelector(Locale.getDefault().getISO3Language(), MediaCodecCapabilities.getInstance(context));
       MediaTrackSelector chosenTracks = intent != null ? (MediaTrackSelector) intent.getParcelableExtra(PlayerActivity.TRACKS) : null;
       loadChangedTracks = chosenTracks != null;
       playVideo(((GetVideoTask) task).getVideo(), chosenTracks,  readTracks);
@@ -411,8 +401,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
         Context context = caller.getValidContext();
         PlexVideoItem item = PlexVideoItem.getItem(result.getVideos().get(0));
         if (tracks == null && item != null)
-          tracks = item.fillTrackSelector(context,
-           Locale.getDefault().getISO3Language(), MediaCodecCapabilities.getInstance(context));
+          tracks = item.fillTrackSelector(Locale.getDefault().getISO3Language(), MediaCodecCapabilities.getInstance(context));
 
         MediaTrackSelector chosenTracks = intent != null ? (MediaTrackSelector) intent.getParcelableExtra(PlayerActivity.TRACKS) : null;
         playVideo(item, chosenTracks, tracks);
@@ -456,15 +445,11 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     caller.showError(context.getString(R.string.video_error_load_error) + " : " + msg);
   }
 
-  private void checkInitialTrack(int streamId, int trackType) {
+  private void checkInitialTrack(int streamId) {
 
-    int currentTrackId = trackSelector.getSelectedTrackId(trackType);
     Stream stream = tracks.getSelectedTrack(streamId);
-    if (stream != null) {
-      int wantedIndex = Integer.parseInt(stream.getIndex());
-      if (currentTrackId != (wantedIndex + 1))
-        tracks.setSelectedTrack(trackSelector, streamId, wantedIndex-1);
-    }
+    if (stream != null)
+        tracks.setSelectedTrack(trackSelector, new Stream.StreamChoice(caller.getValidContext(), true,stream));
     else
       tracks.disableTrackType(trackSelector, streamId);
   }
@@ -474,8 +459,8 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     if (loadChangedTracks) {
 
       loadChangedTracks = false;
-      checkInitialTrack(Stream.Audio_Stream, C.TRACK_TYPE_AUDIO);
-      checkInitialTrack(Stream.Subtitle_Stream, C.TRACK_TYPE_TEXT);
+      checkInitialTrack(Stream.Audio_Stream);
+      checkInitialTrack(Stream.Subtitle_Stream);
     }
 
     if (trackGroups != lastSeenTrackGroupArray) {
@@ -552,34 +537,31 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     return player.getDuration() - player.getCurrentPosition();
   }
 
-  private Runnable nextUpRunnable = new Runnable() {
+  private Runnable nextUpRunnable = new NextUpRunnable(this);
+  private class NextUpRunnable implements Runnable {
+
+    private final SelectView.SelectViewCaller viewCaller;
+
+    NextUpRunnable(SelectView.SelectViewCaller viewCaller) {
+      this.viewCaller = viewCaller;
+    }
+
     @Override
     public void run() {
 
       if (nextVideo != null) {
         releaseSelectView();
         caller.showControls(false);
-        selectView = new NextUpView((Activity) caller.getValidContext(), server, nextVideo, getTimeLeft());
+        selectView = new NextUpView((Activity) caller.getValidContext(), server, nextVideo,
+         getTimeLeft(), viewCaller);
       }
     }
-  };
+  }
 
   public void selectTracks(Activity activity, int streamType) {
 
     releaseSelectView();
-    selectView = new SwitchTrackView(activity, streamType);
-
-    MediaTrackSelector.StreamChoiceArrayAdapter choices = tracks.getTracks(activity, server, streamType);
-    int selected = 0;
-    for (int i = 0; i < choices.getCount(); ++i) {
-      Stream.StreamChoice choice = choices.getItem(i);
-      if (choice != null && choice.isCurrentSelection())
-        selected = i;
-    }
-    String header = activity.getString(streamType == Stream.Audio_Stream ?
-     R.string.exo_controls_audio_description : R.string.exo_controls_subtitles_description);
-    ((SwitchTrackView) selectView).setRow(PlexItemRow.buildCodecItemsRow(activity, server, header,
-                                      choices, streamType), selected);
+    selectView = SwitchTrackView.getTracksView(activity, streamType, tracks, trackSelector, server, this);
   }
 
   public void selectChapter(Activity activity) {
@@ -588,7 +570,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     selectView = new SelectChapterView(activity);
 
     ((SelectChapterView) selectView).setRow(currentVideo.getChildren(activity, server, (SelectChapterView) selectView)
-    , currentVideo.getCurrentChapter(player.getCurrentPosition()));
+    , currentVideo.getCurrentChapter(player.getCurrentPosition()), this);
   }
 
   public boolean isShowingNextUp() {
@@ -605,54 +587,12 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     return false;
   }
 
-  private abstract class SelectView {
-
-    protected final Activity activity;
-    private Fragment fragment = null;
-
-    SelectView(Activity activity) {
-
-      this.activity = activity;
-    }
-
-    protected abstract String getTag();
-    protected abstract int getHeight();
-
-    protected void setFragment(Fragment fragment) {
-
-      this.fragment = fragment;
-
-      if (fragment != null) {
-        caller.selectionViewState(true);
-        View view = activity.findViewById(R.id.selection_fragment);
-        view.setVisibility(View.VISIBLE);
-        view.requestFocus();
-        activity.getFragmentManager().beginTransaction().add(R.id.selection_fragment, fragment, getTag()).commit();
-      }
-      else
-        release();
-    }
-
-    public void release() {
-
-      if (fragment != null && activity != null && !activity.isDestroyed() && !activity.isFinishing()) {
-        activity.runOnUiThread(new Runnable() {
-          @Override
-          public void run() {
-            activity.getFragmentManager().beginTransaction().remove(fragment).commit();
-            activity.findViewById(R.id.selection_fragment).setVisibility(View.INVISIBLE);
-          }
-        });
-      }
-      caller.selectionViewState(false);
-    }
-  }
-
   private class NextUpView extends SelectView implements NextUpFragment.NextUpCallback {
 
-    NextUpView(Activity activity, PlexServer server, PlexVideoItem video, long timeLeft) {
+    NextUpView(Activity activity, PlexServer server, PlexVideoItem video, long timeLeft,
+               SelectViewCaller caller) {
       super(activity);
-      setFragment(new NextUpFragment(activity, server, video, timeLeft, this, getHeight()));
+      setFragment(new NextUpFragment(activity, server, video, timeLeft, this, getHeight()), caller);
     }
 
     @Override
@@ -702,40 +642,6 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     }
   }
 
-  private abstract class SelectViewRow extends SelectView
-   implements CardPresenter.CardPresenterLongClickListener, OnItemViewClickedListener {
-
-    SelectViewRow(Activity activity) {
-      super(activity);
-    }
-
-    protected abstract void cardClicked(PosterCard card);
-
-    void setRow(PlexItemRow row, int initialPosition) {
-
-      setFragment(new SelectionFragment(row, this, initialPosition, getHeight()));
-    }
-
-    private void clicked(PosterCard card) {
-
-      cardClicked(card);
-      release();
-    }
-
-    @Override
-    public boolean longClickOccured(CardObject card, CardPresenter.LongClickWatchStatusCallback callback) {
-
-      clicked((PosterCard) card);
-      return true;
-    }
-
-    @Override
-    public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-      clicked((PosterCard) item);
-    }
-  }
-
   private class SelectChapterView extends SelectViewRow {
 
     SelectChapterView(Activity activity) {
@@ -751,36 +657,10 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     }
   }
 
-
-  private class SwitchTrackView extends SelectViewRow {
-
-    final int type;
-
-    SwitchTrackView(Activity activity, int streamType) {
-
-      super(activity);
-      type = streamType;
-    }
-
-
-    protected  int getHeight() { return 600; }
-
-    protected String getTag() { return type == Stream.Audio_Stream ? "audio" : "subtitle"; }
-
-    protected void cardClicked(PosterCard card) {
-
-      CodecCard codec = (CodecCard) card;
-      Stream.StreamChoice stream = codec.getStream();
-      if (stream == null)
-        return;
-
-      if (stream instanceof Stream.StreamChoiceDisable)
-        tracks.disableTrackType(trackSelector, type);
-      else {
-        int index = Integer.parseInt(stream.stream.getIndex()) - 1;
-        tracks.setSelectedTrack(trackSelector, type, index);
-      }
-    }
+  @Override
+  public void selectionViewState(boolean isVisible) {
+    if (caller != null)
+      caller.selectionViewState(isVisible, currentVideo, server, tracks);
   }
 
 }

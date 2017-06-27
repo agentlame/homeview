@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:src="@drawable/ic_speaker_notes_white_48dp" >
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/studio"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/playback_ui_studio_height"
+        android:scaleType="fitCenter"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        tools:src="@drawable/ic_speaker_notes_white_48dp" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/studio"
+        android:maxLines="3"
+        android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionTitle"
+        android:textSize="26sp"
+        tools:ignore="SmallSp"
+        tools:text="Video Clip Title"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/title">
+
+        <TextView
+            android:id="@+id/subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionSubtitle"
+            tools:text="January 1, 1980 \u00B7 199 mins"/>
+
+        <ImageView
+            android:id="@+id/ratingImage"
+            android:layout_width="@dimen/playback_ui_icons_width_large"
+            android:layout_height="@dimen/playback_ui_icons_height"
+            android:gravity="center"
+            android:scaleType="fitCenter"
+            android:visibility="invisible"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@id/subtitle"
+            tools:src="@drawable/ic_speaker_notes_white_48dp"
+            tools:visibility="visible"/>
+
+        <include layout="@layout/lb_detail_icons"/>
+
+    </RelativeLayout>
+
+</LinearLayout>

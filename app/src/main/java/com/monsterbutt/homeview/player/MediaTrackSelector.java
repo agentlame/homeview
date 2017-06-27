@@ -2,22 +2,12 @@ package com.monsterbutt.homeview.player;
 
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.CheckBox;
-import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.source.TrackGroup;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Stream;
@@ -27,30 +17,23 @@ import java.util.List;
 public class MediaTrackSelector implements Parcelable {
 
     private MediaTracks mTracks = null;
-    private boolean didSelectSubs = false;
     private final String baseLangCode;
 
-    public MediaTrackSelector(Context context, List<us.nineworlds.plex.rest.model.impl.Stream> streams,
+    public MediaTrackSelector(List<us.nineworlds.plex.rest.model.impl.Stream> streams,
                               String baseLangCode, MediaCodecCapabilities capabilities) {
 
         this.baseLangCode = TextUtils.isEmpty(baseLangCode) ? "" : baseLangCode;
 
         mTracks = new MediaTracks(this.baseLangCode);
         for(us.nineworlds.plex.rest.model.impl.Stream stream : streams)
-            mTracks.add(context, capabilities, stream);
+            mTracks.add(capabilities, stream);
         mTracks.setInitialSelectedTracks();
     }
 
     protected MediaTrackSelector(Parcel in) {
 
         baseLangCode = in.readString();
-        didSelectSubs = in.readInt() == 1;
         mTracks = new MediaTracks(in);
-    }
-
-    public int getSelectedTrackDisplayIndex(int streamType) {
-
-        return mTracks.getSelectedTrackDisplayIndex(streamType);
     }
 
     public Stream getSelectedTrack(int streamType) {
@@ -58,29 +41,29 @@ public class MediaTrackSelector implements Parcelable {
         return mTracks.getSelectedTrack(streamType);
     }
 
-    public void disableTrackType(TrackSelector selector, int streamType ) {
+    public void disableTrackType(TrackSelector selector, int streamType) {
 
-        mTracks.setSelectedTrack(streamType, TrackSelector.TrackTypeOff);
+        mTracks.setSelectedTrack(streamType, null);
         if (selector != null)
             selector.setSelectionOverride(streamType == Stream.Subtitle_Stream ? C.TRACK_TYPE_TEXT : C.TRACK_TYPE_AUDIO, null);
     }
 
-    public void setSelectedTrack(TrackSelector selector, int streamType, int displayIndex) {
+    public void setSelectedTrack(TrackSelector selector, Stream.StreamChoice choice) {
 
-        int index = mTracks.setSelectedTrack(streamType, displayIndex);
+        int streamType = choice.getTrackType();
+        mTracks.setSelectedTrack(streamType, choice.stream);
         switch(streamType) {
 
             case Stream.Subtitle_Stream:
 
-                didSelectSubs = index != TrackSelector.TrackTypeOff;
                 if (selector != null)
-                    selector.setSelectionOverride(C.TRACK_TYPE_TEXT, didSelectSubs ? Integer.toString(index+1) : null);
+                    selector.setSelectionOverride(C.TRACK_TYPE_TEXT, choice);
                 break;
 
             case Stream.Audio_Stream:
 
                 if (selector != null)
-                    selector.setSelectionOverride(C.TRACK_TYPE_AUDIO, Integer.toString(index+1));
+                    selector.setSelectionOverride(C.TRACK_TYPE_AUDIO, choice);
                 break;
         }
     }
@@ -112,67 +95,19 @@ public class MediaTrackSelector implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
 
         dest.writeString(baseLangCode);
-        dest.writeInt(didSelectSubs ? 1 : 0);
         mTracks.writeToParcel(dest, flags);
     }
 
-    public StreamChoiceArrayAdapter getTracks(Context context, PlexServer server, int streamType) {
+    public StreamChoiceArrayAdapter getTracks(Context context, int streamType) {
 
-        return mTracks.getTracks(context, server, streamType);
+        return mTracks.getTracks(context, streamType);
     }
 
     public static class StreamChoiceArrayAdapter extends ArrayAdapter<Stream.StreamChoice> {
 
-        private final Context context;
-        private final List<Stream.StreamChoice> values;
-        private final PlexServer server;
 
-        public StreamChoiceArrayAdapter(Context context, PlexServer server, List<Stream.StreamChoice> values) {
+        StreamChoiceArrayAdapter(Context context, List<Stream.StreamChoice> values) {
             super(context, R.layout.lb_streamchoiceitem, values);
-            this.context = context;
-            this.values = values;
-            this.server = server;
         }
-
-        @Override
-        public View getView(int position, View row, ViewGroup parent) {
-
-            View rowView = row;
-            if (rowView == null) {
-                LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                rowView = inflater.inflate(R.layout.lb_streamchoiceitem, parent, false);
-            }
-            final Stream.StreamChoice item = values.get(position);
-
-            CheckBox checkBox = (CheckBox) rowView.findViewById(R.id.currentcheckbox);
-            checkBox.setChecked(item.isCurrentSelection());
-            final ImageView image = (ImageView) rowView.findViewById(R.id.codecimage);
-            String path = item.getCodecImage(server);
-            if (!TextUtils.isEmpty(path)) {
-
-                image.setVisibility(View.VISIBLE);
-                Glide.with(context)
-                        .load(path)
-                        .into(image);
-            }
-            else {
-                Drawable draw = item.getDrawable();
-                image.setVisibility(draw != null ? View.VISIBLE : View.INVISIBLE);
-                image.setImageDrawable(draw);
-            }
-
-            TextView desc = (TextView) rowView.findViewById(R.id.codecdesc);
-            desc.setText(item.toString());
-            TextView supported = (TextView) rowView.findViewById(R.id.codecsupported);
-            supported.setText(item.getDecoderStatus());
-
-            return rowView;
-        }
-    }
-
-    public boolean areSubtitlesEnabled() {
-
-        return mTracks.getSelectedPlayerIndex(Stream.Subtitle_Stream) != TrackSelector.TrackTypeOff
-                && didSelectSubs;
     }
 }

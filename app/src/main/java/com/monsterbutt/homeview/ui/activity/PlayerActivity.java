@@ -98,7 +98,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   private ImageView video;
   private ImageView resolution;
   private ImageView frameRate;
-  private ImageView aspectRatio;
+  private ImageView studio;
 
   private ProgressBar progress_waiting;
 
@@ -150,7 +150,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     poster = (ImageView) findViewById(R.id.posterImage);
     video = (ImageView) findViewById(R.id.videoImage);
     resolution = (ImageView) findViewById(R.id.resolutionImage);
-    aspectRatio = (ImageView) findViewById(R.id.aspectRatioImage);
+    studio = (ImageView) findViewById(R.id.studio);
     frameRate = (ImageView) findViewById(R.id.framerateImage);
     audio = (ImageView) findViewById(R.id.audioImage);
     channels = (ImageView) findViewById(R.id.channelsImage);
@@ -524,7 +524,8 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     }
 
     ImageButton audioButton = (ImageButton) findViewById(R.id.exo_audio_tracks);
-    audioButton.setOnClickListener(new OnClickListener() {
+    if (hasAudio)
+     audioButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
         audioSelected();
@@ -533,7 +534,8 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     SetButtonEnabled(audioButton, hasAudio);
 
     ImageButton subtitlesButton = (ImageButton) findViewById(R.id.exo_subtitle_tracks);
-    subtitlesButton.setOnClickListener(new OnClickListener() {
+    if (hasSubs)
+     subtitlesButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
         subtitlesSelected();
@@ -565,7 +567,8 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     setItem(item, bitmap, server, tracks);
 
     ImageButton chaptersButton = (ImageButton) findViewById(R.id.exo_chapters);
-    chaptersButton.setOnClickListener(new OnClickListener() {
+    if (item.hasChapters())
+      chaptersButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
         chaptersSelection();
@@ -596,16 +599,22 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   private boolean handleSelectionViews() {
 
     boolean selected = findViewById(R.id.exo_subtitle_tracks).hasFocus();
-    if (selected)
-      subtitlesSelected();
+    if (selected) {
+      if (findViewById(R.id.exo_subtitle_tracks).isEnabled())
+        subtitlesSelected();
+    }
     else {
       selected = findViewById(R.id.exo_audio_tracks).hasFocus();
-      if (selected)
-        audioSelected();
+      if (selected) {
+        if (findViewById(R.id.exo_audio_tracks).isEnabled())
+          audioSelected();
+      }
       else {
         selected = findViewById(R.id.exo_chapters).hasFocus();
-        if (selected)
-          chaptersSelection();
+        if (selected) {
+          if (findViewById(R.id.exo_chapters).isEnabled())
+            chaptersSelection();
+        }
       }
     }
 
@@ -628,10 +637,12 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   }
 
   @Override
-  public void selectionViewState(boolean visible) {
+  public void selectionViewState(boolean visible, PlexVideoItem item, PlexServer server, MediaTrackSelector tracks) {
     synchronized (this) {
       selectionViewOnTop = visible;
     }
+    if (!visible)
+      updatePlaybackIcons(item, server, tracks);
   }
 
   @Override
@@ -657,6 +668,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     subtitle.setVisibility(TextUtils.isEmpty(subtitleStr) ? View.INVISIBLE : View.VISIBLE);
     subtitle.setText(subtitleStr);
 
+    loadImage(studio, item.getDetailStudioPath(server));
     updateTimeRemaining(item.getDuration());
 
     if (itemPoster != null)
@@ -665,14 +677,17 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
       loadImage(poster, server.makeServerURL(item.getCardImageURL()));
     loadImage(rating, item.getDetailRatingPath(server));
 
+    updatePlaybackIcons(item, server, tracks);
+  }
+
+  private void updatePlaybackIcons(PlexVideoItem item, PlexServer server, MediaTrackSelector tracks) {
+
     Media media = item.getMedia() != null ? item.getMedia().get(0) : null;
     if (media != null) {
       loadImage(frameRate, server.makeServerURLForCodec(VideoFormat.VideoFrameRate, media.getVideoFrameRate()));
-      //loadImage(aspectRatio, server.makeServerURLForCodec(VideoFormat.VideoAspectRatio, media.getAspectRatio()));
     }
     else {
       frameRate.setVisibility(View.INVISIBLE);
-      aspectRatio.setVisibility(View.GONE);
     }
 
     if (tracks != null) {
@@ -686,20 +701,15 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
         resolution.setVisibility(View.INVISIBLE);
       }
 
-      resetItemTracks(server, tracks);
-    }
-  }
-
-  public void resetItemTracks(PlexServer server, MediaTrackSelector tracks) {
-
-    Stream audioStream = tracks.getSelectedTrack(Stream.Audio_Stream);
-    if (audioStream != null) {
-      loadImage(audio, server.makeServerURLForCodec(Stream.AudioCodec, audioStream.getCodecAndProfile()));
-      loadImage(channels, server.makeServerURLForCodec(Stream.AudioChannels, audioStream.getChannels()));
-    }
-    else {
-      audio.setVisibility(View.INVISIBLE);
-      channels.setVisibility(View.INVISIBLE);
+      Stream audioStream = tracks.getSelectedTrack(Stream.Audio_Stream);
+      if (audioStream != null) {
+        loadImage(audio, server.makeServerURLForCodec(Stream.AudioCodec, audioStream.getCodecAndProfile()));
+        loadImage(channels, server.makeServerURLForCodec(Stream.AudioChannels, audioStream.getChannels()));
+      }
+      else {
+        audio.setVisibility(View.INVISIBLE);
+        channels.setVisibility(View.INVISIBLE);
+      }
     }
   }
 

@@ -17,7 +17,6 @@ package com.monsterbutt.homeview.ui.fragment;
 import android.app.Activity;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -34,6 +33,7 @@ import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
 import android.support.v17.leanback.widget.OnActionClickedListener;
 import android.support.v17.leanback.widget.Presenter;
+import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.SparseArrayObjectAdapter;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -52,10 +52,12 @@ import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.tasks.ToggleWatchedStateTask;
 import com.monsterbutt.homeview.presenters.DetailsDescriptionPresenter;
 import com.monsterbutt.homeview.presenters.CardPresenter;
-import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.PlayerActivity;
+import com.monsterbutt.homeview.ui.android.HomeViewActivity;
+import com.monsterbutt.homeview.ui.android.SelectView;
+import com.monsterbutt.homeview.ui.android.SwitchTrackView;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
@@ -83,7 +85,8 @@ import us.nineworlds.plex.rest.model.impl.Video;
  * It shows a detailed view of video and its meta plus related videos.
  */
 public class DetailsFragment extends android.support.v17.leanback.app.DetailsFragment
-        implements OnActionClickedListener, WatchStatusListener, CardSelectionHandler.CardSelectionListener, CodecCard.OnClickListenerHandler {
+        implements OnActionClickedListener, WatchStatusListener, DetailsDescriptionPresenter.Callback,
+                CardSelectionHandler.CardSelectionListener, SelectView.SelectViewCaller, HomeViewActivity.OnBackPressedListener {
 
 
     private CardSelectionHandler mSelectionHandler;
@@ -92,6 +95,8 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     final static int ACTION_PLAY        = 1;
     final static int ACTION_VIEWSTATUS  = 2;
+    final static int ACTION_AUDIO       = 3;
+    final static int ACTION_SUBTITLES   = 4;
 
     private ArrayObjectAdapter mAdapter;
 
@@ -99,9 +104,14 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     private PlexLibraryItem mItem = null;
     private MediaTrackSelector mTracks = null;
 
-    private ListRow mCodecRow = null;
     private String mBackgroundURL = "";
 
+    private CustomListRowPresenter listRowPS = null;
+
+    private SelectView selectView = null;
+
+    private final static int ChapterId = -2;
+    private static int CurrentRowId = 1;
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -109,6 +119,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         super.onActivityCreated(savedInstanceState);
 
         Activity activity = getActivity();
+        ((HomeViewActivity) activity).setBackPressedListener(this);
         mServer = PlexServerManager.getInstance(activity.getApplicationContext(), activity).getSelectedServer();
         mItem = activity.getIntent().getParcelableExtra(DetailsActivity.ITEM);
 
@@ -117,7 +128,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         String key = mItem != null  ? mItem.getKey()
                                     : getActivity().getIntent().getStringExtra(DetailsActivity.KEY);
         ImageView img = (ImageView) activity.findViewById(android.support.v17.leanback.R.id.details_overview_image);
-        mSelectionHandler = new CardSelectionHandler(this, this, this, mServer, mItem, img);
+        mSelectionHandler = new CardSelectionHandler(this, this, mServer, mItem, img);
 
         mBackgroundURL = getActivity().getIntent().getStringExtra(DetailsActivity.BACKGROUND);
         if (!TextUtils.isEmpty(mBackgroundURL)) {
@@ -191,9 +202,35 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         Context context = getActivity();
         adapter.set(ACTION_PLAY, new Action(ACTION_PLAY, context.getString(R.string.action_play)));
-        adapter.set(ACTION_VIEWSTATUS,
-                new Action(ACTION_VIEWSTATUS, isWatched ? context.getString(R.string.action_watched)
-                        : context.getString(R.string.action_unwatched)));
+        adapter.set(ACTION_VIEWSTATUS, new Action(ACTION_VIEWSTATUS, context.getString(R.string.action_mark),
+                 isWatched ? context.getString(R.string.action_watched) : context.getString(R.string.action_unwatched)));
+        if (mItem instanceof PlexVideoItem && mTracks != null) {
+
+            if (0 < mTracks.getCount(Stream.Audio_Stream)) {
+                Stream audio = mTracks.getSelectedTrack(Stream.Audio_Stream);
+                String title = audio != null ? audio.getTitle() : context.getString(R.string.audio);
+                if (TextUtils.isEmpty(title))
+                    title = context.getString(R.string.audio);
+                String subtitle = audio != null ? audio.getLanguage() : context.getString(R.string.selection_disabled);
+                if (TextUtils.isEmpty(subtitle))
+                    subtitle = " ";
+                adapter.set(ACTION_AUDIO, new Action(ACTION_AUDIO, title, subtitle,
+                 context.getDrawable(R.drawable.ic_audiotrack_white_24dp)));
+            }
+
+            if (0 < mTracks.getCount(Stream.Subtitle_Stream)) {
+                Stream subtitles = mTracks.getSelectedTrack(Stream.Subtitle_Stream);
+                String title = subtitles != null ? subtitles.getLanguage() : context.getString(R.string.subtitle);
+                if (TextUtils.isEmpty(title))
+                    title = context.getString(R.string.subtitle);
+                String subtitle = subtitles != null ? (subtitles.isForced() ? context.getString(R.string.Forced) : " ") : context.getString(R.string.selection_disabled);
+                //if (TextUtils.isEmpty(subtitle))
+                 //   subtitle = context.getString(R.string.track);
+                adapter.set(ACTION_SUBTITLES, new Action(ACTION_SUBTITLES, title, subtitle,
+                 context.getDrawable(R.drawable.ic_subtitles_white_24dp)));
+            }
+        }
+
     }
 
     private void toggleWatched() {
@@ -210,11 +247,20 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     @Override
     public void onActionClicked(Action action) {
 
-        if (action.getId() == ACTION_PLAY)
-            mItem.onPlayPressed(this, getPlaySelectionBundle(false), null);
-
-        else if (action.getId() == ACTION_VIEWSTATUS)
-            toggleWatched();
+        switch ((int) action.getId()) {
+            case ACTION_PLAY:
+                mItem.onPlayPressed(this, getPlaySelectionBundle(false), null);
+                break;
+            case ACTION_VIEWSTATUS:
+                toggleWatched();
+                break;
+            case ACTION_AUDIO:
+                selectTracks(Stream.Audio_Stream);
+                break;
+            case ACTION_SUBTITLES:
+                selectTracks(Stream.Subtitle_Stream);
+                break;
+        }
     }
 
     @Override
@@ -259,36 +305,36 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         return mTracks;
     }
 
+    public void selectTracks(int streamType) {
+
+        releaseSelectView();
+        selectView = SwitchTrackView.getTracksView(getActivity(), streamType, mTracks, null, mServer, this);
+    }
+
+    public boolean releaseSelectView() {
+
+        if (selectView != null) {
+            selectView.release();
+            selectView = null;
+            return true;
+        }
+        return false;
+    }
+
     @Override
-    public DialogInterface.OnClickListener getDialogOnClickListener(final Object card, final int trackType) {
-        return new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
+    public void selectionViewState(boolean isVisible) {
+        if (!isVisible) {
+            DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
+            row.setItem(null);
+            row.setItem(mItem);
+            setActions((SparseArrayObjectAdapter) row.getActionsAdapter(), mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched);
+            selectView = null;
+        }
+    }
 
-                Stream.StreamChoice stream = ((CodecCard) card).getAdapter().getItem(which);
-                if (stream == null || stream.isCurrentSelection())
-                    return;
-
-                int index = -1;
-                if (stream instanceof Stream.StreamChoiceDisable)
-                    mTracks.disableTrackType(null, trackType);
-                else {
-                    index = Integer.parseInt(stream.stream.getIndex()) - 1;
-                    mTracks.setSelectedTrack(null, trackType, index);
-                }
-                ArrayObjectAdapter adapter = (ArrayObjectAdapter) mCodecRow.getAdapter();
-                int cardIndex = adapter.indexOf(card);
-                if (0 <= cardIndex) {
-                    adapter.replace(cardIndex, new CodecCard(getActivity(),
-                            stream.stream,
-                            trackType,
-                            mTracks.getCount(trackType)));
-
-                    adapter.notifyArrayItemRangeChanged(cardIndex, 1);
-                }
-                dialog.dismiss();
-            }
-        };
+    @Override
+    public boolean backPressed() {
+        return releaseSelectView();
     }
 
     private static class MovieDetailsOverviewLogoPresenter extends DetailsOverviewLogoPresenter {
@@ -355,8 +401,8 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     private void setupDetailsOverviewRowPresenter() {
 
         // Set detail background and style.
-        DetailPresenter detailsPresenter =
-                new DetailPresenter(new DetailsDescriptionPresenter(getActivity(), mServer),
+        FullWidthDetailsOverviewRowPresenter detailsPresenter =
+                new DetailPresenter(new DetailsDescriptionPresenter(getActivity(), mServer, this),
                                     new MovieDetailsOverviewLogoPresenter(!(mItem instanceof Episode)));
 
         TypedValue typedValue = new TypedValue();
@@ -374,8 +420,9 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         detailsPresenter.setOnActionClickedListener(this);
 
+        listRowPS = new CustomListRowPresenter();
         ClassPresenterSelector presenterSelector = new ClassPresenterSelector();
-        presenterSelector.addClassPresenter(ListRow.class, new ListRowPresenter());
+        presenterSelector.addClassPresenter(ListRow.class, listRowPS);
         presenterSelector.addClassPresenter(DetailsOverviewRow.class, detailsPresenter);
         mAdapter = new ArrayObjectAdapter(presenterSelector);
         setAdapter(mAdapter);
@@ -409,30 +456,32 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         protected void onPostExecute(PlexLibraryItem item) {
 
             mItem = item;
-            DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
-            row.setItem(null);
-            row.setItem(mItem);
+            Activity activity = getActivity();
+            boolean isVideo = item instanceof PlexVideoItem;
+            mTracks = !isVideo ? null : ((PlexVideoItem) mItem).fillTrackSelector(Locale.getDefault().getISO3Language(),
+                                                                MediaCodecCapabilities.getInstance(getActivity()));
+
+            ((DetailsOverviewRow) mAdapter.get(0)).setItem(mItem);
             DetailsOverviewRow actionrow = (DetailsOverviewRow) mAdapter.get(0);
             setActions((SparseArrayObjectAdapter) actionrow.getActionsAdapter(), mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched);
-            Activity activity = getActivity();
-            if (item instanceof PlexVideoItem) {
-                mTracks = ((PlexVideoItem) mItem).fillTrackSelector(getActivity(),
-                                                                   Locale.getDefault().getISO3Language(),
-                                                                    MediaCodecCapabilities.getInstance(getActivity()));
 
-                mCodecRow = ((PlexVideoItem) mItem).getCodecsRow(activity, mServer, mTracks);
-                mAdapter.add(mCodecRow);
-            }
-            else
-                mTracks = null;
             PlexItemRow childRow = item.getChildren(activity, mServer, mSelectionHandler);
             if (childRow != null) {
+                childRow.setId(isVideo ? ChapterId : CurrentRowId++);
                 mAdapter.add(childRow);
                 mLifeCycleMgr.put("childrow", childRow);
+
+                if (isVideo && childRow.getAdapter().size() > 0) {
+
+                    PlexVideoItem vid = (PlexVideoItem) item;
+                    listRowPS.chapter = vid.getCurrentChapter(vid.getViewedOffset());
+                }
             }
             ListRow extras = item.getExtras(activity, mServer, mSelectionHandler);
-            if (extras != null)
+            if (extras != null) {
+                extras.setId(CurrentRowId++);
                 mAdapter.add(extras);
+            }
 
             HubList list = new HubList(mItem.getRelated());
             new LoadRelatedTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, list);
@@ -486,9 +535,28 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                             adapter);
                     for (Video video: mc.getVideos())
                         adapter.add(new PosterCard(act, PlexVideoItem.getItem(video)));
+                    row.setId(CurrentRowId++);
                     mAdapter.add(row);
                 }
             }
+        }
+    }
+
+    private class CustomListRowPresenter extends ListRowPresenter {
+
+        int chapter = -1;
+
+        @Override
+        protected void onBindRowViewHolder(RowPresenter.ViewHolder holder, Object item) {
+            super.onBindRowViewHolder(holder, item);
+
+            if (chapter < 0 || !(item instanceof PlexItemRow && ((PlexItemRow) item).getId() == ChapterId)
+             || ((ListRow) item).getAdapter().size() == 0)
+                return;
+
+            ListRowPresenter.SelectItemViewHolderTask task = new ListRowPresenter.SelectItemViewHolderTask(chapter);
+            task.setSmoothScroll(true);
+            task.run(holder);
         }
     }
 

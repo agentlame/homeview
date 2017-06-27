@@ -5,14 +5,13 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Stream;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MediaTrackType implements Parcelable {
+class MediaTrackType implements Parcelable {
 
     private final static int None = 0;
     private final static int First = None;
@@ -26,13 +25,13 @@ public class MediaTrackType implements Parcelable {
     private Stream defaultStream = null;
     private List<Stream> streams = new ArrayList<>();
 
-    public MediaTrackType(Context context, MediaCodecCapabilities capabilities, String baseLangCode, int streamType) {
+    MediaTrackType(String baseLangCode, int streamType) {
 
         this.streamType = streamType;
         this.baseLangCode = baseLangCode;
     }
 
-    protected MediaTrackType(Parcel in) {
+    MediaTrackType(Parcel in) {
         streams = in.createTypedArrayList(Stream.CREATOR);
         streamType = in.readInt();
         baseLangCode = in.readString();
@@ -70,33 +69,9 @@ public class MediaTrackType implements Parcelable {
         }
     };
 
-    public int getStreamType() { return streamType; }
+    int getStreamType() { return streamType; }
 
     public int getCount() { return streams.size(); }
-
-    public int getSelectedTrackDisplayIndex() {
-
-        if (selected == null)
-            return TrackSelector.TrackTypeOff;
-        return streams.indexOf(selected);
-    }
-
-    public int getSelectedPlayerIndex() {
-
-        // this skips off and unsupported as exoplayer know nothing of off and skips unsupported
-        if (selected == null || selected.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Unsupported)
-            return TrackSelector.TrackTypeOff;
-        boolean isSoftware = selected.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Software;
-        int playerIndex = selected.getTrackTypeIndex();
-        for (int currIndex = playerIndex; 0 < currIndex--; /**/) {
-
-            Stream currStream = streams.get(currIndex);
-            if ((isSoftware && currStream.getDecodeStatus() != MediaCodecCapabilities.DecodeType.Software)
-                || (!isSoftware && currStream.getDecodeStatus() == MediaCodecCapabilities.DecodeType.Software))
-                --playerIndex;
-        }
-        return playerIndex;
-    }
 
     public void add(MediaCodecCapabilities capabilities, us.nineworlds.plex.rest.model.impl.Stream stream) {
 
@@ -125,7 +100,7 @@ public class MediaTrackType implements Parcelable {
                 (stream.isForced() ? Forced : None);
     }
 
-    public void setInitialSelectedTrack() {
+    void setInitialSelectedTrack() {
 
         if (streams != null) {
             int choice = First;
@@ -151,40 +126,33 @@ public class MediaTrackType implements Parcelable {
         }
     }
 
-    public int setSelectedTrack(int displayIndex) {
+    int setSelectedTrack(Stream stream) {
 
         selected = null;
-        if (displayIndex >= 0 && displayIndex < streams.size())
-            selected = streams.get(displayIndex);
+        if (stream != null && streams.contains(stream))
+            selected = stream;
         return selected == null || selected.getIndex() == null ? TrackSelector.TrackTypeOff : Integer.parseInt(selected.getIndex());
     }
 
-    public MediaTrackSelector.StreamChoiceArrayAdapter getTracks(Context context, PlexServer server) {
+    MediaTrackSelector.StreamChoiceArrayAdapter getTracks(Context context) {
 
         List<Stream.StreamChoice> list = new ArrayList<>();
-        MediaTrackSelector.StreamChoiceArrayAdapter adapter = new MediaTrackSelector.StreamChoiceArrayAdapter(context, server, list);
+        MediaTrackSelector.StreamChoiceArrayAdapter adapter = new MediaTrackSelector.StreamChoiceArrayAdapter(context, list);
         for(Stream stream : streams)
             list.add(new Stream.StreamChoice(context, stream == selected, stream));
-        list.add(0, new Stream.StreamChoiceDisable(context, selected == null));
+        list.add(0, new Stream.StreamChoiceDisable(context, selected == null, this.getStreamType()));
 
         return adapter;
     }
 
-    public MediaCodecCapabilities.DecodeType getDecodeStatusForSelected() {
+    MediaCodecCapabilities.DecodeType getDecodeStatusForSelected() {
 
         if (selected == null)
             return MediaCodecCapabilities.DecodeType.Unsupported;
         return selected.getDecodeStatus();
     }
 
-    public Stream getSelectedTrack() {
+    Stream getSelectedTrack() {
         return selected;
-    }
-
-    public boolean isSelectedTrack(int displayIndex) {
-
-        if (displayIndex >= 0 && displayIndex < streams.size())
-            return selected == streams.get(displayIndex);
-        return false;
     }
 }

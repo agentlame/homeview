@@ -210,37 +210,43 @@ public class Episode extends PlexVideoItem implements Parcelable {
     }
 
     @Override
-    public String getDetailSubtitle(Context context) { return getShowName(); }
-
-    @Override
-    public String getDetailContent(Context context) {
-
-        String duration = getDetailDuration(context);
-        if (!TextUtils.isEmpty(duration))
-            duration = String.format("%s %s", context.getString(R.string.mid_dot),duration);
+    public String getDetailSubtitle(Context context) {
 
         String date = Utils.convertDateToText(context, mVideo.getOriginallyAvailableDate());
         if (TextUtils.isEmpty(date))
             date = TextUtils.isEmpty(getYear()) ? "" : getYear();
 
-        String season = getSeasonNum();
-        if (TextUtils.isEmpty(date)) {
-            if (!TextUtils.isEmpty(season))
-            return String.format("%s %s %s %s %s %s",
-                    context.getString(R.string.Season), season,
-                    context.getString(R.string.mid_dot), context.getString(R.string.Episode),
-                    getEpisodeNum(), duration);
-            return String.format("%s %s %s",
-                    context.getString(R.string.Episode), getEpisodeNum(), duration);
+        String duration = getDetailDuration(context);
+        if (!TextUtils.isEmpty(date)) {
+            if (!TextUtils.isEmpty(duration))
+                return String.format("%s %s %s", date, context.getString(R.string.mid_dot), duration);
+            return date;
         }
+        return duration;
+    }
+
+    @Override
+    public String getDetailContent(Context context) {
+
+        String show = getShowName();
+        String season = getSeasonNum();
         if (!TextUtils.isEmpty(season))
-            return String.format("%s %s %s %s %s %s %s %s",
+            season = String.format("%s %s %s %s %s",
                 context.getString(R.string.Season), season,
                 context.getString(R.string.mid_dot), context.getString(R.string.Episode),
-                getEpisodeNum(), context.getString(R.string.mid_dot), date, duration);
-        return String.format("%s %s %s %s %s",
-                context.getString(R.string.Episode), getEpisodeNum(),
-                context.getString(R.string.mid_dot), date, duration);
+                getEpisodeNum());
+        else
+            season = String.format("%s %s",
+                context.getString(R.string.Episode), getEpisodeNum());
+
+        if (!TextUtils.isEmpty(show)) {
+
+            if (!TextUtils.isEmpty(season))
+                return String.format("%s %s %s",
+                                     show, context.getString(R.string.mid_dot), season);
+            return show;
+        }
+        return season;
     }
 
     public void setSeasonNum(long parentIndex) {
