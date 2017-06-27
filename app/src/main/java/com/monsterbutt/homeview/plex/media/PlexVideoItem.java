@@ -550,7 +550,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
 
             for (us.nineworlds.plex.rest.model.impl.Chapter chapter : mVideo.getChapters()) {
 
-                if (chapter.getStartTimeOffset() > position)
+                if (chapter.getStartTimeOffset() >= position)
                     break;
                 ++ret;
             }
@@ -565,7 +565,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
 
             for (us.nineworlds.plex.rest.model.impl.Chapter chapter : mVideo.getChapters()) {
 
-                if (chapter.getStartTimeOffset() > position) {
+                if (chapter.getStartTimeOffset() >= position) {
 
                     ret = chapter.getStartTimeOffset();
                     break;
