@@ -431,7 +431,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   }
 
   public void release() {
-
+    mainHandler.removeCallbacks(runnableProgress);
     mainHandler.removeCallbacks(nextUpRunnable);
     releaseSelectView();
     if (switcher != null) {

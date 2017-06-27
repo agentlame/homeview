@@ -819,6 +819,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
      | PlaybackState.ACTION_PAUSE
      | PlaybackState.ACTION_PLAY
      | PlaybackState.ACTION_SKIP_TO_PREVIOUS
-     | PlaybackState.ACTION_SKIP_TO_NEXT;
+     | PlaybackState.ACTION_SKIP_TO_NEXT
+     | PlaybackState.ACTION_STOP;
   }
 }
