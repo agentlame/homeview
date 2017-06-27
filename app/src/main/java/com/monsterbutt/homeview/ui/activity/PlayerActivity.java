@@ -7,12 +7,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.media.MediaMetadata;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Bundle;
 
 import android.os.Handler;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 import android.util.Log;
@@ -114,7 +115,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   private View clock;
 
 
-  private MediaSession session;
+  private MediaSessionCompat session;
 
   // Activity lifecycle
 
@@ -125,7 +126,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
 
     setContentView(R.layout.player_activity);
 
-    session = new MediaSession(this, "HomeView");
+    session = new MediaSessionCompat(this, "HomeView");
     session.setSessionActivity(PendingIntent.getActivity(this, 99 /*request code*/,
      new Intent(this, PlayerActivity.class), PendingIntent.FLAG_UPDATE_CURRENT));
     session.setCallback(new MediaSessionCallback());
@@ -587,7 +588,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   }
 
   @Override
-  public void updateMetadata(PlexVideoItem item, Bitmap bitmap, PlexServer server, MediaTrackSelector tracks, MediaMetadata build) {
+  public void updateMetadata(PlexVideoItem item, Bitmap bitmap, PlexServer server, MediaTrackSelector tracks, MediaMetadataCompat build) {
 
     session.setMetadata(build);
     setItem(item, bitmap, server, tracks);
@@ -757,7 +758,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   }
 
 
-  private class MediaSessionCallback extends MediaSession.Callback {
+  private class MediaSessionCallback extends MediaSessionCompat.Callback {
 
     @Override
     public void onPlay() {
@@ -805,7 +806,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   @Override
   public void updateSessionProgress() {
     long position = player == null ? 0 : player.getCurrentPosition();
-    PlaybackState.Builder stateBuilder = new PlaybackState.Builder();
+    PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
     //noinspection WrongConstant
     stateBuilder.setActions(getAvailableActions());
     stateBuilder.setState(player == null ? STATE_STOPPED : player.isPlaying() ? STATE_PLAYING : STATE_PAUSED, position, 1.0f);
@@ -814,18 +815,10 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
 
   private @PlaybackStateCompat.Actions
   long getAvailableActions() {
-    long actions = PlaybackState.ACTION_PLAY_PAUSE;
-    if (player != null) {
-      if (player.isPlaying())
-        actions |= PlaybackState.ACTION_PAUSE;
-      else
-        actions |= PlaybackState.ACTION_PLAY;
-
-      if (player.hasPreviousVideo())
-        actions |= PlaybackState.ACTION_SKIP_TO_PREVIOUS;
-      if (player.hasNextVideo())
-        actions |= PlaybackState.ACTION_SKIP_TO_NEXT;
-    }
-    return actions;
+    return PlaybackState.ACTION_PLAY_PAUSE
+     | PlaybackState.ACTION_PAUSE
+     | PlaybackState.ACTION_PLAY
+     | PlaybackState.ACTION_SKIP_TO_PREVIOUS
+     | PlaybackState.ACTION_SKIP_TO_NEXT;
   }
 }

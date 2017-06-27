@@ -10,6 +10,7 @@ import android.media.MediaMetadata;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.v4.media.MediaMetadataCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -72,7 +73,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     Context getValidContext();
     void onPlayback(boolean isPlaying);
     void updateSessionProgress();
-    void updateMetadata(PlexVideoItem item, Bitmap bitmap, PlexServer server, MediaTrackSelector tracks, MediaMetadata build);
+    void updateMetadata(PlexVideoItem item, Bitmap bitmap, PlexServer server, MediaTrackSelector tracks, MediaMetadataCompat build);
     void selectionViewState(boolean isVisible, PlexVideoItem item, PlexServer server, MediaTrackSelector tracks);
     void showControls(boolean show);
     void showProgress(boolean show);
@@ -137,14 +138,16 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
     @Override
     public void run() {
-      caller.updateSessionProgress();
-      VideoProgressTask.getTask(server, currentVideo).setProgress(0 == getTimeLeft(), player.getCurrentPosition());
-      boolean again;
-      synchronized (this) {
-        again = repeat;
+      if (player != null) {
+        caller.updateSessionProgress();
+        VideoProgressTask.getTask(server, currentVideo).setProgress(0 == getTimeLeft(), player.getCurrentPosition());
+        boolean again;
+        synchronized (this) {
+          again = repeat;
+        }
+        if (again)
+          repeat();
       }
-      if (again)
-        repeat();
     }
   }
   private ProgressRunable runnableProgress = new ProgressRunable();
@@ -274,7 +277,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   private void updateMetadata(Context context) {
 
-    final MediaMetadata.Builder metadataBuilder = new MediaMetadata.Builder();
+    final MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
     metadataBuilder.putString(MediaMetadata.METADATA_KEY_MEDIA_ID, Long.toString(currentVideo.getRatingKey()) + "");
     metadataBuilder.putString(MediaMetadata.METADATA_KEY_DISPLAY_TITLE, currentVideo.getPlaybackTitle(context));
     metadataBuilder.putString(MediaMetadata.METADATA_KEY_DISPLAY_SUBTITLE, currentVideo.getPlaybackSubtitle(context, false));
@@ -421,6 +424,8 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   public boolean isPlaying() {
 
+    if (player == null)
+      return false;
     int playbackState = player.getPlaybackState();
     return (playbackState == STATE_READY || playbackState == STATE_BUFFERING) && player.getPlayWhenReady();
   }
@@ -450,11 +455,13 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   private void checkInitialTrack(int streamId) {
 
-    Stream stream = tracks.getSelectedTrack(streamId);
-    if (stream != null)
-        tracks.setSelectedTrack(trackSelector, new Stream.StreamChoice(caller.getValidContext(), true,stream));
-    else
-      tracks.disableTrackType(trackSelector, streamId);
+    if (tracks != null) {
+      Stream stream = tracks.getSelectedTrack(streamId);
+      if (stream != null)
+        tracks.setSelectedTrack(trackSelector, new Stream.StreamChoice(caller.getValidContext(), true, stream));
+      else
+        tracks.disableTrackType(trackSelector, streamId);
+    }
   }
 
   public void tracksChanged(TrackGroupArray trackGroups) {
@@ -671,8 +678,4 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     if (caller != null)
       caller.selectionViewState(isVisible, currentVideo, server, tracks);
   }
-
-  public boolean hasPreviousVideo() { return previousVideo != null;  }
-
-  public boolean hasNextVideo() { return nextVideo != null; }
 }

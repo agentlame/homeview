@@ -508,6 +508,8 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
 
     public long[] getChapters() {
 
+        if (mVideo == null)
+            return null;
         List<us.nineworlds.plex.rest.model.impl.Chapter> list = mVideo.getChapters();
         if (list == null || list.isEmpty())
             return null;
