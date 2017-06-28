@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -17,6 +18,7 @@ import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.TitleView;
 import android.support.v17.leanback.widget.VerticalGridPresenter;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +33,7 @@ import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.ui.PlexItemGrid;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
+import com.monsterbutt.homeview.ui.activity.SearchActivity;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 import com.monsterbutt.homeview.R;
@@ -396,6 +399,18 @@ public class ContainerGridFragment extends VerticalGridFragment
         TitleView tv = (TitleView) getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group);
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.lb_container_header, tv, false);
         tv.addView(view);
+
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = getContext().getTheme();
+        theme.resolveAttribute(R.attr.brand_accent, typedValue, true);
+        setSearchAffordanceColor(typedValue.data);
+        setOnSearchClickedListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), SearchActivity.class);
+                startActivity(intent);
+            }
+        });
 
         Button hubBtn = (Button) view.findViewById(R.id.hubBtn);
         hubBtn.setOnClickListener(new View.OnClickListener() {
