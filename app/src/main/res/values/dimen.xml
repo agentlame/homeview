@@ -126,4 +126,6 @@
     <dimen name="exo_media_button_width">44dp</dimen>
     <dimen name="exo_media_button_height">32dp</dimen>
 
+    <dimen name="lb_vertical_grid_padding_bottom">174dp</dimen>
+
 </resources>

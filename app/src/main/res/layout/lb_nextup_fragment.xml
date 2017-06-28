@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,27 +9,21 @@
     android:layout_marginBottom="@dimen/playback_ui_time_bottom_padding"
     android:layout_marginEnd="@dimen/playback_ui_time_sides_padding"
     android:layout_gravity="bottom"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:animateLayoutChanges="true" >
 
-    <ImageView
-        android:id="@+id/posterImage"
-        style="?attr/imageCardViewImageStyle"
-        tools:src="@drawable/default_video_cover"
-        android:layout_width="@dimen/POSTER_WIDTH"
-        android:layout_height="@dimen/POSTER_HEIGHT"
-        android:contentDescription="@string/codeccard_image_desc"/>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="@dimen/playback_ui_card" >
+    <LinearLayout
+        android:id="@+id/control_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true" >
 
         <LinearLayout
             android:id="@+id/controls"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
             android:gravity="center" >
 
             <ImageButton
@@ -72,43 +66,23 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/summary"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"
-            android:layout_toStartOf="@id/controls"
-            android:gravity="bottom"
-            android:layout_height="match_parent"
-            android:layout_width="wrap_content"
-            android:orientation="vertical" >
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionTitle"
-                android:textSize="26sp"
-                tools:ignore="SmallSp"
-                tools:text="Video Clip Title"/>
+    <ImageView
+        android:id="@+id/posterImage"
+        style="?attr/imageCardViewImageStyle"
+        tools:src="@drawable/default_video_cover"
+        android:layout_width="@dimen/POSTER_WIDTH"
+        android:layout_height="@dimen/POSTER_HEIGHT"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:contentDescription="@string/codeccard_image_desc"/>
 
-            <TextView
-                android:id="@+id/subtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionSubtitle"
-                tools:text="January 1, 1980 \u00B7 199 mins" />
+    <include layout="@layout/lb_title_summary"
+             android:layout_height="wrap_content"
+             android:layout_width="match_parent"
+             android:layout_toEndOf="@id/posterImage"
+             android:layout_toStartOf="@id/control_layout"
+             android:layout_alignParentBottom="true" />
 
-            <TextView
-                android:id="@+id/description"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="@dimen/detail_text_padding"
-                android:maxLines="5"
-                android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionBody"
-                tools:text="Video Clip Subtitle\nTest line 2\nTest line 3 Test line 3 Test line 3 Test line 3 Test line 3 Test line 3 Test line 3 Test line 3" />
-
-        </LinearLayout>
-
-    </RelativeLayout>
-
-</LinearLayout>
+</RelativeLayout>

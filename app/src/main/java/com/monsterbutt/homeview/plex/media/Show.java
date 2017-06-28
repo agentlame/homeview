@@ -57,6 +57,21 @@ public class Show extends PlexContainerItem implements Parcelable {
         }
     }
 
+    public int getSeasonIndex(int offset) {
+
+        int index = 0;
+        int leafCount = 0;
+        for (PlexLibraryItem dir : mDirectories) {
+
+            int count = Integer.valueOf(((PlexContainerItem) dir).getLeafCount());
+            if (leafCount >= offset && offset < (count + leafCount))
+                break;
+            leafCount += count;
+            ++index;
+        }
+        return index;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         super.writeToParcel(dest, flags);

@@ -48,6 +48,7 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.monsterbutt.homeview.player.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.media.Movie;
+import com.monsterbutt.homeview.plex.media.Show;
 import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.tasks.ToggleWatchedStateTask;
 import com.monsterbutt.homeview.presenters.DetailsDescriptionPresenter;
@@ -458,6 +459,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
             mItem = item;
             Activity activity = getActivity();
             boolean isVideo = item instanceof PlexVideoItem;
+            boolean isShow = item instanceof Show;
             mTracks = !isVideo ? null : ((PlexVideoItem) mItem).fillTrackSelector(Locale.getDefault().getISO3Language(),
                                                                 MediaCodecCapabilities.getInstance(getActivity()));
 
@@ -467,14 +469,16 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
             PlexItemRow childRow = item.getChildren(activity, mServer, mSelectionHandler);
             if (childRow != null) {
-                childRow.setId(isVideo ? ChapterId : CurrentRowId++);
+                childRow.setId(isVideo || isShow? ChapterId : CurrentRowId++);
                 mAdapter.add(childRow);
                 mLifeCycleMgr.put("childrow", childRow);
 
-                if (isVideo && childRow.getAdapter().size() > 0) {
-
-                    PlexVideoItem vid = (PlexVideoItem) item;
-                    listRowPS.chapter = vid.getCurrentChapter(vid.getViewedOffset());
+                if (childRow.getAdapter().size() > 0) {
+                    long viewedOffset = item.getViewedOffset();
+                    if (isVideo)
+                        listRowPS.startindex = ((PlexVideoItem) item).getCurrentChapter(viewedOffset);
+                    else if (isShow)
+                        listRowPS.startindex = ((Show) item).getSeasonIndex((int)viewedOffset);
                 }
             }
             ListRow extras = item.getExtras(activity, mServer, mSelectionHandler);
@@ -544,17 +548,17 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     private class CustomListRowPresenter extends ListRowPresenter {
 
-        int chapter = -1;
+        int startindex = -1;
 
         @Override
         protected void onBindRowViewHolder(RowPresenter.ViewHolder holder, Object item) {
             super.onBindRowViewHolder(holder, item);
 
-            if (chapter < 0 || !(item instanceof PlexItemRow && ((PlexItemRow) item).getId() == ChapterId)
+            if (startindex < 0 || !(item instanceof PlexItemRow && ((PlexItemRow) item).getId() == ChapterId)
              || ((ListRow) item).getAdapter().size() == 0)
                 return;
 
-            ListRowPresenter.SelectItemViewHolderTask task = new ListRowPresenter.SelectItemViewHolderTask(chapter);
+            ListRowPresenter.SelectItemViewHolderTask task = new ListRowPresenter.SelectItemViewHolderTask(startindex);
             task.setSmoothScroll(true);
             task.run(holder);
         }

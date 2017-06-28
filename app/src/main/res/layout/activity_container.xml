@@ -2,10 +2,10 @@
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/coordinator"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
     android:fitsSystemWindows="true" >
 
     <FrameLayout
@@ -35,6 +35,22 @@
             android:focusableInTouchMode="true"
             android:clickable="true" />
 
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:background="@drawable/playback_background_low_to_high"
+        android:layout_gravity="bottom" >
+
+        <include
+            layout="@layout/lb_title_summary"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_marginStart="@dimen/playback_ui_time_sides_padding"
+            android:layout_marginBottom="@dimen/playback_ui_time_bottom_padding"
+            android:layout_marginEnd="@dimen/playback_ui_time_sides_padding"
+            android:layout_gravity="bottom" />
 
     </FrameLayout>
 

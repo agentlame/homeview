@@ -3,11 +3,15 @@ package com.monsterbutt.homeview.ui.activity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.fragment.ContainerGridFragment;
 
@@ -27,6 +31,10 @@ public class ContainerActivity extends HomeViewActivity {
     private boolean mQuickListSelected = false;
     private int mQuickListSelectedIndex = 0;
 
+    private LinearLayout summary;
+    private TextView title;
+    private TextView subtitle;
+    private TextView description;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +44,11 @@ public class ContainerActivity extends HomeViewActivity {
 
         if (getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false))
             (findViewById(R.id.toolbarQuickJump)).setVisibility(View.GONE);
+
+        summary = (LinearLayout) findViewById(R.id.summary);
+        title = (TextView) findViewById(R.id.title);
+        subtitle = (TextView) findViewById(R.id.subtitle);
+        description = (TextView) findViewById(R.id.description);
 
         mQuickList = (ListView) findViewById(R.id.list_shortcut);
         mQuickList.setOnFocusChangeListener(new OnFocusChangeListener() {
@@ -80,6 +93,19 @@ public class ContainerActivity extends HomeViewActivity {
             getFragmentManager().beginTransaction()
                     .add(R.id.fragment_container, mFragment).commit();
         }
+    }
+
+    public void setCurrentItem(PlexLibraryItem item) {
+
+        if (item != null) {
+            title.setText(item.getDetailTitle(this));
+            subtitle.setText(item.getDetailSubtitle(this));
+            description.setText(item.getSummary());
+            summary.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_up));
+        }
+        else
+            summary.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_down));
+
     }
 
     public void setQuickListVisible(boolean visible) {

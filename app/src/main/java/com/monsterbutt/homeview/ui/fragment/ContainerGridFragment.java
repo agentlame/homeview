@@ -10,6 +10,10 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v17.leanback.app.VerticalGridFragment;
+import android.support.v17.leanback.widget.OnItemViewSelectedListener;
+import android.support.v17.leanback.widget.Presenter;
+import android.support.v17.leanback.widget.Row;
+import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.TitleView;
 import android.support.v17.leanback.widget.VerticalGridPresenter;
 import android.text.TextUtils;
@@ -24,6 +28,7 @@ import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.presenters.CardObject;
+import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.ui.PlexItemGrid;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
@@ -218,6 +223,12 @@ public class ContainerGridFragment extends VerticalGridFragment
         setGridPresenter(gridPresenter);
         String key = act.getIntent().getStringExtra(ContainerActivity.KEY);
         new GetContainerTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, key);
+        setOnItemViewSelectedListener(new OnItemViewSelectedListener() {
+            @Override
+            public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
+                ((ContainerActivity) getActivity()).setCurrentItem(((PosterCard)item).getItem());
+            }
+        });
     }
 
     @Override
