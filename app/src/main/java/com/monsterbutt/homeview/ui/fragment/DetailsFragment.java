@@ -51,6 +51,7 @@ import com.monsterbutt.homeview.plex.media.Movie;
 import com.monsterbutt.homeview.plex.media.Show;
 import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.tasks.ToggleWatchedStateTask;
+import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.DetailsDescriptionPresenter;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.ui.PlexItemRow;
@@ -299,6 +300,10 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
             extras.putParcelable(PlayerActivity.TRACKS, mTracks);
         mThemeHandler.getPlaySelectionBundle(extras);
         return extras;
+    }
+
+    @Override
+    public void onCardSelected(CardObject card) {
     }
 
     @Override

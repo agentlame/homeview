@@ -226,12 +226,6 @@ public class ContainerGridFragment extends VerticalGridFragment
         setGridPresenter(gridPresenter);
         String key = act.getIntent().getStringExtra(ContainerActivity.KEY);
         new GetContainerTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, key);
-        setOnItemViewSelectedListener(new OnItemViewSelectedListener() {
-            @Override
-            public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-                ((ContainerActivity) getActivity()).setCurrentItem(((PosterCard)item).getItem());
-            }
-        });
     }
 
     @Override
@@ -450,6 +444,12 @@ public class ContainerGridFragment extends VerticalGridFragment
     @Override
     public Bundle getPlaySelectionBundle(boolean cardWasScene) {
         return mThemeHandler.getPlaySelectionBundle(null);
+    }
+
+    @Override
+    public void onCardSelected(CardObject card) {
+        if (card instanceof PosterCard)
+            ((ContainerActivity) getActivity()).setCurrentItem(((PosterCard) card).getItem());
     }
 
     private class LoadSectionFilterTask extends AsyncTask<String, Void, List<ContainerActivity.QuickJumpRow>> {

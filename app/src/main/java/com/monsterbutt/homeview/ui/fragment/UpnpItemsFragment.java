@@ -145,6 +145,10 @@ public class UpnpItemsFragment extends VerticalGridFragment implements CardSelec
         return extras;
     }
 
+    @Override
+    public void onCardSelected(CardObject card) {
+    }
+
     private class BrowseCallback extends Browse {
 
         public BrowseCallback(Service service, String containerId, BrowseFlag flag) {

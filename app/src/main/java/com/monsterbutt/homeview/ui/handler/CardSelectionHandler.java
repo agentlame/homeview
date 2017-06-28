@@ -41,6 +41,7 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
     public final static String key = "CardSelectionHandler";
     public interface CardSelectionListener {
 
+        void onCardSelected(CardObject card);
         Bundle getPlaySelectionBundle(boolean cardWasScene);
     }
 
@@ -164,6 +165,8 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
             if (item instanceof CardObject) {
                 synchronized (this) {
                     mCurrentCard = (CardObject) item;
+                    if(mCardListener != null)
+                        mCardListener.onCardSelected(mCurrentCard);
                     if (itemViewHolder.view instanceof ImageCardView)
                         mCurrentCardTransitionImage = ((ImageCardView) itemViewHolder.view).getMainImageView();
                     else
