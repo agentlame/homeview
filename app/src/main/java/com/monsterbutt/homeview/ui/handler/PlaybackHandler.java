@@ -129,11 +129,11 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       mainHandler.post(this);
     }
 
-    public void repeat() {
+    public void repeat(boolean forceNow) {
       synchronized (this) {
         repeat = true;
       }
-      mainHandler.postDelayed(this, PROGRESS_UPDATE_INTERVAL);
+      mainHandler.postDelayed(this, forceNow ? 0 : PROGRESS_UPDATE_INTERVAL);
     }
 
     @Override
@@ -146,7 +146,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
           again = repeat;
         }
         if (again)
-          repeat();
+          repeat(false);
       }
     }
   }
@@ -321,7 +321,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     if (!isPlaying)
       runnableProgress.single();
     else
-      runnableProgress.repeat();
+      runnableProgress.repeat(true);
 
     setNextUpPopup();
   }
@@ -417,9 +417,19 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   public void play(boolean play) {
     if (player != null) {
-      player.setPlayWhenReady(play);
-      caller.onPlayback(play);
+      if (play != isPlaying()) {
+        player.setPlayWhenReady(play);
+        caller.onPlayback(play);
+      }
     }
+  }
+
+  public boolean mute(boolean enable) {
+    if (player != null) {
+      player.setVolume(enable ? 0.0f : 1.0f);
+      return true;
+    }
+    return false;
   }
 
   public boolean isPlaying() {

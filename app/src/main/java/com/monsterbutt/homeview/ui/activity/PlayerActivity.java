@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Bundle;
@@ -114,8 +115,44 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   private View controls;
   private View clock;
 
-
+  private AudioManager mAudioManager;
+  private boolean mHasAudioFocus;
+  private boolean mPauseTransient;
   private MediaSessionCompat session;
+
+  private final AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener =
+   new AudioManager.OnAudioFocusChangeListener() {
+     @Override
+     public void onAudioFocusChange(int focusChange) {
+       switch (focusChange) {
+         case AudioManager.AUDIOFOCUS_LOSS:
+           abandonAudioFocus();
+           if (player != null && player.isPlaying())
+             pause();
+           break;
+         case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+           if (player != null && player.isPlaying()) {
+             pause();
+             mPauseTransient = true;
+           }
+           break;
+         case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+           if (player != null)
+             player.mute(true);
+           break;
+         case AudioManager.AUDIOFOCUS_GAIN:
+         case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+         case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+           if (mPauseTransient) {
+             if (player != null && player.isPlaying())
+               play();
+           }
+           if (player != null)
+             player.mute(false);
+           break;
+       }
+     }
+   };
 
   // Activity lifecycle
 
@@ -126,11 +163,13 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
 
     setContentView(R.layout.player_activity);
 
+    mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
     session = new MediaSessionCompat(this, "HomeView");
     session.setSessionActivity(PendingIntent.getActivity(this, 99 /*request code*/,
      new Intent(this, PlayerActivity.class), PendingIntent.FLAG_UPDATE_CURRENT));
     session.setCallback(new MediaSessionCallback());
     session.setFlags(MediaSession.FLAG_HANDLES_MEDIA_BUTTONS | MediaSession.FLAG_HANDLES_TRANSPORT_CONTROLS);
+    session.setActive(true);
 
     simpleExoPlayerView = (SimpleExoPlayerView) findViewById(R.id.player_view);
     simpleExoPlayerView.setControllerVisibilityListener(this);
@@ -184,8 +223,6 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   @Override
   public void onNewIntent(Intent intent) {
     Log.d(Tag, "onNewIntent");
-    //releasePlayer();
-    setIntent(intent);
   }
 
   @Override
@@ -212,7 +249,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     if (player != null && player.isPlaying()) {
       boolean isVisibleBehind = requestVisibleBehind(true);
       if (!isVisibleBehind && !isInPictureInPictureMode())
-        player.play(false);
+        pause();
       else
         showControls(false);
     }
@@ -224,6 +261,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   @Override
   public void onStop() {
     super.onStop();
+    Log.d(Tag, "onStop");
     releasePlayer();
   }
 
@@ -324,6 +362,12 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     return super.dispatchKeyEvent(event) || simpleExoPlayerView.dispatchMediaKeyEvent(event);
   }
 
+  @Override
+  public void onVisibleBehindCanceled() {
+    pause();
+    super.onVisibleBehindCanceled();
+  }
+
   // PlaybackControlView.VisibilityListener implementation
 
   @Override
@@ -366,13 +410,50 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
 
   private void releasePlayer() {
 
-    if (session != null && session.isActive())
-      session.setActive(false);
+    if (session != null)
+      session.release();
     if (player != null) {
       Log.d(Tag, "Releasing player");
       player.release();
       player = null;
     }
+
+    abandonAudioFocus();
+  }
+
+  private void play() {
+    // Request audio focus whenever we resume playback
+    // because the app might have abandoned audio focus due to the AUDIOFOCUS_LOSS.
+    requestAudioFocus();
+
+    if (player != null)
+      player.play(true);
+    updateSessionProgress();
+  }
+
+  private void pause() {
+    mPauseTransient = false;
+
+    if (player != null)
+      player.play(false);
+    updateSessionProgress();
+  }
+
+  private void requestAudioFocus() {
+    if (mHasAudioFocus) {
+      return;
+    }
+    int result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
+     AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+    if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
+      mHasAudioFocus = true;
+    else
+      pause();
+  }
+
+  private void abandonAudioFocus() {
+    mHasAudioFocus = false;
+    mAudioManager.abandonAudioFocus(mOnAudioFocusChangeListener);
   }
 
   // ExoPlayer.EventListener implementation
@@ -400,14 +481,12 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
         adjustFocusForTimeBar(playWhenReady);
         if (playWhenReady)
           onPlayback(player.isPlaying());
-        else if (player.shouldStart()) {
-          player.play(true);
-          updateTimeRemaining(player.getTimeLeft());
-        }
-        if (player.isPlaying() && !session.isActive())
-          session.setActive(true);
-        else if (!player.isPlaying() && session.isActive())
-          session.setActive(false);
+        else if (player.shouldStart())
+          play();
+        else
+          onPlayback(false);
+
+        updateTimeRemaining(player == null ? 0 : player.getTimeLeft());
         break;
     }
   }
@@ -516,8 +595,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
         }
       }
     }
-    else
-      errorString = getString(R.string.video_error_unknown_error);
+
     if (errorString != null) {
       showError(errorString);
     }
@@ -762,14 +840,12 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
 
     @Override
     public void onPlay() {
-      player.play(true);
+      play();
     }
 
     @Override
     public void onPause() {
-      player.play(false);
-      requestVisibleBehind(false);
-      session.setActive(false);
+      pause();
     }
 
     @Override
