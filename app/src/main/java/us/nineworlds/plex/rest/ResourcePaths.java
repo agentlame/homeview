@@ -26,6 +26,7 @@ package us.nineworlds.plex.rest;
 import android.net.Uri;
 
 import java.net.URLEncoder;
+import java.util.StringTokenizer;
 
 import us.nineworlds.plex.rest.config.IConfiguration;
 
@@ -148,7 +149,11 @@ public class ResourcePaths {
 
 	private String encodeSearchQuery(String key, String type, String query) {
 
-		return String.format("%ssearch?" + getToken() + "&type=%s&query=%s", getSectionsURL(key), type, Uri.encode(query));
+		String section = getSectionsURL(key);
+		StringTokenizer tokens = new StringTokenizer(section, "?");
+		section = tokens.nextToken();
+		String token = tokens.hasMoreTokens() ? tokens.nextToken() + "&" : "";
+		return String.format("%s/search?%stype=%s&query=%s", section, token, type, Uri.encode(query));
 	}
 	
 	public String getMovieSearchURL(String key, String query) {
