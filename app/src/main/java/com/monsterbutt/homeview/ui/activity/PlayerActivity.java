@@ -486,7 +486,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
         else
           onPlayback(false);
 
-        updateTimeRemaining(player == null ? 0 : player.getTimeLeft());
+        updateTimeRemaining(player.getTimeLeft());
         break;
     }
   }
