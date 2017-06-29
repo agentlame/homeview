@@ -101,6 +101,9 @@
 
     <dimen name="lb_details_overview_action_items_margin">16dp</dimen>
 
+    <dimen name="lb_hovercard_margin_top">12dp</dimen>
+    <dimen name="lb_hovercard_margin_bottom">8dp</dimen>
+
     <dimen name="lb_login_side_margin">10dp</dimen>
 
     <dimen name="playback_ui_title_row">26sp</dimen>

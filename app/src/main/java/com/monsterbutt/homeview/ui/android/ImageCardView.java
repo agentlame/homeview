@@ -44,7 +44,12 @@ public class ImageCardView extends BaseCardView {
 
 
     public ImageCardView(Context context, AttributeSet attrs, int defStyleAttr) {
+        this(context, attrs, defStyleAttr, false);
+    }
+
+    public ImageCardView(Context context, AttributeSet attrs, int defStyleAttr, boolean posterOnly) {
         super(context, attrs, defStyleAttr);
+        this.posterOnly = posterOnly;
         buildImageCardView(attrs, defStyleAttr, android.support.v17.leanback.R.style.Widget_Leanback_ImageCardView);
     }
 
@@ -60,7 +65,7 @@ public class ImageCardView extends BaseCardView {
         int cardType = cardAttrs
                 .getInt(android.support.v17.leanback.R.styleable.lbImageCardView_lbImageCardViewType, CARD_TYPE_FLAG_IMAGE_ONLY);
 
-        boolean hasImageOnly = cardType == CARD_TYPE_FLAG_IMAGE_ONLY;
+        boolean hasImageOnly = cardType == CARD_TYPE_FLAG_IMAGE_ONLY || posterOnly;
         boolean hasTitle = (cardType & CARD_TYPE_FLAG_TITLE) == CARD_TYPE_FLAG_TITLE;
         boolean hasContent = (cardType & CARD_TYPE_FLAG_CONTENT) == CARD_TYPE_FLAG_CONTENT;
         boolean hasIconRight = (cardType & CARD_TYPE_FLAG_ICON_RIGHT) == CARD_TYPE_FLAG_ICON_RIGHT;
@@ -173,12 +178,23 @@ public class ImageCardView extends BaseCardView {
         cardAttrs.recycle();
     }
 
+    final private boolean posterOnly;
+
     public ImageCardView(Context context) {
         this(context, null);
     }
 
+    public ImageCardView(Context context, boolean posterOnly) {
+        this(context, null, posterOnly);
+    }
+
     public ImageCardView(Context context, AttributeSet attrs) {
-        this(context, attrs, android.support.v17.leanback.R.attr.imageCardViewStyle);
+        this(context, attrs, android.support.v17.leanback.R.attr.imageCardViewStyle, false);
+    }
+
+
+    public ImageCardView(Context context, AttributeSet attrs, boolean posterOnly) {
+        this(context, attrs, android.support.v17.leanback.R.attr.imageCardViewStyle, posterOnly);
     }
 
     /**

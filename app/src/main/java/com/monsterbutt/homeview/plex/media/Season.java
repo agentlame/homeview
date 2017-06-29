@@ -99,6 +99,25 @@ public class Season extends PlexContainerItem implements Parcelable {
     }
 
     @Override
+    public String getDetailTitle(Context context) {
+        return getShowTitle();
+    }
+
+    @Override
+    public String getDetailSubtitle(Context context) {
+        String ret = String.format("%s %s %d %s", getTitle(), context.getString(R.string.mid_dot), getEpisodeCount(),
+         context.getString(R.string.episodes));
+        if (getUnwatchedEpisodeCount() > 0)
+            ret += String.format(" (%d %s)",   getUnwatchedEpisodeCount(), context.getString(R.string.unwatched));
+        return ret;
+    }
+
+    @Override
+    public String getSummary() {
+        return getShowSummary();
+    }
+
+    @Override
     public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
         Intent intent = new Intent(fragment.getActivity(), ContainerActivity.class);

@@ -17,7 +17,9 @@ import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.presenters.CodecPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
+import com.monsterbutt.homeview.presenters.PosterCardExpanded;
 import com.monsterbutt.homeview.presenters.SceneCard;
+import com.monsterbutt.homeview.presenters.SceneCardExpanded;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
@@ -48,31 +50,31 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
         PlexLibraryItem item;
         int index;
 
-        public RowItem(PlexLibraryItem item, int index) {
+        RowItem(PlexLibraryItem item, int index) {
             this.item = item;
             this.index = index;
         }
     }
 
-    final PlexServer server;
-    final Context context;
-    final Map<String, RowItem> map = new HashMap<>();
-    final ArrayObjectAdapter adapter;
-    final RefreshAllCallback mRefreshCallback;
-    final boolean useScene;
-    final HubInfo hub;
+    private final PlexServer server;
+    private final Context context;
+    private final Map<String, RowItem> map = new HashMap<>();
+    private final ArrayObjectAdapter adapter;
+    private final RefreshAllCallback mRefreshCallback;
+    private final boolean useScene;
+    private final HubInfo hub;
     private WatchedStatusHandler watchedHandler = null;
 
     private PlexItemRow(Context context, PlexServer server, String header, int hash,
                         RefreshAllCallback callback, CardPresenter.CardPresenterLongClickListener listener,
-                        boolean useWatchedState, boolean useScene, HubInfo hub) {
-        this(context, server, header, new CardPresenter(server, listener), callback, hash, useWatchedState, useScene, hub);
+                        boolean posterOnly, boolean useWatchedState, boolean useScene, HubInfo hub) {
+        this(context, server, header, new CardPresenter(server, listener, posterOnly), callback, hash, useWatchedState, useScene, hub);
     }
 
     private PlexItemRow(Context context, PlexServer server, String header, Presenter presenter,
                         RefreshAllCallback callback, int hash, boolean useWatchedState,
                         boolean useScene, HubInfo hub) {
-        super(new HeaderItem(hash, header), new ArrayObjectAdapter(presenter));
+        super(hash, new HeaderItem(hash, header), new ArrayObjectAdapter(presenter));
         if (presenter instanceof CardPresenter)
             ((CardPresenter)presenter).setLongClickWatchStatusCallback(this);
         this.server = server;
@@ -257,7 +259,7 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
             }
 
             if (item != null)
-                list.add(useScene ? new SceneCard(context, item) : new PosterCard(context, item));
+                list.add(useScene ? new SceneCardExpanded(context, item) : new PosterCardExpanded(context, item));
         }
         return list;
     }
@@ -278,25 +280,29 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
                                                  boolean useWatchState, boolean useScene,
                                                  CardPresenter.CardPresenterLongClickListener listener) {
 
+        boolean posterOnly = children != null && children.size() > 0 &&
+         !(children.get(0) instanceof com.monsterbutt.homeview.plex.media.Chapter);
         PlexItemRow row = new PlexItemRow(context, server, header, header.hashCode(),
-                                            null, listener, useWatchState, useScene, null);
-        for(PlexLibraryItem item : children) {
-            long ratingKey = item.getRatingKey();
-            String key = ratingKey > 0 ? Long.toString(ratingKey) : item.getKey();
-            if (!row.map.containsKey(key)) {
+                                            null, listener, posterOnly,  useWatchState, useScene, null);
+        if (children != null) {
+            for (PlexLibraryItem item : children) {
+                long ratingKey = item.getRatingKey();
+                String key = ratingKey > 0 ? Long.toString(ratingKey) : item.getKey();
+                if (!row.map.containsKey(key)) {
 
-                row.map.put(key, new RowItem(item, row.adapter.size()));
-                row.adapter.add(row.useScene ? new SceneCard(context, item) : new PosterCard(context, item));
+                    row.map.put(key, new RowItem(item, row.adapter.size()));
+                    row.adapter.add(row.useScene ? new SceneCard(context, item) : new PosterCard(context, item));
+                }
             }
         }
         return row;
     }
 
-    public static PlexItemRow buildItemsRow(Context context, PlexServer server, String header,
-                                            int hash, RefreshAllCallback callback,
-                                            CardPresenter.CardPresenterLongClickListener listener,
-                                            boolean useScene, HubInfo hub) {
-        return new PlexItemRow(context, server, header, hash, callback, listener, true, useScene, hub);
+    static PlexItemRow buildItemsRow(Context context, PlexServer server, String header,
+                                     int hash, RefreshAllCallback callback,
+                                     CardPresenter.CardPresenterLongClickListener listener,
+                                     boolean useScene, HubInfo hub) {
+        return new PlexItemRow(context, server, header, hash, callback, listener, true, true, useScene, hub);
     }
 
     public static PlexItemRow buildSectionRow(Context context, MediaContainer sections, PlexServer server,
@@ -306,7 +312,7 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
         if (sections == null)
             return null;
         PlexItemRow row = new PlexItemRow(context, server, header, header.hashCode(),
-                                            callback, listener, false, true, null);
+                                            callback, listener, false, false, true, null);
         for (Directory dir : sections.getDirectories()) {
 
             PlexContainerItem item = PlexContainerItem.getItem(dir);
@@ -328,7 +334,7 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
         private final PlexServer server;
         private final String maxCount;
 
-        public GetHubDataTask(PlexServer server) {
+        GetHubDataTask(PlexServer server) {
             this.server = server;
             this.maxCount = SettingsManager.getInstance(context).getString("preferences_navigation_hubsizelimit");
         }

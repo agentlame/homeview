@@ -52,8 +52,10 @@ import com.monsterbutt.homeview.plex.media.Show;
 import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.tasks.ToggleWatchedStateTask;
 import com.monsterbutt.homeview.presenters.CardObject;
+import com.monsterbutt.homeview.presenters.CustomListRowPresenter;
 import com.monsterbutt.homeview.presenters.DetailsDescriptionPresenter;
 import com.monsterbutt.homeview.presenters.CardPresenter;
+import com.monsterbutt.homeview.presenters.PosterCardExpanded;
 import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.PlayerActivity;
@@ -88,7 +90,7 @@ import us.nineworlds.plex.rest.model.impl.Video;
  */
 public class DetailsFragment extends android.support.v17.leanback.app.DetailsFragment
         implements OnActionClickedListener, WatchStatusListener, DetailsDescriptionPresenter.Callback,
-                CardSelectionHandler.CardSelectionListener, SelectView.SelectViewCaller, HomeViewActivity.OnBackPressedListener {
+                CardSelectionHandler.CardSelectionListener, SelectView.SelectViewCaller, HomeViewActivity.OnBackPressedListener, CustomListRowPresenter.Callback {
 
 
     private CardSelectionHandler mSelectionHandler;
@@ -426,7 +428,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         detailsPresenter.setOnActionClickedListener(this);
 
-        listRowPS = new CustomListRowPresenter();
+        listRowPS = new CustomListRowPresenter(this);
         ClassPresenterSelector presenterSelector = new ClassPresenterSelector();
         presenterSelector.addClassPresenter(ListRow.class, listRowPS);
         presenterSelector.addClassPresenter(DetailsOverviewRow.class, detailsPresenter);
@@ -539,11 +541,11 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
             for (MediaContainer mc : list) {
 
                 if (mc.getVideos() != null && !mc.getVideos().isEmpty()) {
-                    ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(mServer, mSelectionHandler));
+                    ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(mServer, mSelectionHandler, true));
                     ListRow row = new ListRow(new HeaderItem(0, mc.getTitle1()),
                             adapter);
                     for (Video video: mc.getVideos())
-                        adapter.add(new PosterCard(act, PlexVideoItem.getItem(video)));
+                        adapter.add(new PosterCardExpanded(act, PlexVideoItem.getItem(video)));
                     row.setId(CurrentRowId++);
                     mAdapter.add(row);
                 }
@@ -551,9 +553,13 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         }
     }
 
-    private class CustomListRowPresenter extends ListRowPresenter {
+    private class CustomListRowPresenter extends com.monsterbutt.homeview.presenters.CustomListRowPresenter {
 
         int startindex = -1;
+
+        CustomListRowPresenter(Callback caller) {
+            super(caller);
+        }
 
         @Override
         protected void onBindRowViewHolder(RowPresenter.ViewHolder holder, Object item) {

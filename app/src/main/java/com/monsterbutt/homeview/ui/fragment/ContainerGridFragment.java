@@ -10,11 +10,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.VerticalGridFragment;
-import android.support.v17.leanback.widget.OnItemViewSelectedListener;
-import android.support.v17.leanback.widget.Presenter;
-import android.support.v17.leanback.widget.Row;
-import android.support.v17.leanback.widget.RowPresenter;
 import android.support.v17.leanback.widget.TitleView;
 import android.support.v17.leanback.widget.VerticalGridPresenter;
 import android.text.TextUtils;
@@ -100,18 +97,18 @@ public class ContainerGridFragment extends VerticalGridFragment
         }
     }
 
-    public static class SectionSort extends SectionFilter implements Parcelable {
+    private static class SectionSort extends SectionFilter implements Parcelable {
 
         public final PlexItemGrid.ItemSort id;
-        public boolean isAscending = true;
+        boolean isAscending = true;
 
-        public SectionSort(String name, PlexItemGrid.ItemSort key) {
+        SectionSort(String name, PlexItemGrid.ItemSort key) {
 
             super(name, name);
             this.id = key;
         }
 
-        public SectionSort(Parcel in) {
+        SectionSort(Parcel in) {
 
             super(in);
             id = PlexItemGrid.ItemSort.valueOf(in.readString());
@@ -144,17 +141,17 @@ public class ContainerGridFragment extends VerticalGridFragment
         };
     }
 
-    public static class SectionFilter implements Parcelable {
+    static class SectionFilter implements Parcelable {
 
         public String name;
         public final String key;
 
-        public SectionFilter(String name, String key) {
+        SectionFilter(String name, String key) {
             this.name = name;
             this.key = key;
         }
 
-        public SectionFilter(Parcel in) {
+        SectionFilter(Parcel in) {
             name = in.readString();
             key = in.readString();
         }
@@ -549,7 +546,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         private final Context context;
         private SectionFilter selected;
 
-        public SectionFilterArrayAdapter(Context context, List<SectionFilter> values, SectionFilter selected) {
+        SectionFilterArrayAdapter(Context context, List<SectionFilter> values, SectionFilter selected) {
             super(context, R.layout.lb_aboutitem, values);
             this.context = context;
             this.values = values;
@@ -563,8 +560,9 @@ public class ContainerGridFragment extends VerticalGridFragment
             return selected();
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View row, ViewGroup parent) {
+        public View getView(int position, View row, @NonNull ViewGroup parent) {
 
             View rowView = row;
             if (rowView == null) {

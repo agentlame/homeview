@@ -47,7 +47,7 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
         CardSelectionHandler selectionHandler = new CardSelectionHandler(this, server);
         mLifeCycleMgr.put(CardSelectionHandler.key, selectionHandler);
 
-        mVideoCursorAdapter = new CursorObjectAdapter(new CardPresenter(server, selectionHandler));
+        mVideoCursorAdapter = new CursorObjectAdapter(new CardPresenter(server, selectionHandler, false));
         mVideoCursorAdapter.setMapper(new VideoCursorMapper());
         setSearchResultProvider(this);
     }

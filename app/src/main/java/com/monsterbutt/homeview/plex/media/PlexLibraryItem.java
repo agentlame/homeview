@@ -188,7 +188,7 @@ public abstract class PlexLibraryItem {
         List<PlexLibraryItem> extras = getExtraItems();
         if (extras != null && !extras.isEmpty()) {
             // setup bottom row for seasons, episodes, or chapters
-            ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(server, listener));
+            ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(server, listener, false));
             row = new ListRow(new HeaderItem(0, title), adapter);
             for (PlexLibraryItem extra : extras)
                 adapter.add(new SceneCard(context, extra));

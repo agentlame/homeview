@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Folder;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
-import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
@@ -41,15 +40,15 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
         int index;
         final boolean useScene;
 
-        public GridItem(PlexLibraryItem item, int index, boolean useScene) {
+        GridItem(PlexLibraryItem item, int index, boolean useScene) {
             this.item = item;
             this.index = index;
             this.useScene = useScene;
         }
     }
 
-    Map<String, GridItem> map = new HashMap<>();
-    ArrayObjectAdapter adapter = null;
+    private Map<String, GridItem> map = new HashMap<>();
+    private ArrayObjectAdapter adapter = null;
 
     private WatchedStatusHandler watchedHandler = null;
 
@@ -65,7 +64,7 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
 
     private PlexItemGrid(PlexServer server, boolean useWatchedState, CardPresenter.CardPresenterLongClickListener listener) {
 
-        CardPresenter presenter = new CardPresenter(server, listener);
+        CardPresenter presenter = new CardPresenter(server, listener, true);
         presenter.setLongClickWatchStatusCallback(this);
         this.adapter = new ArrayObjectAdapter(presenter);
         if (useWatchedState)

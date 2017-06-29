@@ -5,12 +5,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v17.leanback.app.BrowseFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
-import android.support.v17.leanback.widget.ListRowPresenter;
 import android.view.View;
 import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
+import com.monsterbutt.homeview.presenters.CustomListRowPresenter;
 import com.monsterbutt.homeview.ui.HubInfo;
 import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.RowData;
@@ -27,7 +27,7 @@ import us.nineworlds.plex.rest.model.impl.Hub;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 
-public class SectionHubFragment extends BrowseFragment implements PlexItemRow.RefreshAllCallback {
+public class SectionHubFragment extends BrowseFragment implements PlexItemRow.RefreshAllCallback, CustomListRowPresenter.Callback {
 
     private PlexServer mServer;
 
@@ -51,7 +51,7 @@ public class SectionHubFragment extends BrowseFragment implements PlexItemRow.Re
         setTitle(activity.getIntent().getStringExtra(SectionHubActivity.TITLE));
 
         setHeadersTransitionOnBackEnabled(false);
-        mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
+        mRowsAdapter = new ArrayObjectAdapter(new CustomListRowPresenter(this));
         setAdapter(mRowsAdapter);
     }
 

@@ -51,6 +51,14 @@ public class PosterCard extends CardObject {
         return item.getCardTitle(mContext);
     }
 
+    public String getSubtitle() {
+        return item.getDetailSubtitle(mContext);
+    }
+
+    public String getDescription() {
+        return item.getSummary();
+    }
+
     @Override
     public String getContent() {
         return item.getCardContent(mContext);
@@ -121,5 +129,17 @@ public class PosterCard extends CardObject {
     public boolean onLongClicked(PlexServer server, Fragment fragment, Bundle extras,
                                  View transitionView, CardPresenter.LongClickWatchStatusCallback callback) {
         return item != null && item.onLongClicked(this, server, fragment, extras, transitionView, callback);
+    }
+
+    String getDetailTitle() {
+        return item == null ? "" : item.getDetailTitle(mContext);
+    }
+
+    String getDetailSubtitle() {
+        return item == null ? "" : item.getDetailSubtitle(mContext);
+    }
+
+    String getSummary() {
+        return item == null ? "" : item.getSummary();
     }
 }

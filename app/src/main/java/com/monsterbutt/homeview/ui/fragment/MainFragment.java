@@ -28,13 +28,13 @@ import android.support.v17.leanback.app.BrowseFragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
-import android.support.v17.leanback.widget.ListRowPresenter;
 import android.support.v17.leanback.widget.TitleView;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.PlexServerManager;
+import com.monsterbutt.homeview.presenters.CustomListRowPresenter;
 import com.monsterbutt.homeview.presenters.SettingCard;
 import com.monsterbutt.homeview.presenters.SettingPresenter;
 import com.monsterbutt.homeview.settings.SettingLaunch;
@@ -59,7 +59,7 @@ import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 public class MainFragment extends BrowseFragment implements PlexServerTaskCaller,
                                                             ServerStatusHandler.ServerStatusListener,
-                                                            PlexItemRow.RefreshAllCallback {
+                                                            PlexItemRow.RefreshAllCallback, CustomListRowPresenter.Callback {
 
     private boolean mFirstResume = true;
 
@@ -100,7 +100,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         mSelectionHandler = new CardSelectionHandler(this);
         if (mServer != null)
             mSelectionHandler.setServer(mServer);
-        mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
+        mRowsAdapter = new ArrayObjectAdapter(new CustomListRowPresenter(this));
         setAdapter(mRowsAdapter);
         mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
         mLifeCycleMgr.put(ServerStatusHandler.key, new ServerStatusHandler(this, this, this, true));
@@ -125,6 +125,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
     public void onResume() {
 
         super.onResume();
+
         mLifeCycleMgr.resumed();
         if (mFirstResume) {
 
@@ -190,7 +191,6 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
             setTitle(title);
         if (null == mSelectionHandler.getSelection())
             new GetRandomArtWorkTask(mServer).execute(sections);
-        int rows = 0;
         handleSectionsRow(sections);
         addSettingsRow(false);
         HubInfo.handleHubRows(getActivity(), mServer, hubs,
@@ -280,7 +280,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         final PlexServer server;
 
-        public GetRandomArtWorkTask(PlexServer server) {
+        GetRandomArtWorkTask(PlexServer server) {
             this.server = server;
         }
 

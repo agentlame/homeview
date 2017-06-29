@@ -56,12 +56,14 @@ public class CardPresenter extends Presenter {
     final private PlexServer mPlex;
     final private CardPresenterLongClickListener mListener;
     private LongClickWatchStatusCallback mLongClickWatchStatusCallback;
+    final private boolean posterOnly;
 
-    public CardPresenter(PlexServer plex, CardPresenterLongClickListener listener) {
+    public CardPresenter(PlexServer plex, CardPresenterLongClickListener listener, boolean posterOnly) {
 
         mPlex = plex;
         mListener = listener;
         mLongClickWatchStatusCallback = null;
+        this.posterOnly = posterOnly;
     }
 
     public void setLongClickWatchStatusCallback(LongClickWatchStatusCallback longClickWatchStatusCallback) {
@@ -71,24 +73,32 @@ public class CardPresenter extends Presenter {
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent) {
 
-        TypedValue typedValue = new TypedValue();
-        Resources.Theme theme = parent.getContext().getTheme();
-        theme.resolveAttribute(R.attr.card_normal, typedValue, true);
-        mDefaultBackgroundColor = typedValue.data;
-        theme.resolveAttribute(R.attr.card_selected, typedValue, true);
-        mSelectedBackgroundColor = typedValue.data;
+        ImageCardView cardView;
+        if (!posterOnly) {
+            TypedValue typedValue = new TypedValue();
+            Resources.Theme theme = parent.getContext().getTheme();
+            theme.resolveAttribute(R.attr.card_normal, typedValue, true);
+            mDefaultBackgroundColor = typedValue.data;
+            theme.resolveAttribute(R.attr.card_selected, typedValue, true);
+            mSelectedBackgroundColor = typedValue.data;
 
-        ImageCardView cardView = new ImageCardView(parent.getContext()) {
-            @Override
-            public void setSelected(boolean selected) {
-                updateCardBackgroundColor(this, selected);
-                super.setSelected(selected);
-            }
-        };
+            cardView = new ImageCardView(parent.getContext(), false) {
+                @Override
+                public void setSelected(boolean selected) {
+                    updateCardBackgroundColor(this, selected);
+                    super.setSelected(selected);
+                }
+            };
 
+            updateCardBackgroundColor(cardView, false);
+        }
+        else {
+
+            cardView = new ImageCardView(parent.getContext(), true);
+        }
         cardView.setFocusable(true);
         cardView.setFocusableInTouchMode(true);
-        updateCardBackgroundColor(cardView, false);
+
         return new ViewHolder(cardView);
     }
 
@@ -105,6 +115,7 @@ public class CardPresenter extends Presenter {
     @Override
     public void onBindViewHolder(Presenter.ViewHolder viewHolder, Object item) {
 
+        boolean isExpanded = (item instanceof PosterCardExpanded || item instanceof SceneCardExpanded);
         final CardObject obj = (CardObject) item;
         final ImageCardView cardView = (ImageCardView) viewHolder.view;
         cardView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -115,9 +126,10 @@ public class CardPresenter extends Presenter {
             }
         });
         Context context = cardView.getContext();
-        cardView.setTitleText(obj.getTitle());
-        cardView.setContentText(obj.getContent());
-
+        if (!isExpanded) {
+            cardView.setTitleText(obj.getTitle());
+            cardView.setContentText(obj.getContent());
+        }
         String imageURL = obj.getImageUrl(mPlex);
             // Set card size from dimension resources.
         final Resources res = cardView.getResources();
