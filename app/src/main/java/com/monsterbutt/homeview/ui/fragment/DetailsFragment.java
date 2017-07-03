@@ -132,7 +132,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         String key = mItem != null  ? mItem.getKey()
                                     : getActivity().getIntent().getStringExtra(DetailsActivity.KEY);
-        ImageView img = activity.findViewById(android.support.v17.leanback.R.id.details_overview_image);
+        ImageView img = (ImageView) activity.findViewById(android.support.v17.leanback.R.id.details_overview_image);
         mSelectionHandler = new CardSelectionHandler(this, this, mServer, mItem, img);
 
         mBackgroundURL = getActivity().getIntent().getStringExtra(DetailsActivity.BACKGROUND);

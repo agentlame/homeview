@@ -388,7 +388,7 @@ public class ContainerGridFragment extends VerticalGridFragment
     public void onStart() {
 
         super.onStart();
-        TitleView tv = getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group);
+        TitleView tv = (TitleView) getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group);
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.lb_container_header, tv, false);
         tv.addView(view);
 
@@ -404,29 +404,29 @@ public class ContainerGridFragment extends VerticalGridFragment
             }
         });
 
-        Button hubBtn = view.findViewById(R.id.hubBtn);
+        Button hubBtn = (Button) view.findViewById(R.id.hubBtn);
         hubBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 hubButtonClicked();
             }
         });
-        Button filterBtn = view.findViewById(R.id.filterBtn);
+        Button filterBtn = (Button) view.findViewById(R.id.filterBtn);
         filterBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 filterButtonClicked();
             }
         });
-        mFilterText = view.findViewById(R.id.filterText);
-        Button sortBtn = view.findViewById(R.id.sortBtn);
+        mFilterText = (TextView) view.findViewById(R.id.filterText);
+        Button sortBtn = (Button) view.findViewById(R.id.sortBtn);
         sortBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sortButtonClicked();
             }
         });
-        mSortText = view.findViewById(R.id.sortText);
+        mSortText = (TextView) view.findViewById(R.id.sortText);
         mSortText.setText(mSorts.selected().name);
 
         if (mUseScene) {
@@ -513,7 +513,7 @@ public class ContainerGridFragment extends VerticalGridFragment
             if (mContainer == null)
                 return;
 
-            TextView text = getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
+            TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
             text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
             if (mUseScene) {
                 setTitle(String.format("%s %s %s",
@@ -572,9 +572,9 @@ public class ContainerGridFragment extends VerticalGridFragment
                 rowView = inflater.inflate(R.layout.lb_filterchoice, parent, false);
             }
             final SectionFilter item = values.get(position);
-            ImageView image = rowView.findViewById(R.id.directionImage);
+            ImageView image = (ImageView) rowView.findViewById(R.id.directionImage);
             image.setVisibility(item instanceof SectionSort && !((SectionSort)item).isAscending ? View.VISIBLE: View.INVISIBLE);
-            CheckBox name = rowView.findViewById(R.id.name);
+            CheckBox name = (CheckBox) rowView.findViewById(R.id.name);
             name.setText(item.name);
             name.setChecked(item == selected);
             return rowView;
