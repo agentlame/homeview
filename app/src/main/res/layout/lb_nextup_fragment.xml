@@ -55,13 +55,16 @@
                 android:paddingEnd="@dimen/playback_text_smallpadding"
                 android:text="@string/ends_at"
                 android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionBody"
-                />
+                android:shadowColor="@color/black_opaque"
+                android:shadowRadius="3.0" />
 
             <TextView
                 android:id="@+id/end_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionBody"
+                android:shadowColor="@color/black_opaque"
+                android:shadowRadius="3.0"
                 tools:text="12:00pm"/>
 
         </LinearLayout>

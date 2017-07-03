@@ -46,6 +46,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="3"
+                android:shadowColor="@color/black_opaque"
+                android:shadowRadius="3.0"
                 tools:text="Tagline goes here"
                 style="?attr/detailsDescriptionSubtitleStyle" />
 
@@ -54,6 +56,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAlignment="textEnd"
+                android:shadowColor="@color/black_opaque"
+                android:shadowRadius="3.0"
                 tools:text="Genres, go, here"
                 style="?attr/detailsDescriptionSubtitleStyle" />
 
@@ -66,6 +70,8 @@
             android:paddingTop="@dimen/detail_text_padding"
             android:maxLines="5"
             android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionBody"
+            android:shadowColor="@color/black_opaque"
+            android:shadowRadius="3.0"
             tools:text="Video Clip Summary\nTest line 2\nTest line 3 Test line 3 Test line 3 Test line 3 Test line 3 Test line 3 Test line 3 Test line 3" />
 
     </LinearLayout>

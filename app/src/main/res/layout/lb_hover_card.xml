@@ -5,9 +5,9 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/playback_background_low_to_high"
     android:layout_marginTop="@dimen/lb_hovercard_margin_top"
     android:layout_marginBottom="@dimen/lb_hovercard_margin_bottom"
+    android:background="@color/BlueGrey.Primary.Translucent"
     android:padding="@dimen/detail_text_padding" >
 
     <TextView
@@ -16,6 +16,8 @@
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionTitle"
         android:textSize="26sp"
+        android:shadowColor="@color/black_opaque"
+        android:shadowRadius="3.0"
         tools:ignore="SmallSp"
         tools:text="Video Clip Title"/>
 
@@ -23,6 +25,8 @@
         android:id="@+id/subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:shadowColor="@color/black_opaque"
+        android:shadowRadius="3.0"
         android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionSubtitle"
         tools:text="January 1, 1980 \u00B7 199 mins" />
 
@@ -30,6 +34,8 @@
         android:id="@+id/description"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:shadowColor="@color/black_opaque"
+        android:shadowRadius="3.0"
         android:paddingTop="@dimen/detail_text_padding"
         android:maxLines="3"
         android:ellipsize="end"

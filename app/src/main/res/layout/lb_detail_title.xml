@@ -28,6 +28,8 @@
         android:maxLines="3"
         android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionTitle"
         android:textSize="26sp"
+        android:shadowColor="@color/black_opaque"
+        android:shadowRadius="3.0"
         tools:ignore="SmallSp"
         tools:text="Video Clip Title"/>
 
@@ -44,6 +46,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionSubtitle"
+            android:shadowColor="@color/black_opaque"
+            android:shadowRadius="3.0"
             tools:text="January 1, 1980 \u00B7 199 mins"/>
 
         <ImageView

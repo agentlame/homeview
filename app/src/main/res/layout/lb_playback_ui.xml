@@ -27,6 +27,8 @@
             android:paddingEnd="6dp"
             android:paddingStart="0dp"
             android:paddingTop="15dp"
+            android:shadowColor="@color/black_opaque"
+            android:shadowRadius="3.0"
             android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionTitle" />
 
     </RelativeLayout>
@@ -102,13 +104,17 @@
                                 android:paddingLeft="4dp"
                                 android:paddingRight="4dp"
                                 android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionBody"
+                                android:shadowColor="@color/black_opaque"
+                                android:shadowRadius="3.0"
                                 tools:text="00:00:00"/>
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text=" / "
-                                android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionBody"/>
+                                android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionBody"
+                                android:shadowColor="@color/black_opaque"
+                                android:shadowRadius="3.0" />
 
                             <TextView
                                 android:id="@+id/exo_duration"
@@ -116,6 +122,8 @@
                                 android:layout_height="wrap_content"
                                 android:includeFontPadding="false"
                                 android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionBody"
+                                android:shadowColor="@color/black_opaque"
+                                android:shadowRadius="3.0"
                                 tools:text=" 11:24:00"/>
 
                         </LinearLayout>
@@ -132,7 +140,8 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/ends_at"
                                 android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionBody"
-                                />
+                                android:shadowColor="@color/black_opaque"
+                                android:shadowRadius="3.0" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -144,6 +153,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionBody"
+                                android:shadowColor="@color/black_opaque"
+                                android:shadowRadius="3.0"
                                 tools:text="12:00"/>
 
                         </LinearLayout>
