@@ -656,13 +656,18 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   }
 
   @Override
-  public void onPlayback(boolean isPlaying) {
+  public void onPlayback(final boolean isPlaying) {
 
     player.handlePlaybackChanged(isPlaying);
-    if (isPlaying)
-      getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-    else
-      getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        if (isPlaying)
+          getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        else
+          getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+      }
+    });
   }
 
   @Override
