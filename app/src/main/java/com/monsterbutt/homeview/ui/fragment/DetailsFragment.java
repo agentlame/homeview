@@ -70,7 +70,6 @@ import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
-import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.ui.activity.DetailsActivity;
 import com.monsterbutt.homeview.ui.handler.ThemeHandler;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
@@ -80,6 +79,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import us.nineworlds.plex.rest.model.impl.Directory;
 import us.nineworlds.plex.rest.model.impl.Hub;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 import us.nineworlds.plex.rest.model.impl.Video;
@@ -95,6 +95,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     private CardSelectionHandler mSelectionHandler;
     private ThemeHandler mThemeHandler;
+    private String themeKey = "";
     private UILifecycleManager mLifeCycleMgr = new UILifecycleManager();
 
     final static int ACTION_PLAY        = 1;
@@ -131,7 +132,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         String key = mItem != null  ? mItem.getKey()
                                     : getActivity().getIntent().getStringExtra(DetailsActivity.KEY);
-        ImageView img = (ImageView) activity.findViewById(android.support.v17.leanback.R.id.details_overview_image);
+        ImageView img = activity.findViewById(android.support.v17.leanback.R.id.details_overview_image);
         mSelectionHandler = new CardSelectionHandler(this, this, mServer, mItem, img);
 
         mBackgroundURL = getActivity().getIntent().getStringExtra(DetailsActivity.BACKGROUND);
@@ -300,7 +301,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         Bundle extras = new Bundle();
         if (mTracks != null)
             extras.putParcelable(PlayerActivity.TRACKS, mTracks);
-        mThemeHandler.getPlaySelectionBundle(extras);
+        mThemeHandler.getPlaySelectionBundle(extras, themeKey);
         return extras;
     }
 
@@ -448,13 +449,20 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         protected PlexLibraryItem doInBackground(String... params) {
 
             PlexLibraryItem ret = null;
-            MediaContainer media = server.getVideoMetadata(params[0]);
+            String key = params[0];
+            MediaContainer media = server.getVideoMetadata(key, false);
             if (media != null) {
 
                 if (media.getVideos() != null && 1 == media.getVideos().size())
                     ret = PlexVideoItem.getItem(media.getVideos().get(0));
-                else
+                else {
+                    if (mItem instanceof Show && 0 < media.getDirectories().size()) {
+                        MediaContainer rel = server.getVideoMetadata(key.replace("/children", ""), true);
+                        if (rel != null && rel.getDirectories().size() > 0)
+                            media.getDirectories().get(0).setRelated(rel.getDirectories().get(0).getRelated());
+                    }
                     ret = PlexContainerItem.getItem(media);
+                }
             }
 
             return ret;
@@ -496,8 +504,8 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
             HubList list = new HubList(mItem.getRelated());
             new LoadRelatedTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, list);
-
-            mThemeHandler.startTheme(mItem.getThemeKey(mServer));
+            themeKey = mItem.getThemeKey(mServer);
+            mThemeHandler.startTheme(themeKey);
         }
     }
 
@@ -542,10 +550,17 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
                 if (mc.getVideos() != null && !mc.getVideos().isEmpty()) {
                     ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(mServer, mSelectionHandler, true));
-                    ListRow row = new ListRow(new HeaderItem(0, mc.getTitle1()),
-                            adapter);
+                    ListRow row = new ListRow(new HeaderItem(0, mc.getTitle1()), adapter);
                     for (Video video: mc.getVideos())
                         adapter.add(new PosterCardExpanded(act, PlexVideoItem.getItem(video)));
+                    row.setId(CurrentRowId++);
+                    mAdapter.add(row);
+                }
+                else if (mc.getDirectories() != null && !mc.getDirectories().isEmpty()) {
+                    ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(mServer, mSelectionHandler, true));
+                    ListRow row = new ListRow(new HeaderItem(0, mc.getTitle1()), adapter);
+                    for (Directory dir: mc.getDirectories())
+                        adapter.add(new PosterCardExpanded(act, PlexContainerItem.getItem(dir)));
                     row.setId(CurrentRowId++);
                     mAdapter.add(row);
                 }

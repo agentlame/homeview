@@ -3,7 +3,7 @@ package com.monsterbutt.homeview.services;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
-import android.media.AudioManager;
+import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
@@ -24,6 +24,8 @@ public class ThemeService extends Service implements MediaPlayer.OnPreparedListe
 
     private static final float VOLUME = 0.15f;
 
+    private static String lastThemePlayed = "";
+
     MediaPlayer mMediaPlayer = null;
 
     public static boolean  startTheme(Activity activity, String themeURL) {
@@ -33,10 +35,13 @@ public class ThemeService extends Service implements MediaPlayer.OnPreparedListe
                 SettingsManager.getInstance(activity.getApplicationContext()).getBoolean("preferences_navigation_thememusic")
                 && !TextUtils.isEmpty(themeURL)) {
 
-            Intent intent = new Intent(activity, ThemeService.class);
-            intent.setAction(ThemeService.ACTION_PLAY);
-            intent.setData(Uri.parse(themeURL));
-            activity.startService(intent);
+            synchronized (THEME_ALREADY_RUN) {
+                lastThemePlayed = themeURL;
+                Intent intent = new Intent(activity, ThemeService.class);
+                intent.setAction(ThemeService.ACTION_PLAY);
+                intent.setData(Uri.parse(themeURL));
+                activity.startService(intent);
+            }
             ret = true;
         }
         return ret;
@@ -47,6 +52,14 @@ public class ThemeService extends Service implements MediaPlayer.OnPreparedListe
         Intent intent = new Intent(activity, ThemeService.class);
         intent.setAction(ThemeService.ACTION_STOP);
         activity.startService(intent);
+    }
+
+    public static String getLastThemePlayed() {
+        String ret;
+        synchronized (THEME_ALREADY_RUN) {
+            ret = lastThemePlayed;
+        }
+        return ret;
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -64,7 +77,10 @@ public class ThemeService extends Service implements MediaPlayer.OnPreparedListe
                 else
                     mMediaPlayer = new MediaPlayer();
                 mMediaPlayer.setDataSource(getBaseContext(), uri);
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mMediaPlayer.setAudioAttributes(new AudioAttributes.Builder()
+                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                .setUsage(AudioAttributes.USAGE_MEDIA)
+                                .build());
                 mMediaPlayer.setOnPreparedListener(this);
                 mMediaPlayer.setOnErrorListener(this);
                 mMediaPlayer.setOnCompletionListener(this);

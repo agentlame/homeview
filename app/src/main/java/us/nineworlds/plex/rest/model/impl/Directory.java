@@ -98,6 +98,8 @@ public class Directory extends AbstractPlexObject implements Parcelable {
 		addedAt = in.readLong();
 		composite = in.readString();
 		originallyAvailableAt = in.readString();
+		extras = in.createTypedArrayList(Extras.CREATOR);
+		related = in.createTypedArrayList(Related.CREATOR);
 	}
 
 	@Override
@@ -147,6 +149,8 @@ public class Directory extends AbstractPlexObject implements Parcelable {
 		dest.writeLong(addedAt);
 		dest.writeString(composite);
 		dest.writeString(originallyAvailableAt);
+		dest.writeTypedList(extras);
+		dest.writeTypedList(related);
 	}
 
 	@Override
@@ -383,6 +387,13 @@ public class Directory extends AbstractPlexObject implements Parcelable {
 	@Attribute(required=false)
 	private String composite;
 
+
+	@ElementList(inline=true,name="Extras",required=false)
+	private List<Extras> extras;
+
+	@ElementList(inline=true,name="Related",required=false)
+	private List<Related> related;
+
 	public String getTitle() {
 		return title;
 	}
@@ -555,4 +566,9 @@ public class Directory extends AbstractPlexObject implements Parcelable {
 			return true;
 		return false;
 	}
+
+	public List<Extras> getExtras() { return extras; }
+	public List<Related> getRelated() { return related; }
+
+  public void setRelated(List<Related> related) { this.related = related; }
 }

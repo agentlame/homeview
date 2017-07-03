@@ -41,7 +41,7 @@ public class GetVideoQueueTask extends PlexServerTask {
 
             final long BAD_RATING_KEY = 0;
             long keyCheck = BAD_RATING_KEY;
-            MediaContainer mc = server.getVideoMetadata(metadataKey);
+            MediaContainer mc = server.getVideoMetadata(metadataKey, false);
             if (mc != null && mc.getDirectories() != null) {
 
                 String viewGroup = mc.getViewGroup();
@@ -50,9 +50,9 @@ public class GetVideoQueueTask extends PlexServerTask {
 
                         // show seasons, get all episodes of show, first unwatched is current
                         Directory all = mc.getDirectories().get(0);
-                        mc = server.getVideoMetadata(all.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS));
+                        mc = server.getVideoMetadata(all.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS), false);
                         if (mc != null && mc.getVideos() == null)
-                            mc = server.getVideoMetadata(all.getKey());
+                            mc = server.getVideoMetadata(all.getKey(), false);
                         break;
                     case Show.TYPE:
 
@@ -64,14 +64,14 @@ public class GetVideoQueueTask extends PlexServerTask {
                         for (Directory dir : mc.getDirectories()) {
 
                             MediaContainer show = server.getVideoMetadata(
-                             dir.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS));
+                             dir.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS), false);
                             if (show != null && show.getVideos() != null)
                                 mc.getVideos().addAll(show.getVideos());
                         }
                         break;
                     case SECONDARY:
 
-                        mc = server.getVideoMetadata(metadataKey + "/all");
+                        mc = server.getVideoMetadata(metadataKey + "/all", false);
                         if (mc.getVideos() == null) {
 
                             if (mc.getVideos() == null)
@@ -79,7 +79,7 @@ public class GetVideoQueueTask extends PlexServerTask {
                             for (Directory dir : mc.getDirectories()) {
 
                                 MediaContainer show = server.getVideoMetadata(
-                                 dir.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS));
+                                 dir.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS), false);
                                 if (show != null && show.getVideos() != null)
                                     mc.getVideos().addAll(show.getVideos());
                             }
@@ -108,7 +108,7 @@ public class GetVideoQueueTask extends PlexServerTask {
                         // no viewgroup with grandparent is a episode, get all episodes for show
                         mc = server.getVideoMetadata(vid.getKey().replace(Long.toString(keyCheck),
                                 Long.toString(vid.getGrandparentRatingKey()))
-                                + "/" + Season.ALL_SEASONS);
+                                + "/" + Season.ALL_SEASONS, false);
                     }
                 }
                 else if (viewGroup.equals(Episode.TYPE)){
@@ -132,7 +132,7 @@ public class GetVideoQueueTask extends PlexServerTask {
                         replaceKey = Long.toString(first.getGrandparentRatingKey());
                     String showKey = first.getKey().replace(Long.toString(first.getRatingKey()),
                             replaceKey) + "/" + Season.ALL_SEASONS;
-                    mc = server.getVideoMetadata(showKey);
+                    mc = server.getVideoMetadata(showKey, false);
                 }
             }
             // movie, use list, current is first unwatched

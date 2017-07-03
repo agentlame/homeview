@@ -209,14 +209,14 @@ public class PlexappFactory {
 	}
 
 	public MediaContainer retrieveVideoMetaData(String key) throws Exception {
-		String episodesURL = resourcePath.getMovieMetaDataURL(key, false);
+		String episodesURL = resourcePath.getMovieMetaDataURL(key, false, false);
 		MediaContainer mediaContainer = serializeResource(episodesURL);
 		return mediaContainer;
 	}
 
 
-	public MediaContainer retrieveMovieMetaData(String key) throws Exception {
-		String episodesURL = resourcePath.getMovieMetaDataURL(key, true);
+	public MediaContainer retrieveMovieMetaData(String key, boolean isShow) throws Exception {
+		String episodesURL = resourcePath.getMovieMetaDataURL(key, true, isShow);
 		MediaContainer mediaContainer = serializeResource(episodesURL);
 		return mediaContainer;
 	}
@@ -295,54 +295,10 @@ public class PlexappFactory {
 		}
 		return false;
 	}
-	
-	public String getProgressURL(String key, String ratingKey, String offset) {
-		return resourcePath.getProgressUrl(key, ratingKey, offset);
-	}
-	
-	public String getMovieSearchURL(String key, String query) {
-		return resourcePath.getMovieSearchURL(key, query);
-	}
-	
-	public String getTVShowSearchURL(String key, String query) {
-		return resourcePath.getMovieSearchURL(key, query);
-	}
 
-	public String getEpisodeSearchURL(String key, String query) {
-		return resourcePath.getMovieSearchURL(key, query);
-	}
-	
 	public String getMediaTagURL(String resourceType, String resourceName) {//, String identifier) {
 		return resourcePath.getMediaTagURL(resourceType, resourceName);//, identifier);
 	}
-	
-	public String getSectionsURL(String key, String category) {
-		return resourcePath.getSectionsURL(key, category);
-	}
-	
-	public String getSectionsURL() {
-		return resourcePath.getSectionsURL();
-	}
-	
-	public String getSectionsUrl(String key) {
-		return resourcePath.getSectionsURL(key);
-	}
-	
-	public String getMovieMetadataURL(String key) {
-		return resourcePath.getMovieMetaDataURL(key, true);
-	}
-	
-	public String getEpisodesURL(String key) {
-		return resourcePath.getEpisodesURL(key);
-	}
-	
-	public String getSeasonsURL(String key) {
-		return resourcePath.getSeasonsURL(key);
-	}
-
-    public String getImageURL(String url, int width, int height) {
-        return resourcePath.getImageURL(url, width, height);
-    }
 
     /**
 	 * Given a resource's URL, read and return the serialized MediaContainer

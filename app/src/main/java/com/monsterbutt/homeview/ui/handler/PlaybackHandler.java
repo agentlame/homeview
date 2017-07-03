@@ -397,7 +397,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
       if (params == null || params.length == 0 || params[0] == null)
         return null;
-      return server.getVideoMetadata(params[0]);
+      return server.getVideoMetadata(params[0], false);
     }
 
     @Override

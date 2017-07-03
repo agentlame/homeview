@@ -3,11 +3,11 @@ package com.monsterbutt.homeview.ui.handler;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.services.ThemeService;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
-
 
 public class ThemeHandler implements UILifecycleManager.LifecycleListener {
 
@@ -17,7 +17,8 @@ public class ThemeHandler implements UILifecycleManager.LifecycleListener {
     private final boolean mIsViewForShow;
     private final boolean mStopThemeOnResume;
     private final PlexServer mServer;
-    private boolean mThemeAlreadyRun;
+    private String themeKey = "";
+    private String currentTheme = "";
     private boolean mContinueTheme = false;
 
     public ThemeHandler(Activity activity, PlexServer server, boolean isViewForShow, boolean stopThemeOnResume) {
@@ -27,20 +28,25 @@ public class ThemeHandler implements UILifecycleManager.LifecycleListener {
         Intent intent = activity.getIntent();
         mIsViewForShow = isViewForShow;
         mStopThemeOnResume = stopThemeOnResume;
-        mThemeAlreadyRun = intent != null && intent.getBooleanExtra(ThemeService.THEME_ALREADY_RUN, false);
+        if (intent != null)
+            themeKey = intent.getStringExtra(ThemeService.THEME_ALREADY_RUN);
+        if (themeKey == null)
+            themeKey = "";
     }
 
     @Override
     public void onResume() {
         mContinueTheme = false;
-        if (mStopThemeOnResume)
+        String lastPlayed = ThemeService.getLastThemePlayed();
+        if (mStopThemeOnResume
+         || (!TextUtils.isEmpty(currentTheme) && !TextUtils.isEmpty(lastPlayed) && !currentTheme.equalsIgnoreCase(lastPlayed)))
             ThemeService.stopTheme(mActivity);
     }
 
     @Override
     public void onPause() {
 
-        if (mContinueTheme || !mThemeAlreadyRun ||
+        if (mContinueTheme || TextUtils.isEmpty(themeKey) ||
                 (mActivity != null && mActivity.isFinishing() && mIsViewForShow))
             return;
         ThemeService.stopTheme(mActivity);
@@ -49,20 +55,23 @@ public class ThemeHandler implements UILifecycleManager.LifecycleListener {
     @Override
     public void onDestroyed() {}
 
-    public Bundle getPlaySelectionBundle(Bundle extras) {
+    public Bundle getPlaySelectionBundle(Bundle extras, String key) {
 
         mContinueTheme = true;
-        if (mThemeAlreadyRun) {
+        if (key != null && themeKey.contains(key)) {
             if (extras == null)
                 extras = new Bundle();
-            extras.putBoolean(ThemeService.THEME_ALREADY_RUN, true);
+            extras.putString(ThemeService.THEME_ALREADY_RUN, themeKey);
         }
         return extras;
     }
 
-    public void startTheme(String themeKey) {
+    public void startTheme(String key) {
 
-        if (!mThemeAlreadyRun && !mServer.isPIPActive())
-            mThemeAlreadyRun = ThemeService.startTheme(mActivity, themeKey);
+        if (key != null && !themeKey.contains(key) && !mServer.isPIPActive()) {
+            themeKey += key + ";";
+            currentTheme = key;
+            ThemeService.startTheme(mActivity, currentTheme);
+        }
     }
 }

@@ -68,6 +68,7 @@ public class ContainerGridFragment extends VerticalGridFragment
     private UILifecycleManager mLifeCycleMgr = new UILifecycleManager();
     private CardSelectionHandler mSelectionHandler;
     private ThemeHandler mThemeHandler;
+    private String themeKey = "";
 
     private TextView mFilterText;
     private TextView mSortText;
@@ -387,7 +388,7 @@ public class ContainerGridFragment extends VerticalGridFragment
     public void onStart() {
 
         super.onStart();
-        TitleView tv = (TitleView) getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group);
+        TitleView tv = getActivity().findViewById(android.support.v17.leanback.R.id.browse_title_group);
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.lb_container_header, tv, false);
         tv.addView(view);
 
@@ -403,29 +404,29 @@ public class ContainerGridFragment extends VerticalGridFragment
             }
         });
 
-        Button hubBtn = (Button) view.findViewById(R.id.hubBtn);
+        Button hubBtn = view.findViewById(R.id.hubBtn);
         hubBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 hubButtonClicked();
             }
         });
-        Button filterBtn = (Button) view.findViewById(R.id.filterBtn);
+        Button filterBtn = view.findViewById(R.id.filterBtn);
         filterBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 filterButtonClicked();
             }
         });
-        mFilterText = (TextView) view.findViewById(R.id.filterText);
-        Button sortBtn = (Button) view.findViewById(R.id.sortBtn);
+        mFilterText = view.findViewById(R.id.filterText);
+        Button sortBtn = view.findViewById(R.id.sortBtn);
         sortBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sortButtonClicked();
             }
         });
-        mSortText = (TextView) view.findViewById(R.id.sortText);
+        mSortText = view.findViewById(R.id.sortText);
         mSortText.setText(mSorts.selected().name);
 
         if (mUseScene) {
@@ -440,7 +441,7 @@ public class ContainerGridFragment extends VerticalGridFragment
 
     @Override
     public Bundle getPlaySelectionBundle(boolean cardWasScene) {
-        return mThemeHandler.getPlaySelectionBundle(null);
+        return mThemeHandler.getPlaySelectionBundle(null, themeKey);
     }
 
     @Override
@@ -479,7 +480,7 @@ public class ContainerGridFragment extends VerticalGridFragment
             if (params == null || params.length == 0 || params[0] == null)
                 return null;
 
-            mContainer = mServer.getVideoMetadata(params[0]);
+            mContainer = mServer.getVideoMetadata(params[0], false);
             if (mContainer.getDirectories() != null && !mContainer.getDirectories().isEmpty()) {
 
                 SectionFilter current = null;
@@ -512,7 +513,7 @@ public class ContainerGridFragment extends VerticalGridFragment
             if (mContainer == null)
                 return;
 
-            TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
+            TextView text = getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
             text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
             if (mUseScene) {
                 setTitle(String.format("%s %s %s",
@@ -536,7 +537,8 @@ public class ContainerGridFragment extends VerticalGridFragment
                 startEntranceTransition();
             }
 
-            mThemeHandler.startTheme(mServer.getThemeURL(mContainer));
+            themeKey = mServer.getThemeURL(mContainer);
+            mThemeHandler.startTheme(themeKey);
         }
     }
 
@@ -570,9 +572,9 @@ public class ContainerGridFragment extends VerticalGridFragment
                 rowView = inflater.inflate(R.layout.lb_filterchoice, parent, false);
             }
             final SectionFilter item = values.get(position);
-            ImageView image = (ImageView) rowView.findViewById(R.id.directionImage);
+            ImageView image = rowView.findViewById(R.id.directionImage);
             image.setVisibility(item instanceof SectionSort && !((SectionSort)item).isAscending ? View.VISIBLE: View.INVISIBLE);
-            CheckBox name = (CheckBox) rowView.findViewById(R.id.name);
+            CheckBox name = rowView.findViewById(R.id.name);
             name.setText(item.name);
             name.setChecked(item == selected);
             return rowView;

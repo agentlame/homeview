@@ -363,13 +363,13 @@ public class PlexServer {
         return ret;
     }
 
-    public MediaContainer getVideoMetadata(String key) {
+    public MediaContainer getVideoMetadata(String key, boolean isShow) {
 
         MediaContainer ret = null;
         if (mFactory != null) {
 
             try {
-                ret = mFactory.retrieveMovieMetaData(key);
+                ret = mFactory.retrieveMovieMetaData(key, isShow);
             }
             catch (Exception e) {
                 Log.e(getClass().getName(), e.toString());
@@ -462,7 +462,7 @@ public class PlexServer {
                             for (Directory show : shows.getDirectories()) {
 
                                 String showKey = show.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS);
-                                MediaContainer showResult = mFactory.retrieveMovieMetaData(showKey);
+                                MediaContainer showResult = mFactory.retrieveMovieMetaData(showKey, false);
                                 if (showResult != null && showResult.getVideos() != null) {
 
                                     showResult.setGrandparentKey(show.getKey());

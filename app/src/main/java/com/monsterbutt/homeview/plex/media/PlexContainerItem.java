@@ -24,6 +24,7 @@ import java.util.List;
 
 import us.nineworlds.plex.rest.model.impl.Directory;
 import us.nineworlds.plex.rest.model.impl.Genre;
+import us.nineworlds.plex.rest.model.impl.Hub;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 import us.nineworlds.plex.rest.model.impl.Video;
 
@@ -33,9 +34,9 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
     public static String CHILDREN = "children";
     public static String ALL = "all";
 
-    protected Directory mDirectory = null;
-    protected List<PlexLibraryItem> mVideos = new ArrayList<>();
-    protected List<PlexLibraryItem> mDirectories = new ArrayList<>();
+    Directory mDirectory = null;
+    private List<PlexLibraryItem> mVideos = new ArrayList<>();
+    List<PlexLibraryItem> mDirectories = new ArrayList<>();
 
     protected PlexContainerItem(Parcel in) {
         mDirectory = in.readParcelable(Directory.class.getClassLoader());
@@ -75,6 +76,13 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
         }
         return null;
     }
+
+    @Override
+    public List<Hub> getRelated() {
+        return mDirectory.getRelated() != null && !mDirectory.getRelated().isEmpty() ?
+         mDirectory.getRelated().get(0).getHubs() : null;
+    }
+
 
     static public PlexContainerItem getItem(MediaContainer mc) {
 
@@ -156,6 +164,8 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
                     mDirectories.add(dir);
                 }
             }
+
+            mDirectory.setRelated(directories.get(0).getRelated());
             mDirectory.setLeafCount(Integer.toString(total));
             mDirectory.setViewedLeafCount(Integer.toString(viewed));
         }
@@ -163,11 +173,8 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
 
     private String mCurrFilter = "";
     public String getBaseFilter() { return ALL; }
-    public String getCurrentFilter() {
+    private String getCurrentFilter() {
         return mCurrFilter.isEmpty() ? getBaseFilter() : mCurrFilter;
-    }
-    public void setCurrentFilter(String filter) {
-        mCurrFilter = filter;
     }
 
     @Override
@@ -264,9 +271,6 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
         return "";
     }
 
-    public long getChildCount() {
-        return mDirectory.getChildCount();
-    }
 
     @Override
     public String getCardImageURL() {
@@ -340,12 +344,8 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
         return Long.valueOf(mDirectory.getViewedLeafCount());
     }
 
-    public int getWatchedCount() {
 
-        return PlexContainerItem.getWatchedCount(mDirectory);
-    }
-
-    public static int getWatchedCount(Directory directory) {
+    private static int getWatchedCount(Directory directory) {
 
         if (null == directory || null == directory.getLeafCount() || null == directory.getViewedLeafCount())
             return 0;
@@ -417,11 +417,11 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
         return mDirectories;
     }
 
-    public String getLeafCount() {
+    String getLeafCount() {
         return mDirectory.getLeafCount();
     }
 
-    public String getYear() {
+    private String getYear() {
 
         String ret = mDirectory.getYear();
         if (TextUtils.isEmpty(ret))
@@ -433,7 +433,7 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
         return mDirectory.getStudio();
     }
 
-    public String getViewedLeafCount() {
+    String getViewedLeafCount() {
         return mDirectory.getViewedLeafCount();
     }
 

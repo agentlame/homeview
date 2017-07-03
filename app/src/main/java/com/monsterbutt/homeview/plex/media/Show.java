@@ -15,6 +15,7 @@ import com.monsterbutt.homeview.ui.activity.ContainerActivity;
 import com.monsterbutt.homeview.ui.activity.DetailsActivity;
 import com.monsterbutt.homeview.R;
 
+
 import us.nineworlds.plex.rest.model.impl.Directory;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
@@ -22,7 +23,7 @@ import us.nineworlds.plex.rest.model.impl.MediaContainer;
 public class Show extends PlexContainerItem implements Parcelable {
 
     public static final String TYPE = "show";
-    public static final String ALL_EPISODE = "All episodes";
+    private static final String ALL_EPISODE = "All episodes";
 
     Show(Directory dir) {
         super(dir);
@@ -139,7 +140,7 @@ public class Show extends PlexContainerItem implements Parcelable {
         return true;
     }
 
-    public int getEpisodeCount() {
+    private int getEpisodeCount() {
 
         if (mDirectory != null && !TextUtils.isEmpty(mDirectory.getLeafCount()))
             return Integer.valueOf(mDirectory.getLeafCount());
@@ -154,7 +155,7 @@ public class Show extends PlexContainerItem implements Parcelable {
         return count;
     }
 
-    public int getUnwatchedEpisodeCount() {
+    private int getUnwatchedEpisodeCount() {
 
         if (mDirectory != null && !TextUtils.isEmpty(mDirectory.getViewedLeafCount()) &&
             !TextUtils.isEmpty(mDirectory.getLeafCount()))
