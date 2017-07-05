@@ -3,25 +3,25 @@
 
     <dimen name="CARD_SQUARE">124dp</dimen>
 
-    <dimen name="CARD_PORTRAIT_WIDTH">124dp</dimen>
-    <dimen name="CARD_PORTRAIT_HEIGHT">186dp</dimen>
+    <dimen name="CARD_PORTRAIT_WIDTH">120dp</dimen>
+    <dimen name="CARD_PORTRAIT_HEIGHT">180dp</dimen>
 
-    <dimen name="CARD_LANDSCAPE_WIDTH">190dp</dimen>
-    <dimen name="CARD_LANDSCAPE_HEIGHT">126dp</dimen>
+    <dimen name="CARD_LANDSCAPE_WIDTH">320dp</dimen>
+    <dimen name="CARD_LANDSCAPE_HEIGHT">180dp</dimen>
+
+    <dimen name="CARD_SECTION_WIDTH">190dp</dimen>
+    <dimen name="CARD_SECTION_HEIGHT">126dp</dimen>
 
     <dimen name="CARD_CODEC_WIDTH">100dp</dimen>
     <dimen name="CARD_CODEC_HEIGHT">60dp</dimen>
 
-    <dimen name="POSTER_WIDTH">90dp</dimen>
-    <dimen name="POSTER_HEIGHT">135dp</dimen>
+    <dimen name="POSTER_WIDTH">120dp</dimen>
+    <dimen name="POSTER_HEIGHT">180dp</dimen>
 
-    <dimen name="DETAIL_POSTER_WIDTH">160dp</dimen>
-    <dimen name="DETAIL_POSTER_HEIGHT">240dp</dimen>
+    <dimen name="DETAIL_POSTER_WIDTH">120dp</dimen>
+    <dimen name="DETAIL_POSTER_HEIGHT">180dp</dimen>
 
-    <dimen name="THUMBNAIL_WIDTH">480dp</dimen>
-    <dimen name="THUMBNAIL_HEIGHT">320dp</dimen>
-
-    <dimen name="DETAIL_THUMBNAIL_WIDTH">270dp</dimen>
+    <dimen name="DETAIL_THUMBNAIL_WIDTH">320dp</dimen>
     <dimen name="DETAIL_THUMBNAIL_HEIGHT">180dp</dimen>
 
     <dimen name="BACKGROUND_WIDTH">1920dp</dimen>

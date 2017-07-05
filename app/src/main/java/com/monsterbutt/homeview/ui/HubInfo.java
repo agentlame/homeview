@@ -24,13 +24,13 @@ public class HubInfo implements Parcelable {
     final public String key;
     final public String path;
 
-    public HubInfo(String name, String key, String path) {
+    HubInfo(String name, String key, String path) {
         this.name = name;
         this.key = key;
         this.path = path;
     }
 
-    protected HubInfo(Parcel in) {
+    private HubInfo(Parcel in) {
         name = in.readString();
         key = in.readString();
         path = in.readString();
@@ -94,7 +94,6 @@ public class HubInfo implements Parcelable {
             }
         }
 
-        RowData settings = map.get(PlexItemRow.SETTINGS_ROW_KEY);
         if (hubs != null) {
 
             int addIndex = rowsAdapter.size() > 0 ? 1 : 0;
@@ -121,7 +120,7 @@ public class HubInfo implements Parcelable {
         }
     }
 
-    public static HubInfo getHub(Hub hub) {
+    private static HubInfo getHub(Hub hub) {
         if (hub == null)
             return null;
         return new HubInfo(hub.getTitle(), hub.getHubIdentifier(), hub.getKey());

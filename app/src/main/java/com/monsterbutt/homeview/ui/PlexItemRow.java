@@ -20,6 +20,7 @@ import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.PosterCardExpanded;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.presenters.SceneCardExpanded;
+import com.monsterbutt.homeview.presenters.SectionCard;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
@@ -322,7 +323,7 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
                 if (!row.map.containsKey(key)) {
 
                     row.map.put(key, new RowItem(item, row.adapter.size()));
-                    row.adapter.add(row.useScene ? new SceneCard(context, item) : new PosterCard(context, item));
+                    row.adapter.add(new SectionCard(context, item));
                 }
             }
         }
