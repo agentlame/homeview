@@ -130,8 +130,10 @@ public class CardPresenter extends Presenter {
             cardView.setTitleText(obj.getTitle());
             cardView.setContentText(obj.getContent());
         }
-        if(obj instanceof PosterCard)
-            cardView.setEpisode("", ((PosterCard) obj).getEpisode());
+        if(obj instanceof PosterCard) {
+            cardView.setEpisode((obj instanceof SceneCard) ? "" : ((PosterCard) obj).getSeason(),
+             ((PosterCard) obj).getEpisode());
+        }
         String imageURL = obj.getImageUrl(mPlex);
             // Set card size from dimension resources.
         final Resources res = cardView.getResources();
