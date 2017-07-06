@@ -56,7 +56,7 @@ public class ContainerGridFragment extends VerticalGridFragment
 
     private PlexServer mServer = null;
     private MediaContainer mContainer = null;
-    private boolean mUseScene = false;
+    private boolean mIsEpisodeList = false;
 
     private PlexItemGrid mGrid = null;
 
@@ -203,11 +203,11 @@ public class ContainerGridFragment extends VerticalGridFragment
         mSorts = new SectionFilterArrayAdapter(act, list, list.get(list.size()-1));
 
         mServer = PlexServerManager.getInstance(act.getApplicationContext(), act).getSelectedServer();
-        mUseScene = act.getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false);
-        if (!mUseScene)
+        mIsEpisodeList = act.getIntent().getBooleanExtra(ContainerActivity.EPISODEIST, false);
+        if (mIsEpisodeList)
             mLifeCycleMgr.put(WatchedStatusHandler.key, new WatchedStatusHandler(mServer, this));
 
-        mThemeHandler = new ThemeHandler(act, mServer, mUseScene, !mUseScene);
+        mThemeHandler = new ThemeHandler(act, mServer, mIsEpisodeList, !mIsEpisodeList);
         mLifeCycleMgr.put(ThemeHandler.key, mThemeHandler);
         mSelectionHandler = new CardSelectionHandler(this, this, mServer);
         mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
@@ -216,8 +216,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         if (!TextUtils.isEmpty(background))
             mSelectionHandler.updateBackground(background, true);
         VerticalGridPresenter gridPresenter = new VerticalGridPresenter();
-        String colCount = mUseScene ? act.getString(R.string.gridview_scene_columns)
-                                    : act.getString(R.string.gridview_poster_columns);
+        String colCount = mIsEpisodeList ? act.getString(R.string.gridview_scene_columns) : act.getString(R.string.gridview_poster_columns);
 
         setTitle(null);
         gridPresenter.setNumberOfColumns(Integer.valueOf(colCount));
@@ -248,7 +247,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         }
 
         List<ContainerActivity.QuickJumpRow> quickjumpList = new ArrayList<>();
-        mGrid = mUseScene ? PlexItemGrid.getWatchedStateGrid(mServer, mSelectionHandler)
+        mGrid = mIsEpisodeList ? PlexItemGrid.getWatchedStateGrid(mServer, mSelectionHandler)
                           : PlexItemGrid.getGrid(mServer, mSelectionHandler);
         mLifeCycleMgr.put("containerGrid", mGrid);
         if (container != null) {
@@ -309,7 +308,7 @@ public class ContainerGridFragment extends VerticalGridFragment
                         lastQuickRow = new ContainerActivity.QuickJumpRow(titleLetter, index);
                         quickjumpList.add(lastQuickRow);
                     }
-                    mGrid.addItem(getActivity(), item, mUseScene);
+                    mGrid.addItem(getActivity(), item);
                     ++index;
                 }
             }
@@ -429,7 +428,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         mSortText = (TextView) view.findViewById(R.id.sortText);
         mSortText.setText(mSorts.selected().name);
 
-        if (mUseScene) {
+        if (mIsEpisodeList) {
 
             hubBtn.setVisibility(View.GONE);
             sortBtn.setVisibility(View.GONE);
@@ -465,7 +464,7 @@ public class ContainerGridFragment extends VerticalGridFragment
 
             if (mFilters.selected() != null)
                mFilterText.setText(mFilters.selected().name);
-            if (!mUseScene && getActivity() != null)
+            if (!mIsEpisodeList && getActivity() != null)
                 ((ContainerActivity) getActivity()).setQuickJumpList(quickjumpList);
             setAdapter(mGrid != null ? mGrid.getAdapter() : null);
             setSelectedPosition(0);
@@ -515,7 +514,7 @@ public class ContainerGridFragment extends VerticalGridFragment
 
             TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);
             text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
-            if (mUseScene) {
+            if (mIsEpisodeList) {
                 setTitle(String.format("%s %s %s",
                         mContainer.getTitle1(),
                                 getString(R.string.mid_dot),

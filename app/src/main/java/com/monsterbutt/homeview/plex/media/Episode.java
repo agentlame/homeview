@@ -232,11 +232,7 @@ public class Episode extends PlexVideoItem implements Parcelable {
         String season = getSeasonNum();
         if (!TextUtils.isEmpty(season))
             season = String.format("%s %s %s %s %s",
-                context.getString(R.string.Season), season,
-                context.getString(R.string.mid_dot), context.getString(R.string.Episode),
-                getEpisodeNum());
-        else
-            season = String.format("%s %s",
+                context.getString(R.string.Season), season, context.getString(R.string.mid_dot),
                 context.getString(R.string.Episode), getEpisodeNum());
 
         if (!TextUtils.isEmpty(show)) {

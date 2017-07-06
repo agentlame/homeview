@@ -9,10 +9,8 @@ import android.widget.TextView;
 
 import com.monsterbutt.homeview.R;
 
-import org.w3c.dom.Text;
 
-
-public class HoverCard extends Presenter {
+class HoverCard extends Presenter {
   @Override
   public ViewHolder onCreateViewHolder(ViewGroup parent) {
     HoverCardView view =  new HoverCardView(parent.getContext());

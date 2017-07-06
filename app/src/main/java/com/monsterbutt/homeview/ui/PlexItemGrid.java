@@ -5,10 +5,12 @@ import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.text.TextUtils;
 
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.Folder;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
+import com.monsterbutt.homeview.presenters.EpisodeCard;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
@@ -71,13 +73,14 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
             watchedHandler = new WatchedStatusHandler(server, this);
     }
 
-    public boolean addItem(Context context, PlexLibraryItem item, boolean useScene) {
+    public boolean addItem(Context context, PlexLibraryItem item) {
 
         String key = item instanceof Folder ? item.getKey() : Long.toString(item.getRatingKey());
         if (!map.containsKey(key)) {
 
-            map.put(key, new GridItem(item, adapter.size(), useScene));
-            adapter.add(useScene ? new SceneCard(context, item) : new PosterCard(context, item));
+            boolean isEpisode = item instanceof Episode;
+            map.put(key, new GridItem(item, adapter.size(), isEpisode));
+            adapter.add(isEpisode ? new EpisodeCard(context, item) : new PosterCard(context, item));
             return true;
         }
         return false;

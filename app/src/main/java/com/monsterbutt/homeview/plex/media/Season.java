@@ -122,7 +122,7 @@ public class Season extends PlexContainerItem implements Parcelable {
 
         Intent intent = new Intent(fragment.getActivity(), ContainerActivity.class);
         intent.putExtra(ContainerActivity.KEY, getKey());
-        intent.putExtra(ContainerActivity.USE_SCENE, true);
+        intent.putExtra(ContainerActivity.EPISODEIST, true);
         intent.putExtra(ContainerActivity.BACKGROUND, getBackgroundImageURL());
         if (extras != null)
             intent.putExtras(extras);

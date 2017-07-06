@@ -37,9 +37,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_below="@id/title">
+        android:layout_height="wrap_content" >
 
         <TextView
             android:id="@+id/subtitle"
@@ -54,11 +52,14 @@
             android:id="@+id/ratingImage"
             android:layout_width="@dimen/playback_ui_icons_width_large"
             android:layout_height="@dimen/playback_ui_icons_height"
+            android:layout_marginStart="@dimen/icon_side_margin"
+            android:layout_marginEnd="@dimen/icon_side_margin"
             android:gravity="center"
-            android:scaleType="fitCenter"
+            android:scaleType="fitStart"
             android:visibility="invisible"
             android:layout_centerVertical="true"
             android:layout_toEndOf="@id/subtitle"
+            android:layout_toStartOf="@id/icons"
             tools:src="@drawable/ic_speaker_notes_white_48dp"
             tools:visibility="visible"/>
 

@@ -104,7 +104,7 @@ public class Show extends PlexContainerItem implements Parcelable {
 
             Intent intent = new Intent(fragment.getActivity(), ContainerActivity.class);
             intent.putExtra(ContainerActivity.KEY, getKey().replace(Season.CHILDREN, Season.ALL_SEASONS));
-            intent.putExtra(ContainerActivity.USE_SCENE, true);
+            intent.putExtra(ContainerActivity.EPISODEIST, true);
             intent.putExtra(ContainerActivity.BACKGROUND, getBackgroundImageURL());
             if (extras != null)
                 intent.putExtras(extras);

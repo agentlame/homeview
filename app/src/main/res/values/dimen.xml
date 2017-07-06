@@ -9,6 +9,9 @@
     <dimen name="CARD_LANDSCAPE_WIDTH">320dp</dimen>
     <dimen name="CARD_LANDSCAPE_HEIGHT">180dp</dimen>
 
+    <dimen name="CARD_EPISODE_WIDTH">190dp</dimen>
+    <dimen name="CARD_EPISODE_HEIGHT">107dp</dimen>
+
     <dimen name="CARD_SECTION_WIDTH">190dp</dimen>
     <dimen name="CARD_SECTION_HEIGHT">126dp</dimen>
 
@@ -105,6 +108,8 @@
     <dimen name="lb_hovercard_margin_bottom">8dp</dimen>
 
     <dimen name="lb_login_side_margin">10dp</dimen>
+
+    <dimen name="icon_side_margin">8dp</dimen>
 
     <dimen name="playback_ui_title_row">26sp</dimen>
     <dimen name="playback_ui_clock_row">26sp</dimen>

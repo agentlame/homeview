@@ -33,6 +33,7 @@ public class ImageCardView extends BaseCardView {
     private ViewGroup mInfoArea;
     private TextView mTitleView;
     private TextView mContentView;
+    private TextView mEpisodeView;
     private ImageView mBadgeImage;
     private boolean mAttachedToWindow;
 
@@ -81,6 +82,10 @@ public class ImageCardView extends BaseCardView {
         mFlagText = (TextView) findViewById(R.id.flag_text);
         if (mFlagText.getText() == null) {
             mFlagText.setVisibility(View.INVISIBLE);
+        }
+        mEpisodeView = (TextView) findViewById(R.id.episode_text);
+        if (mEpisodeView.getText() == null) {
+            mEpisodeView.setVisibility(View.GONE);
         }
         mProgressView = (ProgressBar) findViewById(R.id.card_progress);
         if (mProgressView.getProgress() == 0) {
@@ -250,6 +255,25 @@ public class ImageCardView extends BaseCardView {
         else {
             mFlagText.setText(text);
             mFlagText.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void setEpisode(String season, String episode) {
+        if (TextUtils.isEmpty(episode))
+            mEpisodeView.setVisibility(View.GONE);
+        else {
+
+            Context context = getContext();
+            String text;
+            if (!TextUtils.isEmpty(season))
+                text = String.format("%s %s %s %s %s",
+                                        context.getString(R.string.season_abbrev), season,
+                                        context.getString(R.string.mid_dot),
+                                        context.getString(R.string.episodes_abbrev), episode);
+            else
+                text = String.format("%s %s", context.getString(R.string.episodes_abbrev), episode);
+            mEpisodeView.setText(text);
+            mEpisodeView.setVisibility(View.VISIBLE);
         }
     }
 

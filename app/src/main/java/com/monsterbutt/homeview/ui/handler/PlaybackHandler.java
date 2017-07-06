@@ -651,7 +651,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
             String key = String.format("/library/sections/%s/all", currentVideo.getSectionId());
             if (currentVideo instanceof Episode) {
               key = String.format("%s/%s", ((Episode) currentVideo).getShowKey(), Season.ALL_SEASONS);
-              intent.putExtra(ContainerActivity.USE_SCENE, true);
+              intent.putExtra(ContainerActivity.EPISODEIST, true);
             }
             key += "?" + server.getToken();
             intent.putExtra(ContainerActivity.KEY, key);

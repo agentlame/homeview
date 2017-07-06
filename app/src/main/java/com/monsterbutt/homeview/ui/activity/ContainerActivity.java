@@ -21,7 +21,7 @@ import java.util.List;
 public class ContainerActivity extends HomeViewActivity {
 
     public static final String KEY = "key";
-    public static final String USE_SCENE = "scenelayout";
+    public static final String EPISODEIST = "episodeList";
     public static final String SHARED_ELEMENT_NAME = "hero";
     public static final String BACKGROUND = "background";
     public static final String SELECTED = "selected";
@@ -42,7 +42,7 @@ public class ContainerActivity extends HomeViewActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_container);
 
-        if (getIntent().getBooleanExtra(ContainerActivity.USE_SCENE, false))
+        if (getIntent().getBooleanExtra(ContainerActivity.EPISODEIST, false))
             (findViewById(R.id.toolbarQuickJump)).setVisibility(View.GONE);
 
         summary = (LinearLayout) findViewById(R.id.summary);

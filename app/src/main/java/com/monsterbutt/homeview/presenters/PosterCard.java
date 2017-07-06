@@ -9,6 +9,7 @@ import android.view.View;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
@@ -110,7 +111,9 @@ public class PosterCard extends CardObject {
         return item.getViewedProgress();
     }
 
-    public long getViewedOffset() { return item.getViewedOffset(); }
+    public String getSeason() { return item instanceof Episode ? ((Episode) item).getSeasonNum() : ""; }
+
+    public String getEpisode() { return item instanceof Episode ? ((Episode) item).getEpisodeNum() : ""; }
 
     @Override
     public boolean useItemBackgroundArt() { return item.useItemBackgroundArt(); }
