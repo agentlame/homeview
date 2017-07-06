@@ -80,11 +80,11 @@ public class ImageCardView extends BaseCardView {
             mFlagView.setVisibility(View.INVISIBLE);
         }
         mFlagText = (TextView) findViewById(R.id.flag_text);
-        if (mFlagText.getText() == null) {
+        if (TextUtils.isEmpty(mFlagText.getText())) {
             mFlagText.setVisibility(View.INVISIBLE);
         }
         mEpisodeView = (TextView) findViewById(R.id.episode_text);
-        if (mEpisodeView.getText() == null) {
+        if (TextUtils.isEmpty(mEpisodeView.getText())) {
             mEpisodeView.setVisibility(View.GONE);
         }
         mProgressView = (ProgressBar) findViewById(R.id.card_progress);
