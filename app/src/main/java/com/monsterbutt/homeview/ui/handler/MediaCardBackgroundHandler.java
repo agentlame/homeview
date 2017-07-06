@@ -42,8 +42,9 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
     private boolean mSetting = false;
 
     private String mBackgroundURL = "";
+    private String mWaitingBackgroundURL = "";
 
-    public MediaCardBackgroundHandler(Activity activity) {
+    MediaCardBackgroundHandler(Activity activity) {
 
         mActivity = activity;
         mDefaultBackground = mActivity.getDrawable(R.drawable.default_background);
@@ -63,6 +64,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
         synchronized (this) {
 
             mBackgroundURL = uri;
+            mWaitingBackgroundURL = "";
             mSetting = true;
             mTarget = new SimpleTarget<GlideDrawable>(mMetrics.widthPixels, mMetrics.heightPixels) {
                 @Override
@@ -90,10 +92,13 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
 
         onPause();
         mBackgroundTimer = new Timer();
+        synchronized (this) {
+            mWaitingBackgroundURL = path;
+        }
         mBackgroundTimer.schedule(new UpdateBackgroundTask(path), BACKGROUND_UPDATE_DELAY);
     }
 
-    public void updateBackgroundTimed(PlexServer server, CardObject item) {
+    void updateBackgroundTimed(PlexServer server, CardObject item) {
 
         String url;
         if (item instanceof SceneCard) {
@@ -129,8 +134,11 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
                 mBackgroundManager.attach(mActivity.getWindow());
             mActivity.getWindowManager().getDefaultDisplay().getMetrics(mMetrics);
 
-            if (!TextUtils.isEmpty(mBackgroundURL))
+            if (!TextUtils.isEmpty(mBackgroundURL) || !TextUtils.isEmpty(mWaitingBackgroundURL)) {
+                if (!TextUtils.isEmpty(mWaitingBackgroundURL))
+                    mBackgroundURL = mWaitingBackgroundURL;
                 updateBackground(mBackgroundURL, false);
+            }
         }
     }
 
@@ -154,7 +162,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
     private class UpdateBackgroundTask extends TimerTask {
 
         private URI mBackgroundURI;
-        public UpdateBackgroundTask(String path) {
+        UpdateBackgroundTask(String path) {
 
             mBackgroundURI = URI.create(path);
         }
@@ -176,7 +184,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
 
         final PlexServer mServer;
 
-        public GetRandomArtForSectionTask(PlexServer server) {
+        GetRandomArtForSectionTask(PlexServer server) {
             mServer = server;
         }
 
