@@ -78,7 +78,7 @@ import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_TEXT;
 public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
  PlaybackControlView.VisibilityListener, PlaybackHandler.Invoker, CardPresenter.CardPresenterLongClickListener {
 
-  private static final String Tag = "PictureActivity";
+  private static final String Tag = "PlayerActivity";
   public static final String ACTION_VIEW = "com.monsterbutt.homeview.ui.activity.action.VIEW";
   public static final String KEY = "key";
   public static final String START_OFFSET = "startoffset";
@@ -120,7 +120,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   private boolean mPauseTransient;
   private MediaSessionCompat session;
 
-  private int showFlagCount = 0;
+  private boolean holdWake = false;
 
   private final AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener =
    new AudioManager.OnAudioFocusChangeListener() {
@@ -445,6 +445,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     if (mHasAudioFocus) {
       return;
     }
+    Log.d(Tag, "Request Audio Focus");
     int result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
      AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
     if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
@@ -454,8 +455,11 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   }
 
   private void abandonAudioFocus() {
-    mHasAudioFocus = false;
-    mAudioManager.abandonAudioFocus(mOnAudioFocusChangeListener);
+    if (mHasAudioFocus) {
+      Log.d(Tag, "Abandon Audio Focus");
+      mHasAudioFocus = false;
+      mAudioManager.abandonAudioFocus(mOnAudioFocusChangeListener);
+    }
   }
 
   // ExoPlayer.EventListener implementation
@@ -657,6 +661,24 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     return (isFinishing() || isDestroyed()) ? null : this;
   }
 
+  private void getScreenLock() {
+    if (!holdWake) {
+      getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+      holdWake = true;
+      Log.d(Tag, "Stay Awake");
+      requestAudioFocus();
+    }
+  }
+
+  private void releaseScreenLock() {
+    if (holdWake){
+      abandonAudioFocus();
+      getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+      holdWake = false;
+      Log.d(Tag, "Clear Awake");
+    }
+  }
+
   @Override
   public void onPlayback(final boolean isPlaying) {
 
@@ -665,15 +687,10 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
       @Override
       public void run() {
         synchronized (PlayerActivity.this) {
-          if (isPlaying) {
-            ++showFlagCount;
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            Log.e("Screen Flag", "Awake :" + showFlagCount);
-          } else {
-            --showFlagCount;
-            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-            Log.e("Screen Flag", "Sleep :" + showFlagCount);
-          }
+          if (isPlaying)
+            getScreenLock();
+          else
+            releaseScreenLock();
         }
       }
     });
