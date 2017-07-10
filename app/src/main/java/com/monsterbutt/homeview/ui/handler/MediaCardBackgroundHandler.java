@@ -209,7 +209,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
             if (result != null && result.getPhotos() != null && !result.getPhotos().isEmpty()) {
 
                 int pos = (int) (1000 * Math.random()) % result.getPhotos().size();
-                startBackgroundTimer(mServer.makeServerURL(result.getPhotos().get(pos).getKey()));
+                startBackgroundTimer(result.getPhotos().get(pos).getKey());
             }
         }
     }
