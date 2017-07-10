@@ -132,8 +132,8 @@ public class MediaCodecCapabilities {
                     return AudioFormat.ENCODING_E_AC3;
                 break;
             case MimeTypes.AUDIO_TRUEHD:
-                if (audioCapabilities.supportsEncoding(C.ENCODING_TRUE_HD))
-                    return C.ENCODING_TRUE_HD;
+                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DOLBY_TRUEHD))
+                    return AudioFormat.ENCODING_DOLBY_TRUEHD;
                 break;
             case MimeTypes.AUDIO_DTS:
                 if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DTS))
