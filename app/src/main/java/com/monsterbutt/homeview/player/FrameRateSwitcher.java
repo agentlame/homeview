@@ -34,7 +34,7 @@ public class FrameRateSwitcher {
 
         private final static String intentVal = "android.media.action.HDMI_AUDIO_PLUG";
 
-        private final Activity activity;
+        private final Context context;
         private final FrameRateSwitcherListener listener;
         private boolean isPlugged = true;
         private final long delayValue;
@@ -44,10 +44,10 @@ public class FrameRateSwitcher {
 
         public  RefreshRateSwitchReceiver(Activity activity, FrameRateSwitcherListener listener) {
 
-            this.activity = activity;
+            this.context = activity.getApplicationContext();
             this.listener = listener;
             delayValue = SettingsManager.getInstance(activity).getLong("preferences_device_refreshrate_delay");
-            activity.registerReceiver(this, new IntentFilter(intentVal));
+            context.registerReceiver(this, new IntentFilter(intentVal));
         }
 
         public void setReady() {
@@ -56,7 +56,7 @@ public class FrameRateSwitcher {
             synchronized (lock) {
                 handler.removeCallbacks(timeOutTask);
                 handler.postDelayed(timeOutTask,
-                 SettingsManager.getInstance(activity).getLong("preferences_device_refreshrate_timeout"));
+                 SettingsManager.getInstance(context).getLong("preferences_device_refreshrate_timeout"));
             }
         }
 
@@ -102,8 +102,7 @@ public class FrameRateSwitcher {
 
         public void unregister() {
             Log.i(Tag, "Unregistering Receiver");
-            if (!activity.isDestroyed() && !activity.isFinishing())
-                activity.unregisterReceiver(this);
+            context.unregisterReceiver(this);
         }
     }
 
