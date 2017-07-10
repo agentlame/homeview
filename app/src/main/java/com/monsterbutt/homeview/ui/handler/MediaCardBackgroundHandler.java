@@ -61,7 +61,8 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
 
     public void updateBackground(String uri, boolean animate) {
 
-        if (mServer == null || mActivity.isDestroyed() || mActivity.isFinishing())
+        if (mServer == null || mActivity.isDestroyed() || mActivity.isFinishing() ||
+         (!TextUtils.isEmpty(uri) && uri.equalsIgnoreCase(mBackgroundURL)))
             return;
 
         onPause();
