@@ -57,33 +57,34 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
     private final Chapter.OnClickListenerHandler mChapterClickListener;
     private final boolean mUpdateBackgroundOnCardChange;
 
-    public CardSelectionHandler(Fragment fragment) {
-        this(fragment, null, null,  null, null, null, true);
-    }
-
-    public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener) {
-        this(fragment, cardListener, null,  null, null, null, true);
-    }
-
     public CardSelectionHandler(Fragment fragment, PlexServer server) {
-        this(fragment, null, null, server, null, null, true);
+        this(fragment, null, null, server, null, null, true, "");
     }
 
     public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener, PlexServer server) {
-        this(fragment, cardListener, null, server, null, null, true);
+        this(fragment, cardListener, null, server, null, null, true, "");
+    }
+
+    public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener, PlexServer server, String backgroundURI) {
+        this(fragment, cardListener, null, server, null, null, true, backgroundURI);
     }
 
     public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener, PlexServer server,
                                 PlexLibraryItem mainItem, ImageView mainItemImage) {
-        this(fragment, cardListener, null, server, mainItem, mainItemImage, false);
+        this(fragment, cardListener, null, server, mainItem, mainItemImage, false, "");
+    }
+
+    public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener, PlexServer server,
+                                PlexLibraryItem mainItem, ImageView mainItemImage, String backgroundURI) {
+        this(fragment, cardListener, null, server, mainItem, mainItemImage, false, backgroundURI);
     }
 
     private CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener,
                                 Chapter.OnClickListenerHandler chapterListener, PlexServer server,
                                 PlexLibraryItem mainItem, ImageView mainItemImage,
-                                boolean updateBackgroundOnCardChange) {
+                                boolean updateBackgroundOnCardChange, String backgroundURI) {
 
-        super(fragment.getActivity());
+        super(fragment.getActivity(), server, backgroundURI);
         mUpdateBackgroundOnCardChange = updateBackgroundOnCardChange;
         mCardListener = cardListener;
         mChapterClickListener = chapterListener;
@@ -172,7 +173,7 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
                     else
                         mCurrentCardTransitionImage = null;
                     if (mUpdateBackgroundOnCardChange)
-                        updateBackgroundTimed(mServer, (CardObject) item);
+                        updateBackgroundTimed((CardObject) item);
                 }
             }
             else {

@@ -136,16 +136,8 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         mSelectionHandler = new CardSelectionHandler(this, this, mServer, mItem, img);
 
         mBackgroundURL = getActivity().getIntent().getStringExtra(DetailsActivity.BACKGROUND);
-        if (!TextUtils.isEmpty(mBackgroundURL)) {
-            if (!mBackgroundURL.startsWith("http")) {
-                if (mServer.getServerURL().endsWith("/") && mBackgroundURL.startsWith("/"))
-                    mBackgroundURL = mServer.getServerURL() + mBackgroundURL.substring(1);
-                else
-                    mBackgroundURL = mServer.getServerURL() + mBackgroundURL;
-            }
-            mBackgroundURL += "?" + mServer.getToken();
+        if (!TextUtils.isEmpty(mBackgroundURL))
             mSelectionHandler.updateBackground(mBackgroundURL, true);
-        }
         mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
         mLifeCycleMgr.put(WatchedStatusHandler.key, new WatchedStatusHandler(mServer, this));
         mLifeCycleMgr.put(ThemeHandler.key, mThemeHandler);
@@ -173,7 +165,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     private void setupDetailsOverviewRow() {
 
         if (TextUtils.isEmpty(mBackgroundURL))
-            mSelectionHandler.updateBackground(mServer.makeServerURL(mItem.getBackgroundImageURL()), true);
+            mSelectionHandler.updateBackground(mItem.getBackgroundImageURL(), true);
         boolean usePoster = !(mItem instanceof Episode);
         final DetailsOverviewRow row = new DetailsOverviewRow(mItem);
 

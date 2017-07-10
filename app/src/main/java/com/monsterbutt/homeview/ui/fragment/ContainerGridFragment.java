@@ -209,12 +209,9 @@ public class ContainerGridFragment extends VerticalGridFragment
 
         mThemeHandler = new ThemeHandler(act, mServer, mIsEpisodeList, !mIsEpisodeList);
         mLifeCycleMgr.put(ThemeHandler.key, mThemeHandler);
-        mSelectionHandler = new CardSelectionHandler(this, this, mServer);
+        mSelectionHandler = new CardSelectionHandler(this, this, mServer, act.getIntent().getStringExtra(ContainerActivity.BACKGROUND));
         mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
         mPassedSelectedKey = act.getIntent().getStringExtra(ContainerActivity.SELECTED);
-        String background = act.getIntent().getStringExtra(ContainerActivity.BACKGROUND);
-        if (!TextUtils.isEmpty(background))
-            mSelectionHandler.updateBackground(background, true);
         VerticalGridPresenter gridPresenter = new VerticalGridPresenter();
         String colCount = mIsEpisodeList ? act.getString(R.string.gridview_scene_columns) : act.getString(R.string.gridview_poster_columns);
 
@@ -529,7 +526,7 @@ public class ContainerGridFragment extends VerticalGridFragment
 
                 String art = mContainer.getArt();
                 if (art != null && !art.isEmpty())
-                    mSelectionHandler.updateBackground(mServer.makeServerURL(art), true);
+                    mSelectionHandler.updateBackground(art, true);
                 setAdapter(mGrid != null ? mGrid.getAdapter() : null);
                 setSelectedPosition(mGrid.getIndexForKey(mPassedSelectedKey));
                 mPassedSelectedKey = "";

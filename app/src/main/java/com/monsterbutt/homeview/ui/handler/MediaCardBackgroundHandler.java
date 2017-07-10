@@ -44,12 +44,16 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
     private String mBackgroundURL = "";
     private String mWaitingBackgroundURL = "";
 
-    MediaCardBackgroundHandler(Activity activity) {
+    private final PlexServer mServer;
 
+    MediaCardBackgroundHandler(Activity activity, PlexServer server, String backgroundURI) {
+
+        mServer = server;
         mActivity = activity;
         mDefaultBackground = mActivity.getDrawable(R.drawable.default_background);
         mMetrics = new DisplayMetrics();
-
+        if (!TextUtils.isEmpty(backgroundURI))
+            mBackgroundURL = backgroundURI;
         onResume();
     }
 
@@ -57,7 +61,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
 
     public void updateBackground(String uri, boolean animate) {
 
-        if (mActivity.isDestroyed() || mActivity.isFinishing())
+        if (mServer == null || mActivity.isDestroyed() || mActivity.isFinishing())
             return;
 
         onPause();
@@ -79,7 +83,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
             };
 
             DrawableRequestBuilder builder = Glide.with(mActivity)
-                                            .load(mBackgroundURL)
+                                            .load(mServer.makeServerURL(mBackgroundURL))
                                             .centerCrop()
                                             .error(mDefaultBackground);
             if (!animate)
@@ -98,7 +102,10 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
         mBackgroundTimer.schedule(new UpdateBackgroundTask(path), BACKGROUND_UPDATE_DELAY);
     }
 
-    void updateBackgroundTimed(PlexServer server, CardObject item) {
+    void updateBackgroundTimed(CardObject item) {
+
+        if (mServer == null)
+            return;
 
         String url;
         if (item instanceof SceneCard) {
@@ -106,7 +113,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
             SceneCard card = (SceneCard) item;
             if (!card.useItemBackgroundArt()) {
 
-                new GetRandomArtForSectionTask(server).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, card.getSectionId());
+                new GetRandomArtForSectionTask(mServer).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, card.getSectionId());
                 return;
             }
             else
@@ -121,7 +128,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
 
         mBackgroundURL = url;
         if (mBackgroundURL != null && !mBackgroundURL.isEmpty())
-            startBackgroundTimer(server.makeServerURL(mBackgroundURL));
+            startBackgroundTimer(mBackgroundURL);
     }
 
     @Override

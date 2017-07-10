@@ -110,7 +110,7 @@ public class UpnpItemsFragment extends VerticalGridFragment implements CardSelec
             mPathName = ROOT_PATH_NAME;
 
         setTitle(mPathName);
-        mSelectionHandler = new CardSelectionHandler(this, this);
+        mSelectionHandler = new CardSelectionHandler(this, this, null);
         VerticalGridPresenter gridPresenter = new VerticalGridPresenter();
         String colCount = act.getString(R.string.gridview_poster_columns);
 

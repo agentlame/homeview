@@ -120,6 +120,8 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
   private boolean mPauseTransient;
   private MediaSessionCompat session;
 
+  private int showFlagCount = 0;
+
   private final AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener =
    new AudioManager.OnAudioFocusChangeListener() {
      @Override
@@ -662,10 +664,17 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        if (isPlaying)
-          getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        else
-          getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        synchronized (PlayerActivity.this) {
+          if (isPlaying) {
+            ++showFlagCount;
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            Log.e("Screen Flag", "Awake :" + showFlagCount);
+          } else {
+            --showFlagCount;
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            Log.e("Screen Flag", "Sleep :" + showFlagCount);
+          }
+        }
       }
     });
   }

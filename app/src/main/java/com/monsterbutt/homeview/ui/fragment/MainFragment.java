@@ -97,7 +97,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 
         mServer = PlexServerManager.getInstance(getActivity(), getActivity()).getSelectedServer();
-        mSelectionHandler = new CardSelectionHandler(this);
+        mSelectionHandler = new CardSelectionHandler(this, mServer);
         if (mServer != null)
             mSelectionHandler.setServer(mServer);
         mRowsAdapter = new ArrayObjectAdapter(new CustomListRowPresenter(this));
@@ -303,7 +303,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         protected void onPostExecute(String artKey) {
 
             if (artKey != null && !artKey.isEmpty())
-                mSelectionHandler.updateBackground(mServer.makeServerURL(artKey), true);
+                mSelectionHandler.updateBackground(artKey, true);
         }
     }
 }

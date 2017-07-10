@@ -68,7 +68,7 @@ public class UpnpServersFragment extends VerticalGridFragment  {
         gridPresenter.setNumberOfColumns(Integer.valueOf(colCount));
         setGridPresenter(gridPresenter);
 
-        new CardSelectionHandler(this);
+        new CardSelectionHandler(this, null);
         adapter = new ArrayObjectAdapter(new UpnpCardPresenter());
         setAdapter(adapter);
 
