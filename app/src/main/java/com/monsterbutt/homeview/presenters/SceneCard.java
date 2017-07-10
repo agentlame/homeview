@@ -39,13 +39,11 @@ public class SceneCard extends PosterCard {
 
     @Override
     public int getHeight() {
-        return R.dimen.CARD_LANDSCAPE_HEIGHT;
+        return R.dimen.CARD_EPISODE_HEIGHT;
     }
 
     @Override
-    public int getWidth() {
-        return R.dimen.CARD_LANDSCAPE_WIDTH;
-    }
+    public int getWidth() { return R.dimen.CARD_EPISODE_WIDTH; }
 
     public String getSectionId() {
         return item.getSectionId();

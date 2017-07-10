@@ -10,7 +10,6 @@ import com.monsterbutt.homeview.plex.media.Folder;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
-import com.monsterbutt.homeview.presenters.EpisodeCard;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
@@ -80,7 +79,7 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
 
             boolean isEpisode = item instanceof Episode;
             map.put(key, new GridItem(item, adapter.size(), isEpisode));
-            adapter.add(isEpisode ? new EpisodeCard(context, item) : new PosterCard(context, item));
+            adapter.add(isEpisode ? new SceneCard(context, item) : new PosterCard(context, item));
             return true;
         }
         return false;
