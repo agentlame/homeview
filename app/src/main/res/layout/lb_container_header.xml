@@ -17,8 +17,6 @@
         android:layout_margin="@dimen/toolbar_padding"
         android:nextFocusRight="@+id/sortBtn"
         android:focusable="true"
-        android:shadowColor="@color/black_opaque"
-        android:shadowRadius="3.0"
         android:background="?android:attr/selectableItemBackground"
         android:focusableInTouchMode="true"
         android:clickable="true"/>
@@ -34,8 +32,6 @@
         android:nextFocusRight="@+id/filterBtn"
         android:focusableInTouchMode="true"
         android:focusable="true"
-        android:shadowColor="@color/black_opaque"
-        android:shadowRadius="3.0"
         android:background="?android:attr/selectableItemBackground"
         android:clickable="true" />
 
@@ -47,8 +43,6 @@
         android:layout_height="wrap_content"
         android:textAlignment="center"
         android:textSize="@dimen/container_item_textsize"
-        android:shadowColor="@color/black_opaque"
-        android:shadowRadius="3.0"
         tools:text="Title"/>
 
     <Button
@@ -62,8 +56,6 @@
         android:focusableInTouchMode="true"
         android:focusable="true"
         android:background="?android:attr/selectableItemBackground"
-        android:shadowColor="@color/black_opaque"
-        android:shadowRadius="3.0"
         android:clickable="true" />
 
     <TextView
@@ -74,8 +66,6 @@
         android:layout_height="wrap_content"
         android:textAlignment="center"
         android:textSize="@dimen/container_item_textsize"
-        android:shadowColor="@color/black_opaque"
-        android:shadowRadius="3.0"
         tools:text="All"/>
 
 

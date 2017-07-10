@@ -52,8 +52,6 @@
                     tools:text="Decoder"
                     android:textSize="@dimen/caption_text_size_secondary"
                     android:textAlignment="center"
-                    android:shadowColor="@color/black_opaque"
-                    android:shadowRadius="3.0"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
@@ -75,8 +73,6 @@
                     android:paddingEnd="@dimen/codeccard_text_padding_small"
                     android:paddingStart="@dimen/codeccard_text_padding_small"
                     android:maxLines="1"
-                    android:shadowColor="@color/black_opaque"
-                    android:shadowRadius="3.0"
                     android:ellipsize="marquee" />
 
                 <TextView
@@ -86,8 +82,6 @@
                     android:textAlignment="center"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:shadowColor="@color/black_opaque"
-                    android:shadowRadius="3.0"
                     android:paddingEnd="@dimen/codeccard_text_padding_small"
                     android:paddingStart="@dimen/codeccard_text_padding_small" />
 

@@ -16,8 +16,6 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
         android:layout_alignParentStart="true"
-        android:shadowColor="@color/black_opaque"
-        android:shadowRadius="3.0"
         tools:checked="true"
         tools:text="Sort name"/>
 

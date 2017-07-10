@@ -25,8 +25,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:shadowColor="@color/black_opaque"
-        android:shadowRadius="3.0"
         tools:text="Codec information goes here with stuff"/>
 
 </LinearLayout>

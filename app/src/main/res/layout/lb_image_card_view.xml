@@ -26,8 +26,6 @@
             android:layout_gravity="left"
             android:background="@color/BlueGrey.Primary.Translucent"
             android:padding="@dimen/detail_text_padding"
-            android:shadowColor="@color/black_opaque"
-            android:shadowRadius="3.0"
             tools:text="S00 E00"/>
 
         <ProgressBar
