@@ -35,10 +35,10 @@ import com.monsterbutt.homeview.ui.android.ImageCardView;
 
 public class CardSelectionHandler extends MediaCardBackgroundHandler
                                     implements OnItemViewClickedListener, OnItemViewSelectedListener,
-                                             HomeViewActivity.OnPlayKeyListener,
-                                             CardPresenter.CardPresenterLongClickListener {
+                                             HomeViewActivity.OnPlayKeyListener {
 
     public final static String key = "CardSelectionHandler";
+
     public interface CardSelectionListener {
 
         void onCardSelected(CardObject card);
@@ -77,6 +77,12 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
     public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener, PlexServer server,
                                 PlexLibraryItem mainItem, ImageView mainItemImage, String backgroundURI) {
         this(fragment, cardListener, null, server, mainItem, mainItemImage, false, backgroundURI);
+    }
+
+    public CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener, PlexServer server,
+                                PlexLibraryItem mainItem, ImageView mainItemImage,
+                                boolean updateBackgroundOnCardChange, String backgroundURI) {
+        this(fragment, cardListener, null, server, mainItem, mainItemImage, updateBackgroundOnCardChange, backgroundURI);
     }
 
     private CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener,
@@ -130,7 +136,6 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
         return ret;
     }
 
-    @Override
     public boolean longClickOccured(CardObject obj, CardPresenter.LongClickWatchStatusCallback callback) {
 
         if (obj != null) {
@@ -161,7 +166,6 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
     @Override
     public void onItemSelected(Presenter.ViewHolder itemViewHolder, Object item,
                                RowPresenter.ViewHolder rowViewHolder, Row row) {
-
         synchronized (this) {
             if (item instanceof CardObject) {
                 synchronized (this) {
@@ -186,6 +190,10 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
     @Override
     public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
                               RowPresenter.ViewHolder rowViewHolder, Row row) {
+        onItemClicked(item);
+    }
+
+    public void onItemClicked(Object item) {
 
         Activity act = mFragment.getActivity();
         if (item instanceof CardObject) {

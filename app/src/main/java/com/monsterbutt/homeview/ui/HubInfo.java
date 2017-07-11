@@ -7,7 +7,7 @@ import android.support.v17.leanback.widget.ArrayObjectAdapter;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.presenters.CardPresenter;
+import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,7 +64,7 @@ public class HubInfo implements Parcelable {
                                     List<HubInfo> hubs, HashMap<String, Integer> landscape,
                                     Map<String, RowData> map, ArrayObjectAdapter rowsAdapter,
                                     UILifecycleManager lifeCycleMgr, PlexItemRow.RefreshAllCallback callback,
-                                    CardPresenter.CardPresenterLongClickListener listener) {
+                                    CardSelectionHandler listener) {
 
         List<RowData> currentRows = new ArrayList<>();
         currentRows.addAll(map.values());

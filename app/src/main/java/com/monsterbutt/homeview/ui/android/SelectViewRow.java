@@ -14,7 +14,7 @@ import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.fragment.SelectionFragment;
 
 public abstract class SelectViewRow extends SelectView
- implements CardPresenter.CardPresenterLongClickListener, OnItemViewClickedListener {
+ implements OnItemViewClickedListener {
 
   public SelectViewRow(Activity activity) {
     super(activity);
@@ -31,13 +31,6 @@ public abstract class SelectViewRow extends SelectView
 
     cardClicked(card);
     release();
-  }
-
-  @Override
-  public boolean longClickOccured(CardObject card, CardPresenter.LongClickWatchStatusCallback callback) {
-
-    clicked((PosterCard) card);
-    return true;
   }
 
   @Override

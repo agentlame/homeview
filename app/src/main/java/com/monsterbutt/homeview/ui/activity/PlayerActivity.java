@@ -76,7 +76,7 @@ import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_AUDIO;
 import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_TEXT;
 
 public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
- PlaybackControlView.VisibilityListener, PlaybackHandler.Invoker, CardPresenter.CardPresenterLongClickListener {
+ PlaybackControlView.VisibilityListener, PlaybackHandler.Invoker {
 
   private static final String Tag = "PlayerActivity";
   public static final String ACTION_VIEW = "com.monsterbutt.homeview.ui.activity.action.VIEW";
@@ -711,11 +711,6 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
       }
     });
     SetButtonEnabled(chaptersButton, item.hasChapters());
-  }
-
-  @Override
-  public boolean longClickOccured(CardObject card, CardPresenter.LongClickWatchStatusCallback callback) {
-    return false;
   }
 
   private void SetButtonEnabled(View view, boolean enabled) {

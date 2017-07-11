@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.support.v17.leanback.app.BackgroundManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import com.bumptech.glide.DrawableRequestBuilder;
 import com.bumptech.glide.Glide;
@@ -38,13 +39,12 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
     private Timer mBackgroundTimer = null;
     private BackgroundManager mBackgroundManager;
 
-    private SimpleTarget<GlideDrawable> mTarget;
-    private boolean mSetting = false;
-
     private String mBackgroundURL = "";
     private String mWaitingBackgroundURL = "";
+    private String mLoadedBackgroundURL = "";
 
     private final PlexServer mServer;
+    private final static String Tag = "BackgroundHandler";
 
     MediaCardBackgroundHandler(Activity activity, PlexServer server, String backgroundURI) {
 
@@ -54,31 +54,34 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
         mMetrics = new DisplayMetrics();
         if (!TextUtils.isEmpty(backgroundURI))
             mBackgroundURL = backgroundURI;
-        onResume();
     }
 
     public String getBackgroundURL() { return mBackgroundURL; }
 
-    public void updateBackground(String uri, boolean animate) {
+    public void updateBackground(final String uri, boolean animate) {
+        updateBackground(uri, animate, false);
+    }
+
+    private void updateBackground(final String uri, boolean animate, boolean wasResumed) {
 
         if (mServer == null || mActivity.isDestroyed() || mActivity.isFinishing() ||
-         (!TextUtils.isEmpty(uri) && uri.equalsIgnoreCase(mBackgroundURL)))
+         (!wasResumed && !TextUtils.isEmpty(uri) && uri.equalsIgnoreCase(mLoadedBackgroundURL)))
             return;
 
-        onPause();
+        killTimer();
         synchronized (this) {
 
             mBackgroundURL = uri;
+            Log.d(Tag, "Loading background : " + uri);
             mWaitingBackgroundURL = "";
-            mSetting = true;
-            mTarget = new SimpleTarget<GlideDrawable>(mMetrics.widthPixels, mMetrics.heightPixels) {
+            SimpleTarget<GlideDrawable> target = new SimpleTarget<GlideDrawable>(mMetrics.widthPixels, mMetrics.heightPixels) {
                 @Override
                 public void onResourceReady(GlideDrawable resource,
                                             GlideAnimation<? super GlideDrawable> glideAnimation) {
                     synchronized (this) {
-                        mSetting = false;
                         if (resource != null && mBackgroundManager != null)
                             mBackgroundManager.setDrawable(resource);
+                        mLoadedBackgroundURL = uri;
                     }
                 }
             };
@@ -89,18 +92,24 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
                                             .error(mDefaultBackground);
             if (!animate)
                builder.dontAnimate();
-            builder.into(mTarget);
+            builder.into(target);
         }
     }
 
     private void startBackgroundTimer(String path) {
-
-        onPause();
+        killTimer();
         mBackgroundTimer = new Timer();
         synchronized (this) {
             mWaitingBackgroundURL = path;
         }
         mBackgroundTimer.schedule(new UpdateBackgroundTask(path), BACKGROUND_UPDATE_DELAY);
+    }
+
+    private void killTimer() {
+        synchronized (this) {
+            if (null != mBackgroundTimer)
+                mBackgroundTimer.cancel();
+        }
     }
 
     void updateBackgroundTimed(CardObject item) {
@@ -145,7 +154,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
             if (!TextUtils.isEmpty(mBackgroundURL) || !TextUtils.isEmpty(mWaitingBackgroundURL)) {
                 if (!TextUtils.isEmpty(mWaitingBackgroundURL))
                     mBackgroundURL = mWaitingBackgroundURL;
-                updateBackground(mBackgroundURL, false);
+                updateBackground(mBackgroundURL, true, true);
             }
         }
     }
@@ -153,14 +162,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
     @Override
     public void onPause() {
 
-        synchronized (this) {
-
-            if (mSetting)
-                Glide.clear(mTarget);
-
-            if (null != mBackgroundTimer)
-                mBackgroundTimer.cancel();
-        }
+        killTimer();
     }
 
     @Override
@@ -181,7 +183,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
                 @Override
                 public void run() {
                     if (mBackgroundURI != null) {
-                        updateBackground(mBackgroundURI.toString(), true);
+                        updateBackground(mBackgroundURI.toString(), true, false);
                     }
                 }
             });

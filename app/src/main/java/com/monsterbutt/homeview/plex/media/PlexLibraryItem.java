@@ -26,6 +26,7 @@ import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.PlexItemRow;
+import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
@@ -155,7 +156,7 @@ public abstract class PlexLibraryItem {
 
     public abstract void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride, boolean isStartOverride);
 
-    public PlexItemRow getChildren(Context context, PlexServer server, CardPresenter.CardPresenterLongClickListener listener) {
+    public PlexItemRow getChildren(Context context, PlexServer server, CardSelectionHandler listener) {
 
         boolean skipAllSeason = (this instanceof Show) &&
                 !SettingsManager.getInstance(context).getBoolean("preferences_navigation_showallseason");
@@ -181,7 +182,7 @@ public abstract class PlexLibraryItem {
         return row;
     }
 
-    public ListRow getExtras(Context context, PlexServer server, CardPresenter.CardPresenterLongClickListener listener) {
+    public ListRow getExtras(Context context, PlexServer server, CardSelectionHandler listener) {
 
         String title = context != null ? context.getString(R.string.extras_row_header) : "Extras";
         ListRow row = null;
@@ -274,7 +275,7 @@ public abstract class PlexLibraryItem {
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
             new SetProgressTask(new SetProgressTask.VideoId(server, PlexLibraryItem.this.getKey(),
-                    Long.toString(PlexLibraryItem.this.getRatingKey())), obj.getmContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.UNWATCHED);
+                    Long.toString(PlexLibraryItem.this.getRatingKey())), obj.getContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.UNWATCHED);
             setStatus(new WatchedStatusHandler.UpdateStatus(getKey(), 0, WatchedState.Unwatched));
             if (callback != null)
                 callback.resetSelected(obj);
@@ -295,7 +296,7 @@ public abstract class PlexLibraryItem {
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
             new SetProgressTask(new SetProgressTask.VideoId(server, PlexLibraryItem.this.getKey(),
-                    Long.toString(PlexLibraryItem.this.getRatingKey())), obj.getmContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.WATCHED);
+                    Long.toString(PlexLibraryItem.this.getRatingKey())), obj.getContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.WATCHED);
             setStatus(new WatchedStatusHandler.UpdateStatus(getKey(), 0, WatchedState.Watched));
             if (callback != null)
                 callback.resetSelected(obj);

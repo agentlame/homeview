@@ -595,7 +595,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     releaseSelectView();
     selectView = new SelectChapterView(activity);
 
-    ((SelectChapterView) selectView).setRow(currentVideo.getChildren(activity, server, (SelectChapterView) selectView)
+    ((SelectChapterView) selectView).setRow(currentVideo.getChildren(activity, server, null)
     , currentVideo.getCurrentChapter(player.getCurrentPosition()), this);
   }
 

@@ -12,6 +12,7 @@ import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
+import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
@@ -53,17 +54,17 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
 
     private WatchedStatusHandler watchedHandler = null;
 
-    public static PlexItemGrid getGrid(PlexServer server, CardPresenter.CardPresenterLongClickListener listener) {
+    public static PlexItemGrid getGrid(PlexServer server, CardSelectionHandler listener) {
 
         return new PlexItemGrid(server, false, listener);
     }
 
-    public static PlexItemGrid getWatchedStateGrid(PlexServer server, CardPresenter.CardPresenterLongClickListener listener) {
+    public static PlexItemGrid getWatchedStateGrid(PlexServer server, CardSelectionHandler listener) {
 
         return new PlexItemGrid(server, true, listener);
     }
 
-    private PlexItemGrid(PlexServer server, boolean useWatchedState, CardPresenter.CardPresenterLongClickListener listener) {
+    private PlexItemGrid(PlexServer server, boolean useWatchedState, CardSelectionHandler listener) {
 
         CardPresenter presenter = new CardPresenter(server, listener, true);
         presenter.setLongClickWatchStatusCallback(this);

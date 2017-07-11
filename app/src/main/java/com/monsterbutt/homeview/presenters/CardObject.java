@@ -84,5 +84,5 @@ public abstract class CardObject {
         return onClicked(fragment, extras, transitionView);
     }
 
-    public Context getmContext() { return mContext; }
+    public Context getContext() { return mContext; }
 }

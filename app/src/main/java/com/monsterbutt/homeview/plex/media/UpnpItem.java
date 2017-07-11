@@ -16,9 +16,9 @@ import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.activity.PlayerActivity;
+import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 
 import org.fourthline.cling.support.model.DIDLObject;
 import org.fourthline.cling.support.model.Res;
@@ -261,7 +261,7 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
     }
 
     @Override
-    public PlexItemRow getChildren(Context context, PlexServer server, CardPresenter.CardPresenterLongClickListener listener) {
+    public PlexItemRow getChildren(Context context, PlexServer server, CardSelectionHandler listener) {
         return null;
     }
 

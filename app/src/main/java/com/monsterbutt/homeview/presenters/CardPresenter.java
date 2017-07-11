@@ -34,6 +34,7 @@ import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.ui.android.ImageCardView;
+import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 
 /*
  * A CardPresenter is used to generate Views and bind Objects to them on demand.
@@ -45,20 +46,15 @@ public class CardPresenter extends Presenter {
         void resetSelected(CardObject card);
     }
 
-    public interface CardPresenterLongClickListener {
-
-        boolean longClickOccured(CardObject card, LongClickWatchStatusCallback callback);
-    }
-
     private int mSelectedBackgroundColor = -1;
     private int mDefaultBackgroundColor = -1;
 
     final private PlexServer mPlex;
-    final private CardPresenterLongClickListener mListener;
+    final private CardSelectionHandler mListener;
     private LongClickWatchStatusCallback mLongClickWatchStatusCallback;
     final private boolean posterOnly;
 
-    public CardPresenter(PlexServer plex, CardPresenterLongClickListener listener, boolean posterOnly) {
+    public CardPresenter(PlexServer plex, CardSelectionHandler listener, boolean posterOnly) {
 
         mPlex = plex;
         mListener = listener;
@@ -118,13 +114,21 @@ public class CardPresenter extends Presenter {
         boolean isExpanded = (item instanceof PosterCardExpanded || item instanceof SceneCardExpanded);
         final CardObject obj = (CardObject) item;
         final ImageCardView cardView = (ImageCardView) viewHolder.view;
-        cardView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
+        if (mListener != null) {
+            cardView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
 
-                return mListener != null && mListener.longClickOccured(obj, mLongClickWatchStatusCallback);
-            }
-        });
+                    return mListener.longClickOccured(obj, mLongClickWatchStatusCallback);
+                }
+            });
+            cardView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mListener.onItemClicked(obj);
+                }
+            });
+        }
         Context context = cardView.getContext();
         if (!isExpanded) {
             cardView.setTitleText(obj.getTitle());

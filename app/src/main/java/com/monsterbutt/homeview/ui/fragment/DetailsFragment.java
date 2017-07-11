@@ -31,6 +31,7 @@ import android.support.v17.leanback.widget.FullWidthDetailsOverviewSharedElement
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
+import android.support.v17.leanback.widget.ObjectAdapter;
 import android.support.v17.leanback.widget.OnActionClickedListener;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.RowPresenter;
@@ -47,7 +48,9 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.monsterbutt.homeview.player.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.MediaTrackSelector;
+import com.monsterbutt.homeview.plex.media.Chapter;
 import com.monsterbutt.homeview.plex.media.Movie;
+import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.plex.media.Show;
 import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.tasks.ToggleWatchedStateTask;
@@ -55,6 +58,7 @@ import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CustomListRowPresenter;
 import com.monsterbutt.homeview.presenters.DetailsDescriptionPresenter;
 import com.monsterbutt.homeview.presenters.CardPresenter;
+import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.PosterCardExpanded;
 import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
@@ -115,9 +119,6 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     private SelectView selectView = null;
 
-    private final static int ChapterId = -2;
-    private static int CurrentRowId = 1;
-
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
 
@@ -133,11 +134,9 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         String key = mItem != null  ? mItem.getKey()
                                     : getActivity().getIntent().getStringExtra(DetailsActivity.KEY);
         ImageView img = (ImageView) activity.findViewById(android.support.v17.leanback.R.id.details_overview_image);
-        mSelectionHandler = new CardSelectionHandler(this, this, mServer, mItem, img);
 
         mBackgroundURL = getActivity().getIntent().getStringExtra(DetailsActivity.BACKGROUND);
-        if (!TextUtils.isEmpty(mBackgroundURL))
-            mSelectionHandler.updateBackground(mBackgroundURL, true);
+        mSelectionHandler = new CardSelectionHandler(this, this, mServer, mItem, img, true, mBackgroundURL);
         mLifeCycleMgr.put(CardSelectionHandler.key, mSelectionHandler);
         mLifeCycleMgr.put(WatchedStatusHandler.key, new WatchedStatusHandler(mServer, this));
         mLifeCycleMgr.put(ThemeHandler.key, mThemeHandler);
@@ -476,7 +475,6 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
             PlexItemRow childRow = item.getChildren(activity, mServer, mSelectionHandler);
             if (childRow != null) {
-                childRow.setId(isVideo || isShow? ChapterId : CurrentRowId++);
                 mAdapter.add(childRow);
                 mLifeCycleMgr.put("childrow", childRow);
 
@@ -489,10 +487,8 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                 }
             }
             ListRow extras = item.getExtras(activity, mServer, mSelectionHandler);
-            if (extras != null) {
-                extras.setId(CurrentRowId++);
+            if (extras != null)
                 mAdapter.add(extras);
-            }
 
             HubList list = new HubList(mItem.getRelated());
             new LoadRelatedTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, list);
@@ -545,7 +541,6 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                     ListRow row = new ListRow(new HeaderItem(0, mc.getTitle1()), adapter);
                     for (Video video: mc.getVideos())
                         adapter.add(new PosterCardExpanded(act, PlexVideoItem.getItem(video)));
-                    row.setId(CurrentRowId++);
                     mAdapter.add(row);
                 }
                 else if (mc.getDirectories() != null && !mc.getDirectories().isEmpty()) {
@@ -553,7 +548,6 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                     ListRow row = new ListRow(new HeaderItem(0, mc.getTitle1()), adapter);
                     for (Directory dir: mc.getDirectories())
                         adapter.add(new PosterCardExpanded(act, PlexContainerItem.getItem(dir)));
-                    row.setId(CurrentRowId++);
                     mAdapter.add(row);
                 }
             }
@@ -572,8 +566,15 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         protected void onBindRowViewHolder(RowPresenter.ViewHolder holder, Object item) {
             super.onBindRowViewHolder(holder, item);
 
-            if (startindex < 0 || !(item instanceof PlexItemRow && ((PlexItemRow) item).getId() == ChapterId)
-             || ((ListRow) item).getAdapter().size() == 0)
+            if (startindex < 0 || ((ListRow) item).getAdapter().size() == 0)
+                return;
+
+            ObjectAdapter adapter = ((ListRow) item).getAdapter();
+
+            if (!(adapter.get(0) instanceof PosterCard))
+                return;
+            PlexLibraryItem pi = ((PosterCard)adapter.get(0)).getItem();
+            if (!(pi instanceof Season) && !(pi instanceof Chapter))
                 return;
 
             ListRowPresenter.SelectItemViewHolderTask task = new ListRowPresenter.SelectItemViewHolderTask(startindex);

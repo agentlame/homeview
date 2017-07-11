@@ -14,7 +14,7 @@ public class CustomListRowPresenter extends ListRowPresenter {
     RowsFragment getRowsFragment();
   }
 
-  final private Callback callback;
+  final private Callback callbackRowsFragment;
   final private HoverCard hoverPresenter = new HoverCard();
   final PresenterSelector hover = new PresenterSelector() {
     @Override
@@ -27,14 +27,14 @@ public class CustomListRowPresenter extends ListRowPresenter {
   };
 
   public CustomListRowPresenter(Callback caller) {
-    callback = caller;
+    callbackRowsFragment = caller;
     setHoverCardPresenterSelector(hover);
   }
 
   @Override
   protected void initializeRowViewHolder(RowPresenter.ViewHolder holder) {
-    if (callback != null)
-      callback.getRowsFragment().setExpand(true);
+    if (callbackRowsFragment != null)
+      callbackRowsFragment.getRowsFragment().setExpand(true);
     super.initializeRowViewHolder(holder);
   }
 }

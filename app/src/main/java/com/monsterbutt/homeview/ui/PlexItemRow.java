@@ -22,6 +22,7 @@ import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.presenters.SceneCardExpanded;
 import com.monsterbutt.homeview.presenters.SectionCard;
 import com.monsterbutt.homeview.settings.SettingsManager;
+import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
     private WatchedStatusHandler watchedHandler = null;
 
     private PlexItemRow(Context context, PlexServer server, String header, int hash,
-                        RefreshAllCallback callback, CardPresenter.CardPresenterLongClickListener listener,
+                        RefreshAllCallback callback, CardSelectionHandler listener,
                         boolean posterOnly, boolean useWatchedState, boolean useScene, HubInfo hub) {
         this(context, server, header, new CardPresenter(server, listener, posterOnly), callback, hash, useWatchedState, useScene, hub);
     }
@@ -279,7 +280,7 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
     public static PlexItemRow buildChildItemsRow(Context context, PlexServer server, String header,
                                                  List<PlexLibraryItem> children,
                                                  boolean useWatchState, boolean useScene,
-                                                 CardPresenter.CardPresenterLongClickListener listener) {
+                                                 CardSelectionHandler listener) {
 
         boolean posterOnly = children != null && children.size() > 0 &&
          !(children.get(0) instanceof com.monsterbutt.homeview.plex.media.Chapter);
@@ -301,14 +302,14 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
 
     static PlexItemRow buildItemsRow(Context context, PlexServer server, String header,
                                      int hash, RefreshAllCallback callback,
-                                     CardPresenter.CardPresenterLongClickListener listener,
+                                     CardSelectionHandler listener,
                                      boolean useScene, HubInfo hub) {
         return new PlexItemRow(context, server, header, hash, callback, listener, true, true, useScene, hub);
     }
 
     public static PlexItemRow buildSectionRow(Context context, MediaContainer sections, PlexServer server,
                                               String header, RefreshAllCallback callback,
-                                              CardPresenter.CardPresenterLongClickListener listener) {
+                                              CardSelectionHandler listener) {
 
         if (sections == null)
             return null;
