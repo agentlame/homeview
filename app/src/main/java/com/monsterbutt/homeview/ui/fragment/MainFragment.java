@@ -208,7 +208,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         }
 
         Context context = getActivity();
-        ArrayObjectAdapter gridRowAdapter = new ArrayObjectAdapter(new SettingPresenter());
+        ArrayObjectAdapter gridRowAdapter = new ArrayObjectAdapter(new SettingPresenter(this, null));
         if (oldRow != null)
             gridRowAdapter = (ArrayObjectAdapter) oldRow.data.getAdapter();
         else {

@@ -1,8 +1,13 @@
 package com.monsterbutt.homeview.presenters;
 
+import android.app.Fragment;
 import android.content.res.Resources;
+import android.support.v17.leanback.widget.OnItemViewClickedListener;
 import android.support.v17.leanback.widget.Presenter;
+import android.support.v17.leanback.widget.Row;
+import android.support.v17.leanback.widget.RowPresenter;
 import android.util.TypedValue;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
@@ -10,10 +15,22 @@ import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.ui.android.ImageCardView;
 
 
-public class SettingPresenter extends Presenter {
+public class SettingPresenter extends Presenter implements OnItemViewClickedListener {
+
+    public interface SettingsClickCallback {
+
+        void onClicked(SettingCard card);
+    }
 
     private int mSelectedBackgroundColor = -1;
     private int mDefaultBackgroundColor = -1;
+    private final SettingsClickCallback callback;
+    private final Fragment fragment;
+
+    public SettingPresenter(Fragment fragment, SettingsClickCallback callback) {
+        this.callback = callback;
+        this.fragment = fragment;
+    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent) {
@@ -50,11 +67,16 @@ public class SettingPresenter extends Presenter {
     }
 
     @Override
-    public void onBindViewHolder(Presenter.ViewHolder viewHolder, Object item) {
+    public void onBindViewHolder(final Presenter.ViewHolder viewHolder, Object item) {
 
-        CardObject obj = (CardObject) item;
-
+        final CardObject obj = (CardObject) item;
         final ImageCardView cardView = (ImageCardView) viewHolder.view;
+        cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SettingPresenter.this.onClick(viewHolder, obj);
+            }
+        });
         cardView.setTitleText(obj.getTitle());
         cardView.setContentText(obj.getContent());
 
@@ -74,6 +96,25 @@ public class SettingPresenter extends Presenter {
         // Remove references to images so that the garbage collector can free up memory.
         cardView.setBadgeImage(null);
         cardView.setMainImage(null);
+    }
+
+
+    @Override
+    public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
+                              RowPresenter.ViewHolder rowViewHolder, Row row) {
+        onClick(itemViewHolder, item);
+    }
+
+    public void onClick(Presenter.ViewHolder itemViewHolder, Object item) {
+
+        if (item instanceof CardObject) {
+            if (((CardObject) item).onClicked(fragment, null, null)) {
+                ((ImageCardView) itemViewHolder.view).setContentText(((CardObject) item).getContent());
+
+                if (item instanceof SettingCard && callback != null)
+                    callback.onClicked((SettingCard) item);
+            }
+        }
     }
 }
 

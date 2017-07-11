@@ -8,7 +8,6 @@ import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
-import android.support.v17.leanback.widget.OnItemViewClickedListener;
 import android.support.v17.leanback.widget.OnItemViewSelectedListener;
 import android.support.v17.leanback.widget.Presenter;
 import android.support.v17.leanback.widget.Row;
@@ -18,7 +17,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.SettingCard;
 import com.monsterbutt.homeview.presenters.SettingPresenter;
 import com.monsterbutt.homeview.settings.SettingsManager;
@@ -32,7 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 
-public class SettingsFragment extends BrowseFragment implements OnItemViewClickedListener, OnItemViewSelectedListener, HomeViewActivity.OnPlayKeyListener {
+public class SettingsFragment extends BrowseFragment implements OnItemViewSelectedListener,
+ SettingPresenter.SettingsClickCallback, HomeViewActivity.OnPlayKeyListener {
 
     protected ArrayObjectAdapter mRowsAdapter;
 
@@ -41,7 +40,7 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewClicke
 
     private class DependencyValue {
 
-        public DependencyValue(String key, ArrayObjectAdapter row) {
+        DependencyValue(String key, ArrayObjectAdapter row) {
             this.key = key;
             this.row = row;
         }
@@ -65,9 +64,10 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewClicke
         SettingsManager mgr = SettingsManager.getInstance(getActivity());
         List<SettingsManager.SettingsSection> sections = mgr.getSettingsLayout();
         int rowIndex = 0;
+        SettingPresenter presenter = new SettingPresenter(this, this);
         for(SettingsManager.SettingsSection section : sections) {
 
-            ArrayObjectAdapter gridRowAdapter = new ArrayObjectAdapter(new SettingPresenter());
+            ArrayObjectAdapter gridRowAdapter = new ArrayObjectAdapter(presenter);
             for(SettingValue sett : section.settings) {
 
                 if (sett.enabled()) {
@@ -97,7 +97,7 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewClicke
         setTitle(mgr.title());
 
         setHeadersState(HEADERS_ENABLED);
-        setOnItemViewClickedListener(this);
+        setOnItemViewClickedListener(presenter);
         setOnItemViewSelectedListener(this);
         ((HomeViewActivity) getActivity()).setPlayKeyListener(this);
 
@@ -121,31 +121,6 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewClicke
 
             mCurrentCard = (SettingCard) item;
             mCurrentView = (ImageCardView) itemViewHolder.view;
-        }
-    }
-
-    @Override
-    public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
-                              RowPresenter.ViewHolder rowViewHolder, Row row) {
-
-        if (item instanceof CardObject) {
-            if (((CardObject) item).onClicked(this, null, null)) {
-                ((ImageCardView) itemViewHolder.view).setContentText(((CardObject) item).getContent());
-
-                if (item instanceof SettingCard && ((SettingCard)item).isBooleanSetting()) {
-
-                    SettingCard card = (SettingCard) item;
-                    DependencyValue deps = mDependencies.get(card.getKey());
-                    if (deps != null) {
-
-                        if (card.getContent().equals(getActivity().getString(R.string.preferences_checked_true)))
-                            showDependencies(deps);
-                        else
-                            hideDependencies(deps);
-
-                    }
-                }
-            }
         }
     }
 
@@ -200,5 +175,22 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewClicke
     public boolean playKeyPressed() {
 
         return (mCurrentCard != null && mCurrentCard.onPlayPressed(this, null, null));
+    }
+
+    @Override
+    public void onClicked(SettingCard card) {
+
+        if (card.isBooleanSetting()) {
+
+            SettingsFragment.DependencyValue deps = mDependencies.get(card.getKey());
+            if (deps != null) {
+
+                if (card.getContent().equals(getActivity().getString(R.string.preferences_checked_true)))
+                    showDependencies(deps);
+                else
+                    hideDependencies(deps);
+
+            }
+        }
     }
 }
