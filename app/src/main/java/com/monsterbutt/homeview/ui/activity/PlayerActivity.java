@@ -52,8 +52,6 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.media.VideoFormat;
-import com.monsterbutt.homeview.presenters.CardObject;
-import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.services.ThemeService;
 import com.monsterbutt.homeview.ui.fragment.ErrorFragment;
 import com.monsterbutt.homeview.ui.handler.PlaybackHandler;
