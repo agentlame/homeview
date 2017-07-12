@@ -244,8 +244,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         }
 
         List<ContainerActivity.QuickJumpRow> quickjumpList = new ArrayList<>();
-        mGrid = mIsEpisodeList ? PlexItemGrid.getWatchedStateGrid(mServer, mSelectionHandler)
-                          : PlexItemGrid.getGrid(mServer, mSelectionHandler);
+        mGrid = PlexItemGrid.getWatchedStateGrid(mServer, mSelectionHandler);
         mLifeCycleMgr.put("containerGrid", mGrid);
         if (container != null) {
 

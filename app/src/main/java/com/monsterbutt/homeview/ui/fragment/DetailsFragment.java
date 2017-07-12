@@ -119,6 +119,8 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     private SelectView selectView = null;
 
+    private List<PlexItemRow> mRelateds;
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
 
@@ -269,21 +271,40 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
             list.add(new WatchedStatusHandler.UpdateStatus(Long.toString(mItem.getRatingKey()),
                 mItem.getViewedOffset(), mItem.getWatchedState()));
         }
+        CardObject card = mSelectionHandler.getSelection();
+        if (card != null) {
+
+            if (list == null)
+               list = new WatchedStatusHandler.UpdateStatusList();
+            list.add(card.getUpdateStatus());
+        }
         return list;
     }
 
     @Override
     public void updatedItemsCallback(WatchedStatusHandler.UpdateStatusList items) {
 
-        if (mItem != null && items != null && !items.isEmpty()) {
+        if(items != null && !items.isEmpty()) {
 
-            mItem.setStatus(items.get(0));
+            CardObject card = mSelectionHandler.getSelection();
+            for (WatchedStatusHandler.UpdateStatus update : items) {
+                if (mItem != null && update.key.equalsIgnoreCase(Long.toString(mItem.getRatingKey()))) {
 
-            boolean isWatched = mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched;
-            DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
-            setActions((SparseArrayObjectAdapter) row.getActionsAdapter(), isWatched);
-            row.setItem(null);
-            row.setItem(mItem);
+                    mItem.setStatus(items.get(0));
+
+                    boolean isWatched = mItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched;
+                    DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
+                    setActions((SparseArrayObjectAdapter) row.getActionsAdapter(), isWatched);
+                    row.setItem(null);
+                    row.setItem(mItem);
+                }
+                else if (card != null && mRelateds != null) {
+
+                    for (PlexItemRow row : mRelateds) {
+                        row.updatedItemsCallback(items);
+                    }
+                }
+            }
         }
     }
 
@@ -530,26 +551,9 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         @Override
         protected void onPostExecute(List<MediaContainer> list) {
 
-            if (list == null)
-                return;
-
-            Activity act = getActivity();
-            for (MediaContainer mc : list) {
-
-                if (mc.getVideos() != null && !mc.getVideos().isEmpty()) {
-                    ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(mServer, mSelectionHandler, true));
-                    ListRow row = new ListRow(new HeaderItem(0, mc.getTitle1()), adapter);
-                    for (Video video: mc.getVideos())
-                        adapter.add(new PosterCardExpanded(act, PlexVideoItem.getItem(video)));
-                    mAdapter.add(row);
-                }
-                else if (mc.getDirectories() != null && !mc.getDirectories().isEmpty()) {
-                    ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(mServer, mSelectionHandler, true));
-                    ListRow row = new ListRow(new HeaderItem(0, mc.getTitle1()), adapter);
-                    for (Directory dir: mc.getDirectories())
-                        adapter.add(new PosterCardExpanded(act, PlexContainerItem.getItem(dir)));
-                    mAdapter.add(row);
-                }
+            mRelateds = PlexItemRow.buildRelatedRows(getActivity(), mServer, mSelectionHandler, list);
+            for (PlexItemRow row : mRelateds) {
+                mAdapter.add(row);
             }
         }
     }

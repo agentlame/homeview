@@ -331,6 +331,31 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
         return row;
     }
 
+    public static List<PlexItemRow> buildRelatedRows(Context context, PlexServer server, CardSelectionHandler handler, List<MediaContainer> list) {
+
+        List<PlexItemRow> ret = new ArrayList();
+        if (list == null)
+            return ret;
+
+        for (MediaContainer mc : list) {
+
+            PlexItemRow row = new PlexItemRow(context, server, mc.getTitle1(), mc.getTitle1().hashCode(),
+             null, handler, true, true, false, null);
+            if (mc.getVideos() != null && !mc.getVideos().isEmpty()) {
+                for (Video video: mc.getVideos())
+                    row.adapter.add(new PosterCardExpanded(context, PlexVideoItem.getItem(video)));
+                ret.add(row);
+            }
+            else if (mc.getDirectories() != null && !mc.getDirectories().isEmpty()) {
+                for (Directory dir: mc.getDirectories())
+                    row.adapter.add(new PosterCardExpanded(context, PlexContainerItem.getItem(dir)));
+                ret.add(row);
+            }
+        }
+
+        return ret;
+    }
+
     private class GetHubDataTask extends AsyncTask<HubInfo, Void, MediaContainer> {
 
         private final PlexServer server;
