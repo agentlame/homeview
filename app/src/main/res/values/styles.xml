@@ -25,6 +25,10 @@
         <item name="android:contentDescription">@string/exo_controls_pip_description</item>
     </style>
 
+    <style name="ExoMediaButton.Stop">
+        <item name="android:src">@drawable/ic_stop_white_24dp</item>
+        <item name="android:contentDescription">@string/exo_controls_stop_description</item>
+    </style>
 
     <style name="ExoMediaButton.Chapters">
         <item name="android:src">@drawable/ic_playlist_play_white_24dp</item>

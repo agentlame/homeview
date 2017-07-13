@@ -32,7 +32,8 @@
 
             <ImageButton
                 android:id="@+id/nextup_stopList"
-                style="@style/ExoMediaButton.Pause"/>
+                style="@style/ExoMediaButton.Stop"/>
+
             <ImageButton
                 android:id="@+id/nextup_showList"
                 style="@style/ExoMediaButton.Chapters"/>

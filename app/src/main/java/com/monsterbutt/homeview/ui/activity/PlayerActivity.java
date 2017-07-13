@@ -478,7 +478,8 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
       case STATE_BUFFERING:
         break;
       case STATE_ENDED:
-        exit();
+        if (!player.playNext())
+          exit();
         break;
       case STATE_READY:
         showProgress(false);

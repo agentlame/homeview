@@ -1,6 +1,5 @@
 package com.monsterbutt.homeview.presenters;
 
-import android.support.v17.leanback.app.BrowseFragment;
 import android.support.v17.leanback.app.RowsFragment;
 import android.support.v17.leanback.widget.ListRowPresenter;
 import android.support.v17.leanback.widget.Presenter;
@@ -16,18 +15,18 @@ public class CustomListRowPresenter extends ListRowPresenter {
 
   final private Callback callbackRowsFragment;
   final private HoverCard hoverPresenter = new HoverCard();
-  final PresenterSelector hover = new PresenterSelector() {
-    @Override
-    public Presenter getPresenter(Object item) {
-
-      if (item instanceof SceneCardExpanded || item instanceof PosterCardExpanded)
-        return hoverPresenter;
-      return null;
-    }
-  };
 
   public CustomListRowPresenter(Callback caller) {
     callbackRowsFragment = caller;
+    PresenterSelector hover = new PresenterSelector() {
+      @Override
+      public Presenter getPresenter(Object item) {
+
+        if (item instanceof SceneCardExpanded || item instanceof PosterCardExpanded)
+          return hoverPresenter;
+        return null;
+      }
+    };
     setHoverCardPresenterSelector(hover);
   }
 

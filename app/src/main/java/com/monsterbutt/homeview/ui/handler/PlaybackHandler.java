@@ -433,11 +433,17 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   }
 
   public boolean isPlaying() {
-
     if (player == null)
       return false;
     int playbackState = player.getPlaybackState();
     return (playbackState == STATE_READY || playbackState == STATE_BUFFERING) && player.getPlayWhenReady();
+  }
+
+  public boolean playNext() {
+    if (player == null || nextVideo == null)
+      return false;
+    playVideo(nextVideo, null);
+    return true;
   }
 
   public void release() {
@@ -464,7 +470,6 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   }
 
   private void checkInitialTrack(int streamId) {
-
     if (tracks != null) {
       Stream stream = tracks.getSelectedTrack(streamId);
       if (stream != null)
@@ -475,9 +480,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   }
 
   public void tracksChanged(TrackGroupArray trackGroups) {
-
     if (loadChangedTracks) {
-
       loadChangedTracks = false;
       checkInitialTrack(Stream.Audio_Stream);
       checkInitialTrack(Stream.Subtitle_Stream);
