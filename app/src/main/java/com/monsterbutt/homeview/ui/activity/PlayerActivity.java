@@ -785,6 +785,8 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
 
   @Override
   public void exit() {
+    if (player != null)
+     player.updateRecommendations(null);
     releasePlayer();
     finish();
   }

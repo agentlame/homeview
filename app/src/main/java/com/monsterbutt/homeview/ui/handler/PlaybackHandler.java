@@ -47,6 +47,7 @@ import com.monsterbutt.homeview.plex.tasks.PlexServerTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTaskCaller;
 import com.monsterbutt.homeview.plex.tasks.VideoProgressTask;
 import com.monsterbutt.homeview.presenters.PosterCard;
+import com.monsterbutt.homeview.services.UpdateRecommendationsService;
 import com.monsterbutt.homeview.ui.activity.ContainerActivity;
 import com.monsterbutt.homeview.ui.activity.PlayerActivity;
 import com.monsterbutt.homeview.ui.android.SelectView;
@@ -201,7 +202,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
       mainHandler.removeCallbacks(nextUpRunnable);
       currentVideo = video;
-
+      updateRecommendations(currentVideo);
       updateMetadata(context);
 
       if (switcher != null)
@@ -440,10 +441,25 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   }
 
   public boolean playNext() {
+
+    mainHandler.removeCallbacks(runnableProgress);
+    if (currentVideo != null && server != null)
+      VideoProgressTask.getTask(server, currentVideo).setProgress(true, currentVideo.getDuration());
     if (player == null || nextVideo == null)
       return false;
     playVideo(nextVideo, null);
     return true;
+  }
+
+  public void updateRecommendations(PlexVideoItem currentVideo) {
+
+    if (currentVideo != null && !currentVideo.shouldUpdateStatusOnPlayback())
+      return;
+
+    Context context = caller.getValidContext();
+    Intent intent = new Intent(context.getApplicationContext(), UpdateRecommendationsService.class);
+    server.setCurrentPlayingVideoRatingKey(currentVideo != null ? currentVideo.getRatingKey() : PlexServer.INVALID_RATING_KEY);
+    context.startService(intent);
   }
 
   public void release() {
