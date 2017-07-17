@@ -1,12 +1,12 @@
 package com.monsterbutt.homeview.ui.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.GuidedStepFragment;
 import android.support.v17.leanback.widget.GuidanceStylist;
 import android.support.v17.leanback.widget.GuidedAction;
+import android.support.v4.app.FragmentActivity;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.settings.SettingArray;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class SettingsArrayActivity extends Activity {
+public class SettingsArrayActivity extends FragmentActivity {
 
     private static final int CANCEL   = 1001;
     public static final String SETTING = "setting";

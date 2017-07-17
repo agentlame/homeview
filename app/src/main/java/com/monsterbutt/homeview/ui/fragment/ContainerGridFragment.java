@@ -32,6 +32,7 @@ import com.monsterbutt.homeview.ui.PlexItemGrid;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.SearchActivity;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
+import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
@@ -202,7 +203,7 @@ public class ContainerGridFragment extends VerticalGridFragment
         list.add(new SectionSort(act.getString(R.string.sort_Title), PlexItemGrid.ItemSort.Title));
         mSorts = new SectionFilterArrayAdapter(act, list, list.get(list.size()-1));
 
-        mServer = PlexServerManager.getInstance(act.getApplicationContext(), act).getSelectedServer();
+        mServer = PlexServerManager.getInstance(act.getApplicationContext(), (HomeViewActivity) act).getSelectedServer();
         mIsEpisodeList = act.getIntent().getBooleanExtra(ContainerActivity.EPISODEIST, false);
         if (mIsEpisodeList)
             mLifeCycleMgr.put(WatchedStatusHandler.key, new WatchedStatusHandler(mServer, this));

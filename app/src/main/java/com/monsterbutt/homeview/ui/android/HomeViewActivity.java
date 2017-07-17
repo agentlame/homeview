@@ -1,14 +1,10 @@
 package com.monsterbutt.homeview.ui.android;
 
-import android.app.Activity;
+import android.support.v4.app.FragmentActivity;
 import android.view.KeyEvent;
-import android.view.View;
-import android.widget.ProgressBar;
-
-import com.monsterbutt.homeview.R;
 
 
-public class HomeViewActivity extends Activity {
+public class HomeViewActivity extends FragmentActivity {
 
     OnBackPressedListener mBackListener = null;
     OnPlayKeyListener mPlayListener = null;

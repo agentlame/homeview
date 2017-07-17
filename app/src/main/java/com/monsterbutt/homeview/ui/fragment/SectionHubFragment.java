@@ -16,6 +16,7 @@ import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.RowData;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.SectionHubActivity;
+import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 
 import java.util.ArrayList;
@@ -43,7 +44,7 @@ public class SectionHubFragment extends BrowseFragment implements PlexItemRow.Re
         super.onActivityCreated(savedInstanceState);
 
         Activity activity = getActivity();
-        mServer = PlexServerManager.getInstance(activity.getApplicationContext(), activity).getSelectedServer();
+        mServer = PlexServerManager.getInstance(activity.getApplicationContext(), (HomeViewActivity) activity).getSelectedServer();
         mSelectionHandler = new CardSelectionHandler(this, mServer);
 
         TextView text = (TextView) getActivity().findViewById(android.support.v17.leanback.R.id.title_text);

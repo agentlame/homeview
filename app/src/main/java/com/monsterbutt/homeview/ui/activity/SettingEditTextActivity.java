@@ -1,12 +1,12 @@
 package com.monsterbutt.homeview.ui.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.GuidedStepFragment;
 import android.support.v17.leanback.widget.GuidanceStylist;
 import android.support.v17.leanback.widget.GuidedAction;
+import android.support.v4.app.FragmentActivity;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.settings.SettingText;
@@ -14,7 +14,7 @@ import com.monsterbutt.homeview.settings.SettingText;
 import java.util.List;
 
 
-public class SettingEditTextActivity extends Activity {
+public class SettingEditTextActivity extends FragmentActivity {
 
     private static final int DONE   = 1000;
     private static final int CANCEL   = 1001;

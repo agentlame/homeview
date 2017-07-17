@@ -45,6 +45,7 @@ import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.OnBoardingActivity;
 import com.monsterbutt.homeview.ui.activity.SearchActivity;
 import com.monsterbutt.homeview.ui.activity.SettingsActivity;
+import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
@@ -96,7 +97,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
         TextView text = (TextView) tv.findViewById(android.support.v17.leanback.R.id.title_text);
         text.setTextAlignment(View.TEXT_ALIGNMENT_TEXT_END);
 
-        mServer = PlexServerManager.getInstance(getActivity(), getActivity()).getSelectedServer();
+        mServer = PlexServerManager.getInstance(getActivity(), (HomeViewActivity) getActivity()).getSelectedServer();
         mSelectionHandler = new CardSelectionHandler(this, mServer);
         if (mServer != null)
             mSelectionHandler.setServer(mServer);
@@ -155,7 +156,7 @@ public class MainFragment extends BrowseFragment implements PlexServerTaskCaller
 
         if (requestCode == ServerStatusHandler.SERVER_CHOICE_RESULT) {
 
-            PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext(), getActivity()).getSelectedServer();
+            PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext(), (HomeViewActivity)getActivity()).getSelectedServer();
             if (server != null && server.isValid())
                 setSelectedServer(server);
             else

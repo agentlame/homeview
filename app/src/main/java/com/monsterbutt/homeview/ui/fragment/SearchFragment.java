@@ -12,6 +12,7 @@ import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
 import android.support.v17.leanback.widget.ObjectAdapter;
+import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 
 import com.monsterbutt.homeview.R;
@@ -21,6 +22,7 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
+import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 
 /*
@@ -43,7 +45,7 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext(), getActivity()).getSelectedServer();
+        PlexServer server = PlexServerManager.getInstance(getActivity().getApplicationContext(), (HomeViewActivity) getActivity()).getSelectedServer();
         CardSelectionHandler selectionHandler = new CardSelectionHandler(this, server);
         mLifeCycleMgr.put(CardSelectionHandler.key, selectionHandler);
 

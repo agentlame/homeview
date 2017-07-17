@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v4.app.FragmentActivity;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
@@ -42,7 +43,7 @@ public class ServerStatusHandler implements UILifecycleManager.LifecycleListener
         this(activity, caller, listener, false);
     }
 
-    public ServerStatusHandler(Activity activity, PlexServerTaskCaller caller,
+    private ServerStatusHandler(Activity activity, PlexServerTaskCaller caller,
                                ServerStatusListener listener, boolean skipFirstResume) {
 
         mFragment = null;
@@ -51,7 +52,7 @@ public class ServerStatusHandler implements UILifecycleManager.LifecycleListener
         mCaller = caller;
         mSkipResume = skipFirstResume;
         mServerCheckTimer = new Timer();
-        mMgr = PlexServerManager.getInstance(mActivity.getApplicationContext(), activity);
+        mMgr = PlexServerManager.getInstance(mActivity.getApplicationContext(), (FragmentActivity) activity);
     }
 
     public ServerStatusHandler(Fragment fragment, PlexServerTaskCaller caller,
@@ -63,7 +64,7 @@ public class ServerStatusHandler implements UILifecycleManager.LifecycleListener
         mCaller = caller;
         mSkipResume = skipFirstResume;
         mServerCheckTimer = new Timer();
-        mMgr = PlexServerManager.getInstance(mActivity.getApplicationContext(), mActivity);
+        mMgr = PlexServerManager.getInstance(mActivity.getApplicationContext(), (FragmentActivity) mActivity);
     }
 
     private void checkForPlexServer() {

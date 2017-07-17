@@ -2,60 +2,27 @@ package com.monsterbutt.homeview.ui.activity;
 
 import android.app.Activity;
 import android.app.FragmentManager;
-import android.os.AsyncTask;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.GuidedStepFragment;
 import android.support.v17.leanback.widget.GuidanceStylist.*;
 import android.support.v17.leanback.widget.GuidedAction;
-import android.util.Log;
-import android.view.Surface;
-import android.widget.Toast;
+import android.support.v4.app.FragmentActivity;
 
-import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.Format;
-import com.google.android.exoplayer2.PlaybackParameters;
-import com.google.android.exoplayer2.RendererCapabilities;
-import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.audio.AudioRendererEventListener;
-import com.google.android.exoplayer2.decoder.DecoderCounters;
-import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
-import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.metadata.MetadataRenderer;
-import com.google.android.exoplayer2.metadata.emsg.EventMessage;
-import com.google.android.exoplayer2.metadata.id3.ApicFrame;
-import com.google.android.exoplayer2.metadata.id3.CommentFrame;
-import com.google.android.exoplayer2.metadata.id3.GeobFrame;
-import com.google.android.exoplayer2.metadata.id3.Id3Frame;
-import com.google.android.exoplayer2.metadata.id3.PrivFrame;
-import com.google.android.exoplayer2.metadata.id3.TextInformationFrame;
-import com.google.android.exoplayer2.metadata.id3.UrlLinkFrame;
-import com.google.android.exoplayer2.source.AdaptiveMediaSourceEventListener;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.TrackGroup;
-import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.upstream.DataSpec;
-import com.google.android.exoplayer2.video.VideoRendererEventListener;
+import com.google.android.gms.auth.api.credentials.Credential;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
-import com.monsterbutt.homeview.ui.android.ServerLoginDialog;
 
-import java.io.IOException;
-import java.text.NumberFormat;
 import java.util.List;
-import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.monsterbutt.homeview.plex.PlexServerManager.ALLOW_CREDENTIAL_SIGNIN;
+import static com.monsterbutt.homeview.plex.PlexServerManager.PICK_CREDENTIALS;
 
-public class ServerChoiceActivity extends Activity {
+public class ServerChoiceActivity extends FragmentActivity implements PlexServerManager.CredentialRequestor {
 
     private static final int MANUAL = 999;
     private static final int DONE   = 1000;
@@ -67,6 +34,8 @@ public class ServerChoiceActivity extends Activity {
     private static final int SERVER_CHECK_DELAY = 2000;
     private Timer mServerCheckTimer = null;
     private static PlexServerManager mMgr = null;
+    private PlexServerManager.CredentialProcessor processor;
+    private Credential credential = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +74,29 @@ public class ServerChoiceActivity extends Activity {
                 .build());
     }
 
+    @Override
+    public FragmentActivity getActivity() {
+        return this;
+    }
+
+    @Override
+    public void setCredentialProcessor(PlexServerManager.CredentialProcessor processor, final Credential credentials) {
+        this.processor = processor;
+        this.credential = credentials;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == ALLOW_CREDENTIAL_SIGNIN || requestCode == PICK_CREDENTIALS) {
+            if (resultCode == RESULT_OK)
+                processor.processRetrievedCredential(requestCode == ALLOW_CREDENTIAL_SIGNIN ?
+                 credential : data != null ? (Credential) data.getParcelableExtra(Credential.EXTRA_KEY) : null);
+            else
+                processor.retrievalFailed();
+        }
+    }
 
     public static class ServersFragment extends GuidedStepFragment {
 
@@ -146,14 +138,15 @@ public class ServerChoiceActivity extends Activity {
                 List<PlexServer> servers = mMgr.getDiscoveredServers();
                 PlexServer server = servers.get((int) action.getId());
                 if (server != null)
-                    getServerToken(server, getActivity());
+                    getServerToken(server, (FragmentActivity) getActivity());
             }
         }
     }
 
-    private static void getServerToken(PlexServer server, Activity activity) {
+    private static void getServerToken(PlexServer server, FragmentActivity activity) {
 
-        new ServerCheckTask(activity).getServerToken(server);
+        PlexServerManager.getInstance(activity, activity).getServerToken(server,
+         (PlexServerManager.CredentialRequestor) activity);
     }
 
     public static class ManualStepFragment extends GuidedStepFragment {
@@ -190,7 +183,7 @@ public class ServerChoiceActivity extends Activity {
         public void onGuidedActionClicked(GuidedAction action) {
 
             if (action.getId() == DONE)
-                getServerToken(new PlexServer("manual", String.format("%s:%s", host, port), getContext()), getActivity());
+                getServerToken(new PlexServer("manual", String.format("%s:%s", host, port), getContext()), (FragmentActivity) getActivity());
             else if (action.getId() == CANCEL)
                 getActivity().finishAfterTransition();
             else if (action.getId() == BACK)
@@ -206,58 +199,11 @@ public class ServerChoiceActivity extends Activity {
         }
     }
 
-    private static class ServerCheckTask extends AsyncTask<PlexServer, Void, Boolean> implements ServerLoginDialog.ServerLoginInterface {
-
-        private final Activity mActivity;
-        private boolean isRun = false;
-
-        ServerCheckTask(Activity activity) {
-            mActivity = activity;
-        }
-
-        void getServerToken(PlexServer server) {
-            ServerLoginDialog.login(mActivity, this, server);
-        }
-
-        @Override
-        protected Boolean doInBackground(PlexServer... server) {
-
-            return mMgr.setSelectedServer(server != null && server.length > 0 ? server[0] : null);
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-
-            if (result)
-                mActivity.finishAfterTransition();
-            else
-                Toast.makeText(mActivity, mActivity.getString(R.string.invalid_server), Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onLoginAttempted(PlexServer server, boolean succeeded) {
-
-            if (succeeded) {
-                ServerCheckTask task = this;
-                if (isRun)
-                    task = new ServerCheckTask(mActivity);
-                isRun = true;
-                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, server);
-            }
-            else
-                Toast.makeText(mActivity, mActivity.getString(R.string.plex_login_failed), Toast.LENGTH_LONG).show();
-        }
-
-        @Override
-        public void onLoginCanceled() {
-            // do nothing
-        }
-    }
-
     private class CheckForPlexServerTask extends TimerTask {
 
         Activity mActivity;
-        public CheckForPlexServerTask(Activity activity) {
+
+        CheckForPlexServerTask(Activity activity) {
             mActivity = activity;
         }
         @Override

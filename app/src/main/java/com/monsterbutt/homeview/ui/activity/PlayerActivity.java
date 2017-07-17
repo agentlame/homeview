@@ -1,7 +1,6 @@
 package com.monsterbutt.homeview.ui.activity;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +12,7 @@ import android.media.session.PlaybackState;
 import android.os.Bundle;
 
 import android.os.Handler;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -73,7 +73,7 @@ import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_APPLICATION
 import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_AUDIO;
 import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_TEXT;
 
-public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
+public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventListener,
  PlaybackControlView.VisibilityListener, PlaybackHandler.Invoker {
 
   private static final String Tag = "PlayerActivity";
@@ -547,6 +547,7 @@ public class PlayerActivity extends Activity implements ExoPlayer.EventListener,
 
   @Override
   public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+    super.onPictureInPictureModeChanged(isInPictureInPictureMode);
     player.onPictureInPictureModeChanged(isInPictureInPictureMode);
     if (isInPictureInPictureMode)
       showControls(false);

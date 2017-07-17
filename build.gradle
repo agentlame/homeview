@@ -17,6 +17,7 @@ allprojects {
     repositories {
         jcenter()
     }
+
     project.ext {
         compileSdkVersion=25
         targetSdkVersion=23
