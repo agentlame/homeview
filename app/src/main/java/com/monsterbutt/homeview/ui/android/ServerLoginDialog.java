@@ -117,7 +117,7 @@ public class ServerLoginDialog {
     private boolean handled = false;
     private boolean mIsResolving = false;
 
-    private final static String TAG = "GoogleAuthTask";
+    private final static String TAG = "HV_GoogleAuthTask";
 
     GoogleAuthTask(ServerLoginDialog dialog, FragmentActivity activity, final ServerLoginDialog.ServerLoginInterface callback, final PlexServer server) {
       this.activity = activity;

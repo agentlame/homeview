@@ -60,7 +60,7 @@ public final class EventLogger implements ExoPlayer.EventListener,
  ExtractorMediaSource.EventListener, DefaultDrmSessionManager.EventListener,
  MetadataRenderer.Output {
 
-  private static final String TAG = "EventLogger";
+  private static final String TAG = "HV_EventLogger";
   private static final int MAX_TIMELINE_ITEM_LINES = 3;
   private static final NumberFormat TIME_FORMAT;
   static {

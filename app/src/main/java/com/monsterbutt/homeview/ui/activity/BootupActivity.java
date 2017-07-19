@@ -11,7 +11,7 @@ import com.monsterbutt.homeview.services.UpdateRecommendationsService;
 
 
 public class BootupActivity extends BroadcastReceiver {
-    private static final String TAG = "BootupActivity";
+    private static final String TAG = "HV_BootupActivity";
 
     private static final long INITIAL_DELAY = 5000;
     private static boolean isActive = false;

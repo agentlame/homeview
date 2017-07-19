@@ -79,10 +79,11 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     void showControls(boolean show);
     void showProgress(boolean show);
     void showError(String msg);
+    boolean shouldForceRefreshRate();
     void exit();
   }
 
-  final static private String Tag = "PlaybackHandler";
+  final static private String Tag = "HV_PlaybackHandler";
 
   private static final int CHOOSER_TIMEOUT = 15 * 1000;
   private static final int PROGRESS_UPDATE_INTERVAL = 10 * 1000;
@@ -186,15 +187,20 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
     caller.showProgress(true);
     Context context = caller.getValidContext();
-    if (context == null)
+    if (context == null) {
+      Log.e(Tag, "No context to play video");
       return;
+    }
     else if (video == null) {
+      Log.e(Tag, "No video, stopping player");
       if (player != null)
         player.stop();
       return;
-    } else if (currentVideo != null && video.getRatingKey() == currentVideo.getRatingKey())
+    } else if (currentVideo != null && video.getRatingKey() == currentVideo.getRatingKey()) {
+      Log.w(Tag, "Not going to reload current video");
       return;
-
+    }
+    Log.i(Tag, "Loading Video : " + video.getTitle());
     loadChangedTracks = chosenTracks != null;
     tracks = loadChangedTracks ? chosenTracks : readTracks;
 
@@ -208,7 +214,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       if (switcher != null)
         switcher.unregister();
       switcher = new FrameRateSwitcher((Activity) context, this);
-      if (!switcher.setDisplayRefreshRate(video))
+      if (!switcher.setDisplayRefreshRate(video, caller.shouldForceRefreshRate()))
         initiatePlayOfVideo(resumeWindow != C.INDEX_UNSET);
     }
     new GetVideoQueueTask(this, server).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, video.getKey());
@@ -223,11 +229,14 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       }
       initiatePlayOfVideo(resumeWindow != C.INDEX_UNSET);
     }
+    else
+      play(false);
   }
 
   public boolean shouldStart() {
     boolean ret = false;
     if (pausedTemp) {
+      Log.d(Tag, "Temp pause being cleared");
       pausedTemp = false;
       checkInitialTrack(Stream.Subtitle_Stream);
       ret = true;
@@ -257,7 +266,10 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     long[] chapters = currentVideo.getChapters();
     timeBar.setAdBreakTimesMs(chapters, chapters == null ? 0 : chapters.length);
     view.setPlayer(player);
-    Log.d(Tag, "Playing video, seek Position: " + resumePosition);
+
+    player.setPlayWhenReady(false);
+    Log.d(Tag, "Initializing video, seek Position: " + (resumePosition != C.TIME_UNSET ? resumePosition : 0));
+
     if (haveResumePosition)
       player.seekTo(resumeWindow, resumePosition);
     else if (startPosition.getStartPosition() > 0)
@@ -265,10 +277,8 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     else if (startPosition.getStartType() == StartPosition.PlaybackStartType.Ask
      && startPosition.getVideoOffset() > 0)
       ResumeChoiceHandler.askUser(context, player, startPosition.getVideoOffset(), CHOOSER_TIMEOUT);
-    player.setPlayWhenReady(false);
     pausedTemp = true;
     player.prepare(currentVideo, server, caller.getValidContext(), this, !haveResumePosition, false);
-    caller.onPlayback(true);
   }
 
   public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
@@ -419,7 +429,9 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   public void play(boolean play) {
     if (player != null) {
       if (play != isPlaying()) {
+        Log.i(Tag, "Set playback to : " + (play ? "Play" : "Pause"));
         player.setPlayWhenReady(play);
+        updateResumePosition();
         caller.onPlayback(play);
       }
     }
@@ -427,6 +439,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   public boolean mute(boolean enable) {
     if (player != null) {
+      Log.i(Tag, "Muting");
       player.setVolume(enable ? 0.0f : 1.0f);
       return true;
     }
@@ -440,14 +453,28 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     return (playbackState == STATE_READY || playbackState == STATE_BUFFERING) && player.getPlayWhenReady();
   }
 
+  private boolean playPrevious() {
+    Log.i(Tag, "Playing Previous");
+    return playVideo(previousVideo);
+  }
+
   public boolean playNext() {
+    Log.i(Tag, "Playing Next");
+    PlexVideoItem video = currentVideo;
+    boolean ret = playVideo(nextVideo);
+    if (ret && video != null && server != null)
+      VideoProgressTask.getTask(server, currentVideo).setProgress(true, currentVideo.getDuration());
+    return ret;
+  }
+
+  private boolean playVideo(PlexVideoItem video) {
+    if (player == null || video == null)
+      return false;
 
     mainHandler.removeCallbacks(runnableProgress);
-    if (currentVideo != null && server != null)
-      VideoProgressTask.getTask(server, currentVideo).setProgress(true, currentVideo.getDuration());
-    if (player == null || nextVideo == null)
-      return false;
-    playVideo(nextVideo, null);
+    play(false);
+    clearResumePosition();
+    playVideo(video, null);
     return true;
   }
 
@@ -528,11 +555,8 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
         position = currentVideo.getPreviousChapterStart(player.getCurrentPosition());
       if (position != BAD_CHAPTER_START && player.getCurrentPosition() > START_CHAPTER_THRESHOLD)
         player.seekTo(position);
-      else if (previousVideo != null && player.getCurrentPosition() < START_CHAPTER_THRESHOLD) {
-        play(false);
-        pausedTemp = true;
-        playVideo(previousVideo, null);
-      }
+      else if (previousVideo != null && player.getCurrentPosition() < START_CHAPTER_THRESHOLD)
+        playPrevious();
       else
         player.seekTo(0);
     }
@@ -550,7 +574,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       if (position != BAD_CHAPTER_START)
         player.seekTo(position);
       else if (nextVideo != null)
-        playVideo(nextVideo, null);
+        playNext();
       else {
         player.stop();
         caller.exit();
@@ -655,7 +679,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       switch(button) {
 
         case StartNext:
-          playVideo(nextVideo, null);
+          playNext();
           break;
 
         case StopList:

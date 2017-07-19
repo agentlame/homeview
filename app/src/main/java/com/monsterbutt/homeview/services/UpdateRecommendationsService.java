@@ -42,7 +42,7 @@ import us.nineworlds.plex.rest.model.impl.Video;
 
 public class UpdateRecommendationsService extends IntentService {
 
-    private static final String TAG = "RecommendationsService";
+    private static final String TAG = "HV_RecommendationsService";
 
     public UpdateRecommendationsService() {
         super(TAG);

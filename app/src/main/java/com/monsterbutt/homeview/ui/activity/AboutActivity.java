@@ -41,7 +41,7 @@ public class AboutActivity extends ListActivity {
 
     private class AboutItem {
 
-        public final static String TAG = "Item";
+        public final static String TAG = "HV_Item";
 
         private String title;
         final private String blurb;

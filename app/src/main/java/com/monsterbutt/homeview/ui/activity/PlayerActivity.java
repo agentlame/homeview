@@ -44,7 +44,6 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.PlaybackControlView;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.ui.SubtitleView;
-import com.google.android.exoplayer2.util.Util;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.MediaTrackSelector;
@@ -76,7 +75,7 @@ import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_TEXT;
 public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventListener,
  PlaybackControlView.VisibilityListener, PlaybackHandler.Invoker {
 
-  private static final String Tag = "PlayerActivity";
+  private static final String Tag = "HV_PlayerActivity";
   public static final String ACTION_VIEW = "com.monsterbutt.homeview.ui.activity.action.VIEW";
   public static final String KEY = "key";
   public static final String START_OFFSET = "startoffset";
@@ -89,6 +88,7 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
   private SimpleExoPlayerView simpleExoPlayerView;
 
   private boolean needRetrySource;
+  private boolean dontStartPlaybackOnLoad = false;
 
   private PlaybackHandler player = null;
 
@@ -229,14 +229,13 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
   public void onStart() {
     super.onStart();
     Log.d(Tag, "onStart");
-    if (Util.SDK_INT > 23) {
-      initializePlayer();
-    }
+    initializePlayer();
   }
 
   @Override
   public void onResume() {
     super.onResume();
+    Log.d(Tag, "onResume");
     ThemeService.stopTheme(this);
   }
 
@@ -247,13 +246,18 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
 
     Log.d(Tag, "onPause");
     if (player != null && player.isPlaying()) {
+
+      Log.d(Tag, "Turn On Visible Behind");
       boolean isVisibleBehind = requestVisibleBehind(true);
-      if (!isVisibleBehind && !isInPictureInPictureMode())
+      if (!isVisibleBehind && !isInPictureInPictureMode()) {
+        Log.d(Tag, "Visible Behind failed");
         pause();
+      }
       else
         showControls(false);
     }
     else {
+      Log.d(Tag, "Turn off Visible Behind");
       requestVisibleBehind(false);
     }
   }
@@ -263,6 +267,7 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
     super.onStop();
     Log.d(Tag, "onStop");
     releasePlayer();
+    dontStartPlaybackOnLoad = true;
   }
 
   @Override
@@ -401,6 +406,7 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
     if (needNewPlayer || needRetrySource) {
       String action = intent.getAction();
       if (ACTION_VIEW.equals(action)) {
+        Log.d(Tag, "Playing video from Action_View");
         player.playVideo((PlexVideoItem) intent.getParcelableExtra(PlayerActivity.VIDEO), intent);
         needRetrySource = false;
       } else
@@ -426,14 +432,17 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
     // because the app might have abandoned audio focus due to the AUDIOFOCUS_LOSS.
     requestAudioFocus();
 
-    if (player != null)
-      player.play(true);
+    if (player != null) {
+      if (dontStartPlaybackOnLoad)
+        Log.d(Tag, "Skipping Play call because of restart from dreaming");
+      else
+        player.play(true);
+    }
     updateSessionProgress();
   }
 
   private void pause() {
     mPauseTransient = false;
-
     if (player != null)
       player.play(false);
     updateSessionProgress();
@@ -484,16 +493,22 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
       case STATE_READY:
         showProgress(false);
         adjustFocusForTimeBar(playWhenReady);
-        if (playWhenReady)
+        if (playWhenReady) {
+          dontStartPlaybackOnLoad = false;
           onPlayback(player.isPlaying());
+        }
         else if (player.shouldStart())
           play();
-        else
+        else if (!dontStartPlaybackOnLoad)
           onPlayback(false);
 
         updateTimeRemaining(player.getTimeLeft());
         break;
     }
+  }
+
+  public boolean shouldForceRefreshRate() {
+    return dontStartPlaybackOnLoad;
   }
 
   public void showProgress(boolean show) {
@@ -909,6 +924,7 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
 
   @Override
   public void updateSessionProgress() {
+    Log.d(Tag, "Updating Session Progress");
     long position = player == null ? 0 : player.getCurrentPosition();
     PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
     //noinspection WrongConstant

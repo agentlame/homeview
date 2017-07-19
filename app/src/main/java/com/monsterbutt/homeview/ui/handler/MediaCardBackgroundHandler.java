@@ -44,7 +44,7 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
     private String mLoadedBackgroundURL = "";
 
     private final PlexServer mServer;
-    private final static String Tag = "BackgroundHandler";
+    private final static String Tag = "HV_BackgroundHandler";
 
     MediaCardBackgroundHandler(Activity activity, PlexServer server, String backgroundURI) {
 
