@@ -46,10 +46,6 @@ public class HomeViewPlayer extends SimpleExoPlayer {
         mFactory = renderersFactory;
     }
 
-    public void prepare(PlexVideoItem item, PlexServer server, Context context, ExtractorMediaSource.EventListener listener) {
-        prepare(item, server, context, listener, false, false);
-    }
-
     public void prepare(PlexVideoItem item, PlexServer server, Context context, ExtractorMediaSource.EventListener listener,
                         boolean resetPosition, boolean resetState) {
         mFactory.mDeviceAudioRenderer.prepareVideo(item);

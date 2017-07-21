@@ -165,7 +165,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     private void setupDetailsOverviewRow() {
 
-        if (TextUtils.isEmpty(mBackgroundURL))
+        if (TextUtils.isEmpty(mBackgroundURL) && !TextUtils.isEmpty(mItem.getBackgroundImageURL()))
             mSelectionHandler.updateBackground(mItem.getBackgroundImageURL(), true);
         boolean usePoster = !(mItem instanceof Episode);
         final DetailsOverviewRow row = new DetailsOverviewRow(mItem);
