@@ -701,8 +701,11 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
             else
                 ret += url;
 
-            if (server.hasServerToken())
-                ret += "?" + server.getToken();
+            if (server.hasServerToken()) {
+                String token = server.getToken();
+                if (!ret.contains(token))
+                    ret += (ret.contains("?") ? "&" : "?") + token;
+            }
         }
         return ret;
     }
