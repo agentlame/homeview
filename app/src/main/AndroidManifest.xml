@@ -8,6 +8,9 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
+    <uses-permission android:name="com.android.providers.tv.permission.READ_EPG_DATA" />
+    <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
+
     <uses-feature
         android:name="android.hardware.microphone"
         android:required="false" />
@@ -38,6 +41,15 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:scheme="homeview"
+                    android:host="app"
+                    android:pathPrefix="/main"/>
             </intent-filter>
 
         </activity>
@@ -73,14 +85,51 @@
 
         </activity>
 
-        <activity android:name=".ui.activity.PlayerActivity"
-                  android:resizeableActivity="true"
-                  android:supportsPictureInPicture="true"
-                  android:launchMode="singleTask"
-                  android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"/>
+        <activity
+            android:name=".ui.activity.PlayerActivity"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true"
+            android:launchMode="singleTask"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation">
 
-        <activity android:name=".ui.activity.DetailsActivity"/>
-        <activity android:name=".ui.activity.ContainerActivity" />
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:scheme="homeview"
+                    android:host="app"
+                    android:pathPrefix="/playback"/>
+            </intent-filter>
+
+        </activity>
+
+        <activity
+            android:name=".ui.activity.DetailsActivity" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:scheme="homeview"
+                    android:host="app"
+                    android:pathPrefix="/details"/>
+            </intent-filter>
+
+        </activity>
+
+        <activity
+            android:name=".ui.activity.ContainerActivity" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data
+                    android:scheme="homeview"
+                    android:host="app"
+                    android:pathPrefix="/list"/>
+            </intent-filter>
+
+        </activity>
 
         <service android:exported="false" android:name=".services.ThemeService" >
             <intent-filter>
@@ -96,6 +145,22 @@
         <service
             android:name="com.monsterbutt.homeview.services.UpdateRecommendationsService"
             android:enabled="true" />
+
+        <service
+            android:name="com.monsterbutt.homeview.services.SyncChannelJobService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <receiver
+            android:name="com.monsterbutt.homeview.receivers.OnInstallReceiver"
+            android:enabled="true"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.media.tv.action.INITIALIZE_PROGRAMS"/>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name="com.monsterbutt.homeview.ui.activity.BootupActivity"

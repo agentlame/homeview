@@ -27,6 +27,18 @@
 
         </Preference>
 
+        <Preference
+            android:title="@string/preferences_channels_movies"
+            android:key="preferences_server_channels_movies"
+            android:dependency="api/26"
+            android:drawable="@drawable/ic_local_movies_white_48dp" />
+
+        <Preference
+            android:title="@string/preferences_channels_shows"
+            android:key="preferences_server_channels_shows"
+            android:dependency="api/26"
+            android:drawable="@drawable/ic_live_tv_white_48dp" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

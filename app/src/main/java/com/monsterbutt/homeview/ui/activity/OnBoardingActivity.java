@@ -6,11 +6,13 @@ import android.support.v4.app.FragmentActivity;
 
 import com.google.android.gms.auth.api.credentials.Credential;
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.TvUtil;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTaskCaller;
 import com.monsterbutt.homeview.plex.tasks.ServerLibraryTask;
+import com.monsterbutt.homeview.services.UpdateRecommendationsService;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.handler.ServerStatusHandler;
 
@@ -41,6 +43,18 @@ public class OnBoardingActivity extends FragmentActivity implements PlexServerTa
     public void onResume() {
         super.onResume();
         mLifeCycleMgr.resumed();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        PlexServer server = PlexServerManager.getInstance(getApplicationContext(), null).getSelectedServer();
+        if (server != null && server.isValid()) {
+
+            TvUtil.scheduleSyncingChannel(this);
+            getApplicationContext().startService(new Intent(getApplicationContext(), UpdateRecommendationsService.class));
+            BootupActivity.scheduleRecommendationUpdate(getApplicationContext());
+        }
     }
 
     @Override

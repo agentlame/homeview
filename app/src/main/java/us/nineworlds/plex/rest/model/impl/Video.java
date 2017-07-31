@@ -110,6 +110,8 @@ public class Video extends AbstractPlexObject implements Parcelable {
 	@Attribute(required=false)
 	private String grandparentTheme;
 
+	@Attribute(required = false)
+	private String primaryExtraKey;
 
 	public Video(Parcel in) {
 		super(in);
@@ -155,6 +157,7 @@ public class Video extends AbstractPlexObject implements Parcelable {
 		chapters = in.createTypedArrayList(Chapter.CREATOR);
 		extras = in.createTypedArrayList(Extras.CREATOR);
 		related = in.createTypedArrayList(Related.CREATOR);
+		primaryExtraKey = in.readString();
 	}
 
 	@Override
@@ -202,6 +205,7 @@ public class Video extends AbstractPlexObject implements Parcelable {
 		dest.writeTypedList(chapters);
 		dest.writeTypedList(extras);
 		dest.writeTypedList(related);
+		dest.writeString(primaryExtraKey);
 	}
 
 	@Override
@@ -619,4 +623,5 @@ public class Video extends AbstractPlexObject implements Parcelable {
 	public List<Chapter> getChapters() { return chapters; }
 
 	public long getLastViewedAt() { return lastViewedAt; }
+	public String getPrimaryExtraKey() { return primaryExtraKey; }
 }

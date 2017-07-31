@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.Utils;
+import com.monsterbutt.homeview.plex.PlexServer;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ import us.nineworlds.plex.rest.model.impl.Video;
 
 public class Movie extends PlexVideoItem implements Parcelable {
 
-    public static String TYPE = "movie";
+    public final static String TYPE = "movie";
 
     public Movie(Video video) {
         super(video);
@@ -112,5 +113,15 @@ public class Movie extends PlexVideoItem implements Parcelable {
     public String getDetailContent(Context context) {
 
         return getTagline();
+    }
+
+    @Override
+    protected com.monsterbutt.homeview.model.Video.VideoBuilder toVideo(Context context,
+                                                                        com.monsterbutt.homeview.model.Video.VideoBuilder builder,
+                                                                        PlexServer server) {
+        super.toVideo(context, builder, server);
+        return builder
+         .category(TYPE)
+         .thumbNail(getBackgroundImageURL());
     }
 }

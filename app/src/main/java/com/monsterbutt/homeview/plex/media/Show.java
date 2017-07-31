@@ -10,6 +10,7 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.View;
 
+import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.activity.ContainerActivity;
 import com.monsterbutt.homeview.ui.activity.DetailsActivity;
@@ -201,5 +202,17 @@ public class Show extends PlexContainerItem implements Parcelable {
             return "";
         return String.format("%s %s %s", Integer.toString(count), context.getString(R.string.unwatched),
                                                 context.getString(R.string.episodes));
+    }
+
+    @Override
+    protected com.monsterbutt.homeview.model.Video.VideoBuilder toVideo(Context context,
+                                                                        com.monsterbutt.homeview.model.Video.VideoBuilder builder,
+                                                                        PlexServer server) {
+        super.toVideo(context, builder, server);
+        return builder
+         .category(TYPE)
+         .showTitle(getTitle())
+         .thumbNail(getBackgroundImageURL())
+         .cardImageUrl(getThumbnailKey());
     }
 }

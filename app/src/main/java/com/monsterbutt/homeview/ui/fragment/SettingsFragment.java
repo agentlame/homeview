@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.TvUtil;
 import com.monsterbutt.homeview.presenters.SettingCard;
 import com.monsterbutt.homeview.presenters.SettingPresenter;
 import com.monsterbutt.homeview.settings.SettingsManager;
@@ -37,6 +38,8 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewSelect
 
     private SettingCard mCurrentCard = null;
     private ImageCardView mCurrentView = null;
+
+    private final static String API_KEY = "api/";
 
     private class DependencyValue {
 
@@ -76,13 +79,20 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewSelect
                     String dependencyKey = sett.dependencyKey();
                     if (!TextUtils.isEmpty(dependencyKey)) {
 
-                        DependencyValue deps = mDependencies.get(dependencyKey);
-                        if (deps == null) {
-
-                            deps = new DependencyValue(dependencyKey, gridRowAdapter);
-                            mDependencies.put(dependencyKey, deps);
+                        if (dependencyKey.startsWith(API_KEY)) {
+                            int api = Integer.valueOf(dependencyKey.substring(API_KEY.length()));
+                            if (android.os.Build.VERSION.SDK_INT < api)
+                                continue;
                         }
-                        deps.list.add(card);
+                        else {
+                            DependencyValue deps = mDependencies.get(dependencyKey);
+                            if (deps == null) {
+
+                                deps = new DependencyValue(dependencyKey, gridRowAdapter);
+                                mDependencies.put(dependencyKey, deps);
+                            }
+                            deps.list.add(card);
+                        }
                     }
                     gridRowAdapter.add(card);
                 }
@@ -111,6 +121,9 @@ public class SettingsFragment extends BrowseFragment implements OnItemViewSelect
             SettingsManager mgr = SettingsManager.getInstance(getActivity());
             mCurrentCard.updateValue(mgr.getSetting(mCurrentCard.getKey()).reload(getActivity()), mCurrentView);
         }
+
+        if (requestCode == TvUtil.MAKE_BROWSABLE_REQUEST_CODE)
+            TvUtil.scheduleSyncingChannel(getContext());
     }
 
     @Override

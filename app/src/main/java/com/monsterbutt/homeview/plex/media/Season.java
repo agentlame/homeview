@@ -9,6 +9,7 @@ import android.os.Parcelable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.view.View;
 
+import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.ui.activity.ContainerActivity;
 import com.monsterbutt.homeview.R;
 
@@ -143,5 +144,18 @@ public class Season extends PlexContainerItem implements Parcelable {
     @Override
     public String getHeaderForChildren(Context context) {
         return context.getString(R.string.detailview_header_season);
+    }
+
+    @Override
+    protected com.monsterbutt.homeview.model.Video.VideoBuilder toVideo(Context context,
+                                                                        com.monsterbutt.homeview.model.Video.VideoBuilder builder,
+                                                                        PlexServer server) {
+        super.toVideo(context, builder, server);
+        return builder
+         .category(TYPE)
+         .showTitle(getShowTitle())
+         .seasonNum((int) getSeasonNum())
+         .thumbNail(getBackgroundImageURL())
+         .cardImageUrl(getShowThumbKey());
     }
 }

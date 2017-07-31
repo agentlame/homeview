@@ -32,7 +32,7 @@ public class DetailsActivity extends HomeViewActivity {
     public static final String KEY = "KEY";
     public static final String ITEM = "item";
     public static final String BACKGROUND = "background";
-
+    public static final String URI = "homeview://app/details";
 
     /**
      * Called when the activity is first created.

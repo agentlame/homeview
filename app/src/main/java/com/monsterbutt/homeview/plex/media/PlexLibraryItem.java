@@ -18,6 +18,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.annotations.SerializedName;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.tasks.SetProgressTask;
@@ -39,10 +40,23 @@ public abstract class PlexLibraryItem {
 
     public enum WatchedState {
 
-        Watched,
-        Unwatched,
-        PartialWatched,
-        WatchedAndPartial
+        @SerializedName("0")
+        Watched(0),
+        @SerializedName("1")
+        Unwatched(1),
+        @SerializedName("2")
+        PartialWatched(2),
+        @SerializedName("3")
+        WatchedAndPartial(3);
+
+        private final int value;
+        public int getValue() {
+            return value;
+        }
+
+        private WatchedState(int value) {
+            this.value = value;
+        }
     }
 
     static public final int COMPOSITE_COLS = 3;
@@ -327,5 +341,19 @@ public abstract class PlexLibraryItem {
 
             return rowView;
         }
+    }
+
+    protected com.monsterbutt.homeview.model.Video.VideoBuilder toVideo(Context context,
+                                                                        com.monsterbutt.homeview.model.Video.VideoBuilder builder,
+                                                                        PlexServer server) {
+        return builder
+         .id(getRatingKey())
+         .watched(getWatchedState())
+         .releaseDate(getOriginalAvailableDate());
+    }
+
+    public com.monsterbutt.homeview.model.Video toVideo(Context context, PlexServer server) {
+
+        return toVideo(context, new com.monsterbutt.homeview.model.Video.VideoBuilder(), server).build();
     }
 }

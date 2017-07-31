@@ -2,6 +2,7 @@ package com.monsterbutt.homeview.ui.activity;
 
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
+import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -9,6 +10,8 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.os.Handler;
@@ -78,14 +81,17 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
   private static final String Tag = "HV_PlayerActivity";
   public static final String ACTION_VIEW = "com.monsterbutt.homeview.ui.activity.action.VIEW";
   public static final String KEY = "key";
+  public static final String ACTION = "action";
   public static final String START_OFFSET = "startoffset";
   public static final String VIDEO = "video";
   public static final String TRACKS = "tracks";
   public static final String FILTER = "filter";
   public static final String SHARED_ELEMENT_NAME = "hero";
-
+  public static final String URI = "homeview://app/playback";
 
   private SimpleExoPlayerView simpleExoPlayerView;
+
+  private String lastPlayingKey = "";
 
   private boolean needRetrySource;
   private boolean dontStartPlaybackOnLoad = false;
@@ -223,6 +229,7 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
   @Override
   public void onNewIntent(Intent intent) {
     Log.d(Tag, "onNewIntent");
+    setIntent(intent);
   }
 
   @Override
@@ -237,6 +244,24 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
     super.onResume();
     Log.d(Tag, "onResume");
     ThemeService.stopTheme(this);
+
+    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && !TextUtils.isEmpty(lastPlayingKey)) {
+
+      Intent intent = getIntent();
+      if (intent != null) {
+        String key = intent.getStringExtra(PlayerActivity.KEY);
+        if (TextUtils.isEmpty(key)) {
+          Uri data = intent.getData();
+          if (intent.getAction().equals(Intent.ACTION_VIEW) && data != null && data.toString().startsWith(URI))
+            key = data.toString().substring(URI.length());
+        }
+        if (!TextUtils.isEmpty(key) && !key.equals(lastPlayingKey)) {
+          needRetrySource = true;
+          initializePlayer();
+        }
+      }
+      lastPlayingKey = "";
+    }
   }
 
   @TargetApi(24)
@@ -244,11 +269,13 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
   public void onPause() {
     super.onPause();
 
+    lastPlayingKey = player.getCurrentKey();
     Log.d(Tag, "onPause");
     if (player != null && player.isPlaying()) {
 
       Log.d(Tag, "Turn On Visible Behind");
-      boolean isVisibleBehind = requestVisibleBehind(true);
+      boolean isVisibleBehind = (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O ? requestVisibleBehind(true) :
+        enterPictureInPictureMode(new PictureInPictureParams.Builder().build()));
       if (!isVisibleBehind && !isInPictureInPictureMode()) {
         Log.d(Tag, "Visible Behind failed");
         pause();
@@ -258,7 +285,8 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
     }
     else {
       Log.d(Tag, "Turn off Visible Behind");
-      requestVisibleBehind(false);
+      if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
+        requestVisibleBehind(false);
     }
   }
 
@@ -405,7 +433,12 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
 
     if (needNewPlayer || needRetrySource) {
       String action = intent.getAction();
-      if (ACTION_VIEW.equals(action)) {
+      Uri data = intent.getData();
+      if (action.equals(Intent.ACTION_VIEW) && data != null && data.toString().startsWith(URI)) {
+        intent.putExtra(ACTION, ACTION_VIEW);
+        intent.putExtra(KEY, data.toString().substring(URI.length()));
+      }
+      if (ACTION_VIEW.equals(action) || (!TextUtils.isEmpty(intent.getStringExtra(ACTION)) && ACTION_VIEW.equals(intent.getStringExtra(ACTION)))) {
         Log.d(Tag, "Playing video from Action_View");
         player.playVideo((PlexVideoItem) intent.getParcelableExtra(PlayerActivity.VIDEO), intent);
         needRetrySource = false;

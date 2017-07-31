@@ -23,6 +23,7 @@ import android.media.MediaDescription;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.view.View;
 
 import com.monsterbutt.homeview.R;
@@ -31,12 +32,14 @@ import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.provider.SearchImagesProvider;
 
+import java.io.Serializable;
+
 import static com.monsterbutt.homeview.plex.media.PlexLibraryItem.WatchedState.Watched;
 
 /**
  * Video is an immutable object that holds the various metadata associated with a single video.
  */
-public final class Video extends CardObject implements Parcelable {
+public final class Video extends CardObject implements Parcelable, Serializable, Comparable<Video> {
 
     public final long id;
     public final String category;
@@ -46,6 +49,7 @@ public final class Video extends CardObject implements Parcelable {
     public final String bgImageUrl;
     public final String cardImageUrl;
     public final String videoUrl;
+    public final String trailerUrl;
     public final String studio;
     public final String rating;
     public final String key;
@@ -56,6 +60,19 @@ public final class Video extends CardObject implements Parcelable {
     public final PlexLibraryItem.WatchedState watched;
     public final boolean shouldStartQueuePlayback;
     public final String frameRate;
+    public final String releaseDate;
+
+    public final int episodeNum;
+    public final int seasonNum;
+    public final String showTitle;
+    public final String thumbNail;
+    public final int height;
+    public final int width;
+    public final String[] genre;
+    public final String[] ratings;
+
+    public long programId = -1;
+    public int sortOrder = 0;
 
     private Video(
             final long id,
@@ -75,7 +92,18 @@ public final class Video extends CardObject implements Parcelable {
             final long watchedOffset,
             final PlexLibraryItem.WatchedState watched,
             final String frameRate,
-            final boolean shouldStartQueuePlayback) {
+            final String releaseDate,
+            final boolean shouldStartQueuePlayback,
+            final int episodeNum,
+            final int seasonNum,
+            final String showTitle,
+            final String thumbNail,
+            final int height,
+            final int width,
+            final String trailerUrl,
+            final String[] genre,
+            final String[] ratings,
+            final int sortOrder) {
         this.id = id;
         this.category = category;
         this.title = title;
@@ -100,7 +128,18 @@ public final class Video extends CardObject implements Parcelable {
         this.duration = duration;
         this.watchedOffset = watchedOffset;
         this.watched = watched;
+        this.releaseDate = releaseDate;
         this.shouldStartQueuePlayback = shouldStartQueuePlayback;
+        this.episodeNum = episodeNum;
+        this.seasonNum = seasonNum;
+        this.showTitle = showTitle;
+        this.thumbNail = thumbNail;
+        this.height = height;
+        this.width = width;
+        this.genre = genre;
+        this.trailerUrl = trailerUrl;
+        this.ratings = ratings;
+        this.sortOrder = sortOrder;
     }
 
 
@@ -122,7 +161,18 @@ public final class Video extends CardObject implements Parcelable {
         watchedOffset = in.readLong();
         watched = PlexLibraryItem.WatchedState.values()[in.readInt()];
         frameRate = in.readString();
+        releaseDate = in.readString();
         shouldStartQueuePlayback = in.readByte() == 1;
+        episodeNum = in.readInt();
+        seasonNum = in.readInt();
+        showTitle = in.readString();
+        thumbNail = in.readString();
+        height = in.readInt();
+        width = in.readInt();
+        trailerUrl = in.readString();
+        genre = in.createStringArray();
+        ratings = in.createStringArray();
+        sortOrder = in.readInt();
     }
 
     public static final Creator<Video> CREATOR = new Creator<Video>() {
@@ -168,20 +218,75 @@ public final class Video extends CardObject implements Parcelable {
         dest.writeLong(watchedOffset);
         dest.writeInt(watched.ordinal());
         dest.writeString(frameRate);
+        dest.writeString(releaseDate);
         dest.writeByte((byte) (shouldStartQueuePlayback ? 1 : 0));
+        dest.writeInt(episodeNum);
+        dest.writeInt(seasonNum);
+        dest.writeString(showTitle);
+        dest.writeString(thumbNail);
+        dest.writeInt(height);
+        dest.writeInt(width);
+        dest.writeString(trailerUrl);
+        dest.writeStringArray(genre);
+        dest.writeStringArray(ratings);
+        dest.writeInt(sortOrder);
     }
 
     @Override
     public String toString() {
-        String s = "Video{";
-        s += "id=" + id;
-        s += ", category='" + category + "'";
-        s += ", title='" + title + "'";
-        s += ", videoUrl='" + videoUrl + "'";
-        s += ", bgImageUrl='" + bgImageUrl + "'";
-        s += ", cardImageUrl='" + cardImageUrl + "'";
-        s += ", studio='" + cardImageUrl + "'";
+        String s = "{ Video : {";
+        s += "id:" + id;
+        s += ", category:\"" + category + "\"";
+        s += ", title:\"" + title + "\"";
+        s += ", videoUrl:\"" + videoUrl + "\"";
+        s += ", bgImageUrl:\"" + bgImageUrl + "\"";
+        s += ", cardImageUrl:\"" + cardImageUrl + "\"";
+        s += ", studio:\"" + studio + "\"";
+        s += ", subtitle:\"" + subtitle + "\"";
+        s += ", description:\"" + description + "\"";
+        s += ", bgImageUrl:\"" + bgImageUrl + "\"";
+        s += ", rating:\"" + rating + "\"";
+        s += ", key:\"" + key + "\"";
+        s += ", filePath:\"" + filePath + "\"";
+        s += ", serverPath:\"" + serverPath + "\"";
+        s += ", frameRate:\"" + frameRate + "\"";
+        s += ", duration:" + duration;
+        s += ", watchedOffset:" + watchedOffset;
+        s += ", programId:" + programId;
+        s += ", watched:" + watched.getValue();
+        s += ", releaseDate:\"" + releaseDate + "\"";
+        s += ", shouldStartQueuePlayback:" + (shouldStartQueuePlayback ? 1 : 0);
+        s += ", episodeNum:" + episodeNum;
+        s += ", seasonNum:" + seasonNum;
+        s += ", showTitle:\"" + showTitle + "\"";
+        s += ", thumbNail:\"" + thumbNail + "\"";
+        s += ", height:" + height;
+        s += ", width:" + width;
+        s += ", trailerUrl:\"" + trailerUrl + "\"";
+        s += ", sortOrder:" + sortOrder;
+        s += ", genre:{";
+        if (genre != null && genre.length > 0) {
+            boolean comma = false;
+            for (String g : genre) {
+                if (comma)
+                    s += ", ";
+                comma = true;
+                s += "\"" + g + "\"";
+            }
+        }
         s += "}";
+        s += ", ratings:{";
+        if (ratings != null && ratings.length > 0) {
+            boolean comma = false;
+            for (String r : ratings) {
+                if (comma)
+                    s += ", ";
+                comma = true;
+                s += "\"" + r + "\"";
+            }
+        }
+        s += "}";
+        s += "}}";
         return s;
     }
 
@@ -250,6 +355,14 @@ public final class Video extends CardObject implements Parcelable {
         return false;
     }
 
+    @Override
+    public int compareTo(@NonNull Video r) {
+        if (this.sortOrder < r.sortOrder)
+            return -1;
+        else
+            return 1;
+    }
+
     // Builder for Video object.
     public static class VideoBuilder {
         private long id = 0;
@@ -267,9 +380,20 @@ public final class Video extends CardObject implements Parcelable {
         private String serverPath = "";
         private long   duration = 0;
         private long   watchedOffset = 0;
+        private String releaseDate = "";
         private PlexLibraryItem.WatchedState watched = Watched;
         private String frameRate = "";
         private boolean shouldStartQueuePlayback = false;
+        private int episodeNum = 0;
+        private int seasonNum = 0;
+        private String showTitle = "";
+        private String thumbNail = "";
+        private int height = 0;
+        private int width = 0;
+        private String trailerUrl = "";
+        private String[] genre = {};
+        private String[] ratings = {};
+        private int sortOrder = 0;
 
         public VideoBuilder id(long id) {
             this.id = id;
@@ -351,6 +475,11 @@ public final class Video extends CardObject implements Parcelable {
             return this;
         }
 
+        public VideoBuilder releaseDate(String releaseDate) {
+            this.releaseDate = releaseDate;
+            return this;
+        }
+
         public VideoBuilder frameRate(String frameRate) {
             this.frameRate = frameRate;
             return this;
@@ -358,6 +487,56 @@ public final class Video extends CardObject implements Parcelable {
 
         public VideoBuilder shouldStartQueuePlayback(boolean shouldStartQueuePlayback) {
             this.shouldStartQueuePlayback = shouldStartQueuePlayback;
+            return this;
+        }
+
+        public VideoBuilder episodeNum(int num) {
+            this.episodeNum = num;
+            return this;
+        }
+
+        public VideoBuilder seasonNum(int num) {
+            this.seasonNum = num;
+            return this;
+        }
+
+        public VideoBuilder showTitle(String title) {
+            this.showTitle = title;
+            return this;
+        }
+
+        public VideoBuilder thumbNail(String url) {
+            this.thumbNail = url;
+            return this;
+        }
+
+        public VideoBuilder height(int val) {
+            this.height = val;
+            return this;
+        }
+
+        public VideoBuilder width(int val) {
+            this.width = val;
+            return this;
+        }
+
+        public VideoBuilder trailerUrl(String val) {
+            this.trailerUrl = val;
+            return this;
+        }
+
+        public VideoBuilder genre(String[] vals) {
+            this.genre = vals;
+            return this;
+        }
+
+        public VideoBuilder ratings(String[] vals) {
+            this.ratings = vals;
+            return this;
+        }
+
+        public VideoBuilder sortOrder(int sortOrder) {
+            this.sortOrder = sortOrder;
             return this;
         }
 
@@ -380,7 +559,18 @@ public final class Video extends CardObject implements Parcelable {
                     0,
                     Watched,
                     "",
-                    false
+                    "",
+                    false,
+                    0,
+                    0,
+                    "",
+                    "",
+                    0,
+                    0,
+                    "",
+                    null,
+                    null,
+                    0
             );
         }
 
@@ -403,7 +593,18 @@ public final class Video extends CardObject implements Parcelable {
                     watchedOffset,
                     watched,
                     frameRate,
-                    shouldStartQueuePlayback
+                    releaseDate,
+                    shouldStartQueuePlayback,
+                    episodeNum,
+                    seasonNum,
+                    showTitle,
+                    thumbNail,
+                    height,
+                    width,
+                    trailerUrl,
+                    genre,
+                    ratings,
+                    sortOrder
             );
         }
     }

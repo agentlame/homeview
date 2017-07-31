@@ -25,6 +25,7 @@ public class ContainerActivity extends HomeViewActivity {
     public static final String SHARED_ELEMENT_NAME = "hero";
     public static final String BACKGROUND = "background";
     public static final String SELECTED = "selected";
+    public static final String URI = "homeview://app/list";
 
     private ListView mQuickList = null;
     private ContainerGridFragment mFragment;

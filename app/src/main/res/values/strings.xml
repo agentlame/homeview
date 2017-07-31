@@ -240,6 +240,20 @@
     <string name="upnpbaditem">Unsupported UPnP item type</string>
     <string name="upnpbadpath">Bad file path for item</string>
 
+    <string name="preferences_channels_movies">Recently Added Movies Channel</string>
+    <string name="preferences_channels_shows">Recently Added Shows Channel</string>
+
+    <string name="channel_added">Channel Added</string>
+    <string name="channel_existed">Channel Existed Already</string>
+
+    <string name="channel_recommended">Recomended</string>
+    <string name="channel_recommended_description">Shows or movies recently added to your library or currently in progress</string>
+    <string name="channel_shows">Recently Added Shows</string>
+    <string name="channel_shows_description">Shows recently added to your library</string>
+    <string name="channel_movies">Recently Added Movies</string>
+    <string name="channel_movies_description">Movies recently added to your library</string>
+
+
     <string name="pip">PIP</string>
     <string name="jump">Jump</string>
 
@@ -290,4 +304,6 @@
     <string name="subtitle">Subtitle</string>
     <string name="track">Track</string>
 
+    <string name="channel_name">HomeView</string>
+    <string name="channel_description">Latest happenings in HomeView</string>
 </resources>

@@ -1,6 +1,8 @@
 package com.monsterbutt.homeview.plex.media;
 
 import android.app.Fragment;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.database.MatrixCursor;
@@ -577,18 +579,41 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return ret;
     }
 
-    public com.monsterbutt.homeview.model.Video toVideo(Context context) {
+    @Override
+    protected com.monsterbutt.homeview.model.Video.VideoBuilder toVideo(Context context,
+                                                                        com.monsterbutt.homeview.model.Video.VideoBuilder builder,
+                                                                        PlexServer server) {
 
-        return new com.monsterbutt.homeview.model.Video.VideoBuilder()
-                .title(getPlaybackTitle(context))
-                .description(getPlaybackDescription(context))
-                .subtitle(getPlaybackSubtitle(context, false))
-                .cardImageUrl(getPlaybackImageURL())
-                .duration(getDurationMs())
-                .studio(getStudio())
-                .rating(getContentRating())
-                .id(getRatingKey())
-                .build();
+        List<String> genres = new ArrayList<>();
+        List<Genre> list = getGenres();
+        if (list != null) {
+            for (Genre g : list)
+                genres.add(g.getTag());
+        }
+
+        super.toVideo(context, builder, server);
+        return builder
+         .key(getKey())
+         .title(getTitle())
+         .description(getPlaybackDescription(context))
+         .subtitle(getPlaybackSubtitle(context, false))
+         .cardImageUrl(getPlaybackImageURL())
+         .duration(getDurationMs())
+         .studio(getStudio())
+         .rating(getContentRating())
+         .trailerUrl(getTrailerURL())
+         .height(mVideo.getMedias() != null && !mVideo.getMedias().isEmpty() ? Integer.parseInt(mVideo.getMedias().get(0).getHeight()) : 0)
+         .width(mVideo.getMedias() != null && !mVideo.getMedias().isEmpty() ? Integer.parseInt(mVideo.getMedias().get(0).getWidth()) : 0)
+         .genre((String[]) genres.toArray(new String[genres.size()]));
+
+        // show title
+        // thumbnail
+        // episode num
+        // season num
+        // height
+        // width
+        // canonical genre
+        // content rating
     }
 
     public long getNextUpThresholdTrigger(Context context) {
@@ -689,10 +714,9 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     public boolean shouldDiscoverQueue() { return true; }
     public boolean shouldUpdateStatusOnPlayback() { return true; }
 
-    public String getVideoPath(PlexServer server) {
+    public static String getVideoPath(PlexServer server, String url) {
 
         String serverURL = server.getServerURL();
-        String url = getPathKey();
         String ret = "";
         if (!TextUtils.isEmpty(url) && serverURL != null) {
             ret = serverURL;
@@ -710,8 +734,47 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return ret;
     }
 
+    public String getVideoPath(PlexServer server) {
+        return PlexVideoItem.getVideoPath(server, getPathKey());
+    }
+
     public boolean selectedHasMissingData() {
         return getMedia().get(0).getVideoPart().get(0).getStreams() == null
                 || !hasChapters(); // force chapter check in here, even if they don't exist
+    }
+
+    public PendingIntent buildPendingIntent(Context context) {
+
+        Intent playbackIntent = new Intent(context, PlayerActivity.class);
+        playbackIntent.setAction(PlayerActivity.ACTION_VIEW);
+        playbackIntent.putExtra(PlayerActivity.ACTION, PlayerActivity.ACTION_VIEW);
+        playbackIntent.putExtra(PlayerActivity.KEY, getKey());
+        playbackIntent.putExtra(PlayerActivity.VIDEO, this);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addParentStack(PlayerActivity.class);
+        stackBuilder.addNextIntent(playbackIntent);
+        // Ensure a unique PendingIntents, otherwise all
+        // recommendations end up with the same PendingIntent
+        playbackIntent.setAction(getKey());
+        return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    public String getTrailerURL() {
+        String key = mVideo.getPrimaryExtraKey();
+        if (!TextUtils.isEmpty(key)) {
+            List<Extras> extras = mVideo.getExtras();
+            if (extras != null && !extras.isEmpty()) {
+                for(Extras extra : extras) {
+                    List<Video> vids = extra.getVideos();
+                    if (vids != null && !vids.isEmpty()) {
+                        for (Video vid : vids) {
+                            if(vid.getKey().equals(key))
+                                return vid.getMedias().get(0).getVideoPart().get(0).getKey();
+                        }
+                    }
+                }
+            }
+        }
+        return getPathKey();
     }
 }

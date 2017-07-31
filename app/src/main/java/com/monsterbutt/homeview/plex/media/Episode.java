@@ -14,7 +14,7 @@ import us.nineworlds.plex.rest.model.impl.Video;
 
 public class Episode extends PlexVideoItem implements Parcelable {
 
-    public static String TYPE = "episode";
+    public final static String TYPE = "episode";
 
     public Episode(Video video) {
 
@@ -247,5 +247,18 @@ public class Episode extends PlexVideoItem implements Parcelable {
 
     public void setSeasonNum(long parentIndex) {
         mVideo.setSeason(Long.toString(parentIndex));
+    }
+
+    @Override
+    protected com.monsterbutt.homeview.model.Video.VideoBuilder toVideo(Context context,
+                                                                        com.monsterbutt.homeview.model.Video.VideoBuilder builder,
+                                                                        PlexServer server) {
+        super.toVideo(context, builder, server);
+        return builder
+         .category(TYPE)
+         .showTitle(getShowName())
+         .episodeNum(Integer.parseInt(getEpisodeNum()))
+         .seasonNum(Integer.parseInt(getSeasonNum()))
+         .thumbNail(getThumbnailKey());
     }
 }

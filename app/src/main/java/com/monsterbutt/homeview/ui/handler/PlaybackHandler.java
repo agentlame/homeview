@@ -453,6 +453,13 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     return (playbackState == STATE_READY || playbackState == STATE_BUFFERING) && player.getPlayWhenReady();
   }
 
+  public String getCurrentKey() {
+
+    if (isPlaying())
+      return currentVideo.getKey();
+    return "";
+  }
+
   private boolean playPrevious() {
     Log.i(Tag, "Playing Previous");
     return playVideo(previousVideo);
