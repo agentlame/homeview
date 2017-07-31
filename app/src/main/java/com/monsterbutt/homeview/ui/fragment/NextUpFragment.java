@@ -27,6 +27,7 @@ public class NextUpFragment extends Fragment {
   public interface NextUpCallback {
 
     enum Clicked {
+      Close,
       StartNext,
       StopList,
       ShowList
@@ -65,11 +66,15 @@ public class NextUpFragment extends Fragment {
     String out = " " + new SimpleDateFormat("h:mm", Locale.US).format((new Date()).getTime() + video.getDuration() + currentTimeLeft);
     ((TextView) view.findViewById(R.id.end_time)).setText(out);
 
+    view.findViewById(R.id.nextup_close).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) { clicked(NextUpCallback.Clicked.Close); }
+    });
+    view.findViewById(R.id.nextup_close).requestFocus();
     view.findViewById(R.id.nextup_startNext).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) { clicked(NextUpCallback.Clicked.StartNext); }
     });
-    view.findViewById(R.id.nextup_startNext).requestFocus();
     view.findViewById(R.id.nextup_stopList).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) { clicked(NextUpCallback.Clicked.StopList); }

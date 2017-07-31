@@ -26,6 +26,11 @@
             android:layout_height="wrap_content"
             android:gravity="center" >
 
+
+            <ImageButton
+                android:id="@+id/nextup_close"
+                style="@style/ExoMediaButton.Close"/>
+
             <ImageButton
                 android:id="@+id/nextup_startNext"
                 style="@style/ExoMediaButton.Play"/>

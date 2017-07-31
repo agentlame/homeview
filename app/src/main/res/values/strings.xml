@@ -296,7 +296,7 @@
     <string name="options_label">Options</string>
     <string name="chapters_label">Chapters</string>
 
-
+    <string name="exo_controls_close_description">Close</string>
     <string name="exo_controls_pip_description">Picture In Picture</string>
     <string name="exo_controls_chapters_description">Chapters</string>
     <string name="exo_controls_audio_description">Audio Tracks</string>
