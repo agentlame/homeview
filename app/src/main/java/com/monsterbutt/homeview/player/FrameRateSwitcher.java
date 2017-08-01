@@ -345,7 +345,7 @@ public class FrameRateSwitcher {
             Display.Mode currentMode = getCurrentMode();
             Display.Mode newMode = getBestFitMode(convertFrameRate(item.getMedia().get(0).getVideoFrameRate()));
             if (currentMode != null) {
-                if (force || requestedMode != null && currentMode.getRefreshRate() != newMode.getRefreshRate())
+                if (force || newMode != null && currentMode.getRefreshRate() != newMode.getRefreshRate())
                     return changeMode(newMode);
                 Log.i(Tag, "Frame rate left alone");
             }
