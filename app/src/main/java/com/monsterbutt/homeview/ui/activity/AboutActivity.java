@@ -19,7 +19,9 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class AboutActivity extends ListActivity {
@@ -41,7 +43,7 @@ public class AboutActivity extends ListActivity {
 
     private class AboutItem {
 
-        public final static String TAG = "HV_Item";
+        public final static String TAG = "Item";
 
         private String title;
         final private String blurb;
@@ -107,8 +109,12 @@ public class AboutActivity extends ListActivity {
         }
 
         try {
-            if (!items.isEmpty() && items.get(0).title.equals("Homeview"))
-                items.get(0).title += String.format(" (%s)", getPackageManager().getPackageInfo(getPackageName(), 0).versionName);
+            if (!items.isEmpty() && items.get(0).title.equals("Homeview")) {
+                String version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+                long time = getPackageManager().getPackageInfo(getPackageName(), 0).lastUpdateTime;
+                String date = new SimpleDateFormat("yyyy/MM/dd k:mm").format(new Date(time));
+                items.get(0).title += String.format(" (%s %s)", version, date);
+            }
         } catch (Exception e) {}
 
         return items;
