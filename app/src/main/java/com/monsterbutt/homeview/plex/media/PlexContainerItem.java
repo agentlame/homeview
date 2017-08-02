@@ -141,8 +141,10 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
             }
             mDirectory.setViewedLeafCount(Integer.toString(viewed));
         }
+        setDirectories(mc.getDirectories());
+    }
 
-        List<Directory> directories = mc.getDirectories();
+    public void setDirectories(List<Directory> directories) {
         if (directories != null) {
 
             int viewed = 0;

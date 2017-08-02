@@ -28,7 +28,6 @@ import android.support.v17.leanback.widget.DetailsOverviewLogoPresenter;
 import android.support.v17.leanback.widget.DetailsOverviewRow;
 import android.support.v17.leanback.widget.FullWidthDetailsOverviewRowPresenter;
 import android.support.v17.leanback.widget.FullWidthDetailsOverviewSharedElementHelper;
-import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.ListRowPresenter;
 import android.support.v17.leanback.widget.ObjectAdapter;
@@ -57,9 +56,7 @@ import com.monsterbutt.homeview.plex.tasks.ToggleWatchedStateTask;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CustomListRowPresenter;
 import com.monsterbutt.homeview.presenters.DetailsDescriptionPresenter;
-import com.monsterbutt.homeview.presenters.CardPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
-import com.monsterbutt.homeview.presenters.PosterCardExpanded;
 import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.activity.PlayerActivity;
@@ -83,10 +80,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import us.nineworlds.plex.rest.model.impl.Directory;
 import us.nineworlds.plex.rest.model.impl.Hub;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
-import us.nineworlds.plex.rest.model.impl.Video;
 
 /*
  * LeanbackDetailsFragment extends DetailsFragment, a Wrapper fragment for leanback details screens.
@@ -470,10 +465,14 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                 else {
                     if (mItem instanceof Show && 0 < media.getDirectories().size()) {
                         MediaContainer rel = server.getVideoMetadata(key.replace("/children", ""), true);
-                        if (rel != null && rel.getDirectories().size() > 0)
+                        if (rel != null && rel.getDirectories().size() > 0) {
                             media.getDirectories().get(0).setRelated(rel.getDirectories().get(0).getRelated());
+                            ((Show) mItem).setDirectories(media.getDirectories());
+                        }
+                        ret = mItem;
                     }
-                    ret = PlexContainerItem.getItem(media);
+                    else
+                        ret = PlexContainerItem.getItem(media);
                 }
             }
 
