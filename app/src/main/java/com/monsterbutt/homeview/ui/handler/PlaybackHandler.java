@@ -342,8 +342,9 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       mainHandler.removeCallbacks(nextUpRunnable);
       if (nextVideo != null && currentVideo != null && player != null && isPlaying()) {
         long time = currentVideo.getNextUpThresholdTrigger(caller.getValidContext());
-        if (time != NEXTUP_DISABLED)
-          mainHandler.postDelayed(nextUpRunnable, time);
+        long pos = getCurrentPosition();
+        if (time != NEXTUP_DISABLED && pos < time)
+          mainHandler.postDelayed(nextUpRunnable, time - pos);
       }
     }
   }
@@ -499,7 +500,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   public void release() {
     mainHandler.removeCallbacks(runnableProgress);
     mainHandler.removeCallbacks(nextUpRunnable);
-    releaseSelectView();
+
     if (switcher != null) {
       switcher.unregister();
       switcher = null;
