@@ -456,7 +456,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   public String getCurrentKey() {
 
-    if (isPlaying())
+    if (isPlaying() && currentVideo != null)
       return currentVideo.getKey();
     return "";
   }

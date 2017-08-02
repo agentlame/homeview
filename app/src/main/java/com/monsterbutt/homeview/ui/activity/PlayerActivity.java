@@ -269,7 +269,7 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
   public void onPause() {
     super.onPause();
 
-    lastPlayingKey = player.getCurrentKey();
+    lastPlayingKey = player != null ? player.getCurrentKey() : "";
     Log.d(Tag, "onPause");
     if (player != null && player.isPlaying()) {
 
