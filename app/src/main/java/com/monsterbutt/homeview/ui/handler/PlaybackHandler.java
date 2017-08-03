@@ -207,6 +207,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
     synchronized (this) {
 
+      Log.d(Tag, "Next up released (play video)");
       mainHandler.removeCallbacks(nextUpRunnable);
       currentVideo = video;
       updateRecommendations(currentVideo);
@@ -340,11 +341,15 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   private void setNextUpPopup() {
     synchronized (this) {
+
+      Log.d(Tag, "Next up released (setup)");
       mainHandler.removeCallbacks(nextUpRunnable);
       if (nextVideo != null && currentVideo != null && player != null && isPlaying()) {
         long time = currentVideo.getNextUpThresholdTrigger(caller.getValidContext());
         long pos = getCurrentPosition();
         if (time != NEXTUP_DISABLED && pos < time)
+
+          Log.d(Tag, "Next up SET for : " + ((time - pos)/1000) + " seconds");
           mainHandler.postDelayed(nextUpRunnable, time - pos);
       }
     }
@@ -510,6 +515,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   public void release() {
     mainHandler.removeCallbacks(runnableProgress);
+    Log.d(Tag,"Next up released (release)");
     mainHandler.removeCallbacks(nextUpRunnable);
 
     if (switcher != null) {
@@ -640,6 +646,8 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       if (nextVideo != null) {
         releaseSelectView();
         caller.showControls(false);
+
+        Log.d(Tag,"Next up initiated");
         selectView = new NextUpView((Activity) caller.getValidContext(), server, nextVideo,
          getTimeLeft(), viewCaller);
       }
