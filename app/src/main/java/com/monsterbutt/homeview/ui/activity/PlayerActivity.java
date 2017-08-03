@@ -596,7 +596,8 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
   @Override
   public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
     super.onPictureInPictureModeChanged(isInPictureInPictureMode);
-    player.onPictureInPictureModeChanged(isInPictureInPictureMode);
+    if (player != null)
+     player.onPictureInPictureModeChanged(isInPictureInPictureMode);
     if (isInPictureInPictureMode)
       showControls(false);
   }
@@ -826,6 +827,8 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
 
   @Override
   public void showControls(boolean show) {
+    if (simpleExoPlayerView == null)
+      return;
     if (show)
       simpleExoPlayerView.showController();
     else
