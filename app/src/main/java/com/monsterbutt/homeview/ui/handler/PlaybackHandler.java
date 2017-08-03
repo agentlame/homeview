@@ -80,6 +80,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     void showProgress(boolean show);
     void showError(String msg);
     boolean shouldForceRefreshRate();
+    void onNewIntent(Intent intent);
     void exit();
   }
 
@@ -461,14 +462,24 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     return "";
   }
 
+  private void setVideoIntent(PlexVideoItem video) {
+    Intent intent = new Intent();
+    intent.setAction(PlayerActivity.ACTION_VIEW);
+    intent.putExtra(PlayerActivity.KEY, video.getKey());
+    intent.putExtra(PlayerActivity.VIDEO, video);
+    caller.onNewIntent(intent);
+  }
+
   private boolean playPrevious() {
     Log.i(Tag, "Playing Previous");
+    setVideoIntent(previousVideo);
     return playVideo(previousVideo);
   }
 
   public boolean playNext() {
     Log.i(Tag, "Playing Next");
     PlexVideoItem video = currentVideo;
+    setVideoIntent(nextVideo);
     boolean ret = playVideo(nextVideo);
     if (ret && video != null && server != null)
       VideoProgressTask.getTask(server, currentVideo).setProgress(true, currentVideo.getDuration());
