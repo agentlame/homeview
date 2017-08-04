@@ -13,6 +13,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.monsterbutt.homeview.BuildConfig;
 import com.monsterbutt.homeview.R;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -111,8 +112,7 @@ public class AboutActivity extends ListActivity {
         try {
             if (!items.isEmpty() && items.get(0).title.equals("Homeview")) {
                 String version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-                long time = getPackageManager().getPackageInfo(getPackageName(), 0).lastUpdateTime;
-                String date = new SimpleDateFormat("yyyy/MM/dd k:mm").format(new Date(time));
+                String date = new SimpleDateFormat("yyyy/MM/dd k:mm").format(new Date(BuildConfig.TIMESTAMP));
                 items.get(0).title += String.format(" (%s %s)", version, date);
             }
         } catch (Exception e) {}

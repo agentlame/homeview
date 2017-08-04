@@ -43,6 +43,7 @@ android {
     defaultConfig {
         multiDexEnabled true
         applicationId "com.monsterbutt.homeview"
+        buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
         minSdkVersion 23
         targetSdkVersion 26
         archivesBaseName = "homeview"
