@@ -492,6 +492,8 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   }
 
   private boolean playVideo(PlexVideoItem video) {
+
+    releaseSelectView();
     if (player == null || video == null)
       return false;
 

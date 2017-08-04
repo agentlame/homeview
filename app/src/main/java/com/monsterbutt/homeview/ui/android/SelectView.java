@@ -16,6 +16,7 @@ public abstract class SelectView {
   protected final Activity activity;
   private Fragment fragment = null;
   private SelectViewCaller caller;
+  private boolean isReleased = false;
 
   public SelectView(Activity activity) {
 
@@ -42,6 +43,12 @@ public abstract class SelectView {
   }
 
   public void release() {
+
+    synchronized (this) {
+      if (isReleased)
+        return;
+      isReleased = true;
+    }
 
     if (fragment != null && activity != null && !activity.isDestroyed() && !activity.isFinishing()) {
       activity.runOnUiThread(new Runnable() {
