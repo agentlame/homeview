@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v4.media.MediaMetadataCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -96,7 +97,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   private PlexVideoItem previousVideo = null;
   private PlexVideoItem nextVideo = null;
 
-
+  private String keyOfLastVideo = "";
   private boolean pausedTemp = true;
 
   private int resumeWindow;
@@ -184,7 +185,8 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       playVideo(video, chosenTracks,  null);
   }
 
-  private void playVideo(PlexVideoItem video, MediaTrackSelector chosenTracks, MediaTrackSelector readTracks) {
+  private void playVideo(PlexVideoItem video, MediaTrackSelector chosenTracks,
+                         MediaTrackSelector readTracks) {
 
     caller.showProgress(true);
     Context context = caller.getValidContext();
@@ -276,10 +278,11 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       player.seekTo(resumeWindow, resumePosition);
     else if (startPosition.getStartPosition() > 0)
       player.seekTo(startPosition.getStartPosition());
-    else if (startPosition.getStartType() == StartPosition.PlaybackStartType.Ask
-     && startPosition.getVideoOffset() > 0)
+    else if ( (TextUtils.isEmpty(keyOfLastVideo) || !currentVideo.getKey().equals(keyOfLastVideo)) &&
+     startPosition.getStartType() == StartPosition.PlaybackStartType.Ask && startPosition.getVideoOffset() > 0)
       ResumeChoiceHandler.askUser(context, player, startPosition.getVideoOffset(), CHOOSER_TIMEOUT);
     pausedTemp = true;
+    keyOfLastVideo = currentVideo.getKey();
     player.prepare(currentVideo, server, caller.getValidContext(), this, !haveResumePosition, false);
   }
 
