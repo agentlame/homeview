@@ -350,10 +350,11 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       if (nextVideo != null && currentVideo != null && player != null && isPlaying()) {
         long time = currentVideo.getNextUpThresholdTrigger(caller.getValidContext());
         long pos = getCurrentPosition();
-        if (time != NEXTUP_DISABLED && pos < time)
-
-          Log.d(Tag, "Next up SET for : " + ((time - pos)/1000) + " seconds");
-          mainHandler.postDelayed(nextUpRunnable, time - pos);
+        if (time != NEXTUP_DISABLED && pos < time) {
+          long delay = time - pos;
+          Log.d(Tag, "Next up SET for : " + (delay / 1000) + " seconds");
+          mainHandler.postDelayed(nextUpRunnable, delay);
+        }
       }
     }
   }
@@ -690,10 +691,12 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   private class NextUpView extends SelectView implements NextUpFragment.NextUpCallback {
 
+    NextUpFragment fragment;
     NextUpView(Activity activity, PlexServer server, PlexVideoItem video, long timeLeft,
                SelectViewCaller caller) {
       super(activity);
-      setFragment(new NextUpFragment(activity, server, video, timeLeft, this, getHeight()), caller);
+      fragment = new NextUpFragment(activity, server, video, timeLeft, this, getHeight());
+      setFragment(fragment, caller);
     }
 
     @Override
@@ -703,6 +706,13 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
     @Override
     protected int getHeight() { return 600; }
+
+    @Override
+
+    public void release() {
+      fragment.release();
+      super.release();
+    }
 
     @Override
     public void clicked(Clicked button) {

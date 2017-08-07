@@ -173,14 +173,14 @@
     <string name="Forced">Forced</string>
     <string name="Default">Default</string>
     <string name="Disable">Disable</string>
-    <string name="skip_forward_seconds">15</string>
-    <string name="skip_back_seconds">5</string>
+    <string name="skip_forward_seconds">20</string>
+    <string name="skip_back_seconds">10</string>
     <string name="jump_forward_seconds">300</string>
     <string name="jump_backward_seconds">300</string>
 
     <string name="nextup_poster">NextUp Poster</string>
-    <string name="nextup_comingup">Playing in</string>
-    <string name="nextup_comingup_seconds">seconds</string>>
+    <string name="nextup_comingup">Playing in&#160;</string>
+    <string name="nextup_comingup_seconds">&#160;seconds</string>>
     <string name="codeccard_image_desc"></string>
 
     <string name="section_toolbar_hub">Hub</string>
@@ -290,7 +290,7 @@
     <string name="error_unsupported_video">Media includes video tracks, but none are playable by this device</string>
     <string name="error_unsupported_audio">Media includes audio tracks, but none are playable by this device</string>
 
-    <string name="ends_at">Ends at</string>
+    <string name="ends_at">Ends at&#160;</string>
 
     <string name="controls_label">Playback Controls</string>
     <string name="options_label">Options</string>
@@ -306,4 +306,5 @@
 
     <string name="channel_name">HomeView</string>
     <string name="channel_description">Latest happenings in HomeView</string>
+
 </resources>
