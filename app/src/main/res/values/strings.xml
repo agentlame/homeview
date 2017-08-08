@@ -192,9 +192,9 @@
     <string name="container_sort_selection_title">Sort Order</string>
     <string name="container_sort_selection_summary">Choose a sort.  Reselecting the current choice toggles ascending/descending.</string>
 
-    <string name="playback_start_dialog">Choose where to begin playback</string>
-    <string name="playback_start_dialog_begin">From beginning</string>
-    <string name="playback_start_dialog_resume">From last viewed position</string>
+    <string name="playback_start_dialog">Resume playback?</string>
+    <string name="playback_start_dialog_begin">From the beginning</string>
+    <string name="playback_start_dialog_resume">From previous viewed</string>
 
     <string name="track_dialog">Select a track for playback</string>
     <string name="action_dialog">Available actions</string>

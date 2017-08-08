@@ -338,7 +338,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     }
 
     @Override
-    public void selectionViewState(boolean isVisible) {
+    public void selectionViewState(boolean isVisible, boolean shouldShowPlaybackUI) {
         if (!isVisible) {
             DetailsOverviewRow row = (DetailsOverviewRow) mAdapter.get(0);
             row.setItem(null);

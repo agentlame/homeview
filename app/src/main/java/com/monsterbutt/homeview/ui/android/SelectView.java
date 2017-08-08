@@ -10,7 +10,7 @@ public abstract class SelectView {
 
   public interface SelectViewCaller {
 
-    void selectionViewState(boolean isVisible);
+    void selectionViewState(boolean isVisible, boolean shouldShowPlaybackUI);
   }
 
   protected final Activity activity;
@@ -32,7 +32,7 @@ public abstract class SelectView {
     this.caller = caller;
     if (fragment != null) {
       if (caller != null)
-        caller.selectionViewState(true);
+        caller.selectionViewState(true, false);
       View view = activity.findViewById(R.id.selection_fragment);
       view.setVisibility(View.VISIBLE);
       view.requestFocus();
@@ -40,6 +40,10 @@ public abstract class SelectView {
     }
     else
       release();
+  }
+
+  protected boolean shouldShowPlayerUIOnRelease() {
+    return false;
   }
 
   public void release() {
@@ -60,6 +64,6 @@ public abstract class SelectView {
       });
     }
     if (caller != null)
-     caller.selectionViewState(false);
+     caller.selectionViewState(false, shouldShowPlayerUIOnRelease());
   }
 }

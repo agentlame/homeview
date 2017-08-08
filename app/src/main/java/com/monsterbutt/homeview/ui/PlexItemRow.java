@@ -7,6 +7,7 @@ import android.support.v17.leanback.widget.HeaderItem;
 import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.Presenter;
 
+import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
@@ -18,6 +19,8 @@ import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.presenters.CodecPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.PosterCardExpanded;
+import com.monsterbutt.homeview.presenters.ResumeChoiceCard;
+import com.monsterbutt.homeview.presenters.ResumeChoicePresenter;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.presenters.SceneCardExpanded;
 import com.monsterbutt.homeview.presenters.SectionCard;
@@ -266,6 +269,17 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
         return list;
     }
 
+    public static PlexItemRow buildResumeChoices(Context context, String header, long offset) {
+
+        PlexItemRow row = new PlexItemRow(context, null, header, new ResumeChoicePresenter(), null,
+                                            header.hashCode(), false, true, null);
+        row.adapter.add(new ResumeChoiceCard(context, context.getString(R.string.playback_start_dialog_resume),
+                                        offset, context.getDrawable(R.drawable.ic_slow_motion_video_white_48dp)));
+        row.adapter.add(new ResumeChoiceCard(context, context.getString(R.string.playback_start_dialog_begin),
+                                         0, context.getDrawable(R.drawable.ic_play_circle_outline_white_48dp)));
+        return row;
+    }
+
     public static PlexItemRow buildCodecItemsRow(Context context, PlexServer server, String header,
                                                  MediaTrackSelector.StreamChoiceArrayAdapter choices,
                                                  int streamType) {
@@ -333,7 +347,7 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
 
     public static List<PlexItemRow> buildRelatedRows(Context context, PlexServer server, CardSelectionHandler handler, List<MediaContainer> list) {
 
-        List<PlexItemRow> ret = new ArrayList();
+        List<PlexItemRow> ret = new ArrayList<>();
         if (list == null)
             return ret;
 

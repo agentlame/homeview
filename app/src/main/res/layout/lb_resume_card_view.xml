@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            style="?attr/imageCardViewImageStyle"
+            android:orientation="vertical"
+            android:layout_height="wrap_content"
+            android:layout_width="@dimen/codeccard_width"
+            android:background="?attr/card_normal" >
+
+            <ImageView
+                android:id="@+id/image"
+                android:scaleType="centerInside"
+                android:layout_weight="1"
+                tools:src="@drawable/ic_speaker_notes_white_48dp"
+                android:layout_height="@dimen/codeccard_height"
+                android:layout_width="match_parent"
+                android:padding="@dimen/codeccard_text_padding"
+                android:contentDescription="@string/codeccard_image_desc"
+                style="?attr/imageCardViewImageStyle" />
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/codeccard_text_banner_height"
+                android:background="?attr/card_selected"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/title"
+                    tools:text="Make your choice"
+                    android:textSize="@dimen/caption_text_size"
+                    android:textAlignment="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="@dimen/codeccard_text_padding_small"
+                    android:paddingStart="@dimen/codeccard_text_padding_small"
+                    android:maxLines="1"
+                    android:ellipsize="marquee" />
+
+                <TextView
+                    android:id="@+id/time"
+                    tools:text="00:00:00"
+                    android:textSize="@dimen/caption_text_size_secondary"
+                    android:textAlignment="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="@dimen/codeccard_text_padding_small"
+                    android:paddingStart="@dimen/codeccard_text_padding_small" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</merge>

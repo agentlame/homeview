@@ -51,6 +51,7 @@ import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.services.UpdateRecommendationsService;
 import com.monsterbutt.homeview.ui.activity.ContainerActivity;
 import com.monsterbutt.homeview.ui.activity.PlayerActivity;
+import com.monsterbutt.homeview.ui.android.ResumeChoiceView;
 import com.monsterbutt.homeview.ui.android.SelectView;
 import com.monsterbutt.homeview.ui.android.SelectViewRow;
 import com.monsterbutt.homeview.ui.android.SwitchTrackView;
@@ -87,7 +88,6 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   final static private String Tag = "HV_PlaybackHandler";
 
-  private static final int CHOOSER_TIMEOUT = 15 * 1000;
   private static final int PROGRESS_UPDATE_INTERVAL = 10 * 1000;
 
   private final PlexServer server;
@@ -280,7 +280,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       player.seekTo(startPosition.getStartPosition());
     else if ( (TextUtils.isEmpty(keyOfLastVideo) || !currentVideo.getKey().equals(keyOfLastVideo)) &&
      startPosition.getStartType() == StartPosition.PlaybackStartType.Ask && startPosition.getVideoOffset() > 0)
-      ResumeChoiceHandler.askUser(context, player, startPosition.getVideoOffset(), CHOOSER_TIMEOUT);
+      selectResumeChoice(startPosition.getVideoOffset());
     pausedTemp = true;
     keyOfLastVideo = currentVideo.getKey();
     player.prepare(currentVideo, server, caller.getValidContext(), this, !haveResumePosition, false);
@@ -660,6 +660,11 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     }
   }
 
+  private void selectResumeChoice(long offset) {
+    releaseSelectView();
+    selectView = ResumeChoiceView.getView((Activity) caller.getValidContext(), this, offset, this);
+  }
+
   public void selectTracks(Activity activity, int streamType) {
 
     releaseSelectView();
@@ -769,8 +774,11 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   }
 
   @Override
-  public void selectionViewState(boolean isVisible) {
-    if (caller != null)
+  public void selectionViewState(boolean isVisible, boolean shouldShowPlaybackUI) {
+    if (caller != null) {
       caller.selectionViewState(isVisible, currentVideo, server, tracks);
+      if (shouldShowPlaybackUI)
+        caller.showControls(true);
+    }
   }
 }
