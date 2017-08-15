@@ -269,10 +269,10 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
   public void onPause() {
     super.onPause();
 
-    lastPlayingKey = player != null ? player.getCurrentKey() : "";
+    lastPlayingKey = "";
     Log.d(Tag, "onPause");
     if (player != null && player.isPlaying()) {
-
+      lastPlayingKey = player.getCurrentKey();
       Log.d(Tag, "Turn On Visible Behind");
       boolean isVisibleBehind = (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O ? requestVisibleBehind(true) :
         enterPictureInPictureMode(new PictureInPictureParams.Builder().build()));

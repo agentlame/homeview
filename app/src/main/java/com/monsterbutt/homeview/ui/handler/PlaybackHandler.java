@@ -472,6 +472,9 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   }
 
   private void setVideoIntent(PlexVideoItem video) {
+
+    if (video == null)
+      return;
     Intent intent = new Intent();
     intent.setAction(PlayerActivity.ACTION_VIEW);
     intent.putExtra(PlayerActivity.KEY, video.getKey());
