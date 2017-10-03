@@ -29,10 +29,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import android.app.IntentService;
-import android.content.Context;
 import android.content.Intent;
-import android.net.DhcpInfo;
-import android.net.wifi.WifiManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -106,16 +103,4 @@ public class GDMService extends IntentService {
 		}
 	}
 
-	// Builds the broadcast address based on the local network
-	protected InetAddress getBroadcastAddress() throws IOException {
-		WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-		DhcpInfo dhcp = wifi.getDhcpInfo();
-		// handle null somehow
-
-		int broadcast = (dhcp.ipAddress & dhcp.netmask) | ~dhcp.netmask;
-		byte[] quads = new byte[4];
-		for (int k = 0; k < 4; k++)
-			quads[k] = (byte) (broadcast >> k * 8);
-		return InetAddress.getByAddress(quads);
-	}
 }
