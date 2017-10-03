@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
@@ -34,8 +36,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer;
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
@@ -67,15 +69,15 @@ import us.nineworlds.plex.rest.model.impl.Media;
 import static android.media.session.PlaybackState.STATE_PAUSED;
 import static android.media.session.PlaybackState.STATE_PLAYING;
 import static android.media.session.PlaybackState.STATE_STOPPED;
-import static com.google.android.exoplayer2.ExoPlayer.STATE_BUFFERING;
-import static com.google.android.exoplayer2.ExoPlayer.STATE_ENDED;
-import static com.google.android.exoplayer2.ExoPlayer.STATE_IDLE;
-import static com.google.android.exoplayer2.ExoPlayer.STATE_READY;
+import static com.google.android.exoplayer2.Player.STATE_BUFFERING;
+import static com.google.android.exoplayer2.Player.STATE_ENDED;
+import static com.google.android.exoplayer2.Player.STATE_IDLE;
+import static com.google.android.exoplayer2.Player.STATE_READY;
 import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_APPLICATION;
 import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_AUDIO;
 import static com.google.android.exoplayer2.util.MimeTypes.BASE_TYPE_TEXT;
 
-public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventListener,
+public class PlayerActivity extends FragmentActivity implements Player.EventListener,
  PlaybackControlView.VisibilityListener, PlaybackHandler.Invoker {
 
   private static final String Tag = "HV_PlayerActivity";
@@ -188,10 +190,9 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
     simpleExoPlayerView.requestFocus();
 
     findViewById(R.id.exo_pip).setOnClickListener(new OnClickListener() {
-      @TargetApi(24)
       @Override
       public void onClick(View v) {
-        enterPictureInPictureMode();
+        goToPIP();
       }
     });
     findViewById(R.id.exo_prev_chapter).setOnClickListener(new OnClickListener() {
@@ -264,6 +265,20 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
     }
   }
 
+  @TargetApi(26)
+  boolean goToPIP() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      PictureInPictureParams params = new PictureInPictureParams.Builder()
+       .setAspectRatio(player.getVideoAspectRatio())
+       .setSourceRectHint(player.getVideoRect())
+       .build();
+      return enterPictureInPictureMode(params);
+    }
+
+    enterPictureInPictureMode();
+    return true;
+  }
+
   @TargetApi(24)
   @Override
   public void onPause() {
@@ -274,8 +289,7 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
     if (player != null && player.isPlaying()) {
       lastPlayingKey = player.getCurrentKey();
       Log.d(Tag, "Turn On Visible Behind");
-      boolean isVisibleBehind = (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O ? requestVisibleBehind(true) :
-        enterPictureInPictureMode(new PictureInPictureParams.Builder().build()));
+      boolean isVisibleBehind = (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O ? requestVisibleBehind(true) : goToPIP());
       if (!isVisibleBehind && !isInPictureInPictureMode()) {
         Log.d(Tag, "Visible Behind failed");
         pause();
@@ -481,12 +495,33 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
     updateSessionProgress();
   }
 
+  private AudioFocusRequest afRequest = null;
+  @TargetApi(26)
   private void requestAudioFocus() {
     if (mHasAudioFocus) {
       return;
     }
+
+    synchronized (this) {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && null == afRequest) {
+        afRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+         .setAudioAttributes(new AudioAttributes.Builder()
+          .setUsage(AudioAttributes.USAGE_MEDIA)
+          .setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
+          .build())
+         .setAcceptsDelayedFocusGain(true)
+         .setOnAudioFocusChangeListener(mOnAudioFocusChangeListener, new Handler(getMainLooper()))
+         .setWillPauseWhenDucked(true)
+         .build();
+      }
+    }
+
     Log.d(Tag, "Request Audio Focus");
-    int result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
+    int result;
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+      result = mAudioManager.requestAudioFocus(afRequest);
+    else
+      result = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,
      AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
     if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
       mHasAudioFocus = true;
@@ -498,7 +533,11 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
     if (mHasAudioFocus) {
       Log.d(Tag, "Abandon Audio Focus");
       mHasAudioFocus = false;
-      mAudioManager.abandonAudioFocus(mOnAudioFocusChangeListener);
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        mAudioManager.abandonAudioFocusRequest(afRequest);
+      else
+         mAudioManager.abandonAudioFocus(mOnAudioFocusChangeListener);
     }
   }
 
@@ -563,6 +602,11 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
     // Do nothing.
   }
 
+  @Override
+  public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+
+  }
+
   // User controls
 
   @Override
@@ -603,7 +647,7 @@ public class PlayerActivity extends FragmentActivity implements ExoPlayer.EventL
   }
 
   @Override
-  public void onPositionDiscontinuity() {
+  public void onPositionDiscontinuity(@Player.DiscontinuityReason int reason) {
     Log.d(Tag, "Position Discontinuity");
     if (needRetrySource) {
       // This will only occur if the user has performed a seek whilst in the error state. Update the

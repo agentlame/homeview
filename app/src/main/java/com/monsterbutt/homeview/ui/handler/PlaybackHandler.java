@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.media.MediaMetadata;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -13,6 +14,7 @@ import android.os.Handler;
 import android.support.v4.media.MediaMetadataCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.Rational;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -20,7 +22,7 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
@@ -62,8 +64,8 @@ import java.util.Locale;
 
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
-import static com.google.android.exoplayer2.ExoPlayer.STATE_BUFFERING;
-import static com.google.android.exoplayer2.ExoPlayer.STATE_READY;
+import static com.google.android.exoplayer2.Player.STATE_BUFFERING;
+import static com.google.android.exoplayer2.Player.STATE_READY;
 import static com.monsterbutt.homeview.plex.media.PlexVideoItem.BAD_CHAPTER_START;
 import static com.monsterbutt.homeview.plex.media.PlexVideoItem.NEXTUP_DISABLED;
 import static com.monsterbutt.homeview.plex.media.PlexVideoItem.START_CHAPTER_THRESHOLD;
@@ -105,7 +107,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
   private MediaTrackSelector tracks;
 
-  private final ExoPlayer.EventListener eventListener;
+  private final Player.EventListener eventListener;
   private final SimpleExoPlayerView view;
 
   private final TrackSelector trackSelector;
@@ -157,7 +159,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
   private ProgressRunable runnableProgress = new ProgressRunable();
 
 
-  public PlaybackHandler(Invoker caller, ExoPlayer.EventListener eventListener, SimpleExoPlayerView view, Handler handler) {
+  public PlaybackHandler(Invoker caller, Player.EventListener eventListener, SimpleExoPlayerView view, Handler handler) {
 
     this.caller = caller;
     this.mainHandler = handler;
@@ -180,7 +182,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       new GetVideoTask(this, server).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
        intent != null ? intent.getStringExtra(PlayerActivity.KEY) : "");
     else if (video.selectedHasMissingData())
-      new GetFullInfo(intent).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, video.getKey());
+      new GetFullInfo(intent, this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, video.getKey());
     else
       playVideo(video, chosenTracks,  null);
   }
@@ -262,13 +264,19 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     player.addListener(eventLogger);
     player.setAudioDebugListener(eventLogger);
     player.setVideoDebugListener(eventLogger);
-    player.setMetadataOutput(eventLogger);
+    player.addMetadataOutput(eventLogger);
 
     trackSelector.setTunnelingAudioSessionId(C.generateAudioSessionIdV21(context));
 
-    DefaultTimeBar timeBar = (DefaultTimeBar) view.findViewById(R.id.exo_progress);
+    DefaultTimeBar timeBar = view.findViewById(R.id.exo_progress);
     long[] chapters = currentVideo.getChapters();
-    timeBar.setAdBreakTimesMs(chapters, chapters == null ? 0 : chapters.length);
+    boolean[] chaptersPlayed = null;
+    if (chapters != null) {
+      chaptersPlayed = new boolean[chapters.length];
+      for (int i = 0; i < chapters.length; ++i)
+        chaptersPlayed[i] = false;
+    }
+    timeBar.setAdGroupTimesMs(chapters, chaptersPlayed, chapters == null ? 0 : chapters.length);
     view.setPlayer(player);
 
     player.setPlayWhenReady(false);
@@ -283,7 +291,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       selectResumeChoice(startPosition.getVideoOffset());
     pausedTemp = true;
     keyOfLastVideo = currentVideo.getKey();
-    player.prepare(currentVideo, server, caller.getValidContext(), this, !haveResumePosition, false);
+    player.prepare(currentVideo, server, caller.getValidContext(), this, !haveResumePosition);
   }
 
   public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
@@ -359,11 +367,11 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     }
   }
 
-  private void showToast(int id, String additionalMessage) {
+  private void showToast(int id) {
     Context context = caller.getValidContext();
     if (context == null)
       return;
-    Toast.makeText(context.getApplicationContext(), context.getString(id) + additionalMessage, Toast.LENGTH_LONG).show();
+    Toast.makeText(context.getApplicationContext(), context.getString(id), Toast.LENGTH_LONG).show();
   }
 
   public void updateResumePosition() {
@@ -386,7 +394,7 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     if (task instanceof GetVideoTask) {
       PlexVideoItem item = ((GetVideoTask) task).getVideo();
       if (item.selectedHasMissingData()) {
-        new GetFullInfo(intent).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item.getKey());
+        new GetFullInfo(intent, this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item.getKey());
         return;
       }
       MediaTrackSelector readTracks = item.fillTrackSelector(Locale.getDefault().getISO3Language(), MediaCodecCapabilities.getInstance(context));
@@ -406,12 +414,15 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     }
   }
 
-  private class GetFullInfo extends AsyncTask<String, Void, MediaContainer> {
+  private static class GetFullInfo extends AsyncTask<String, Void, MediaContainer> {
 
     final Intent intent;
+    final PlaybackHandler playbackHandler;
 
-    GetFullInfo(Intent intent) {
+    GetFullInfo(Intent intent, PlaybackHandler handler) {
+
       this.intent = intent;
+      playbackHandler = handler;
     }
 
     @Override
@@ -419,21 +430,31 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
 
       if (params == null || params.length == 0 || params[0] == null)
         return null;
-      return server.getVideoMetadata(params[0], false);
+      return playbackHandler.server.getVideoMetadata(params[0], false);
     }
 
     @Override
     protected void onPostExecute(MediaContainer result) {
 
-      if (result != null) {
-        Context context = caller.getValidContext();
-        PlexVideoItem item = PlexVideoItem.getItem(result.getVideos().get(0));
-        if (tracks == null && item != null)
-          tracks = item.fillTrackSelector(Locale.getDefault().getISO3Language(), MediaCodecCapabilities.getInstance(context));
+      if (result != null)
+        playbackHandler.playFullItem(PlexVideoItem.getItem(result.getVideos().get(0)), intent);
+    }
+  }
 
-        MediaTrackSelector chosenTracks = intent != null ? (MediaTrackSelector) intent.getParcelableExtra(PlayerActivity.TRACKS) : null;
-        playVideo(item, chosenTracks, tracks);
-      }
+  private void playFullItem(PlexVideoItem item, Intent intent) {
+
+    if (tracks == null && item != null) {
+      tracks = item.fillTrackSelector(Locale.getDefault().getISO3Language(),
+       MediaCodecCapabilities.getInstance(caller.getValidContext()));
+    }
+    MediaTrackSelector chosenTracks = intent != null ? (MediaTrackSelector) intent.getParcelableExtra(PlayerActivity.TRACKS) : null;
+    playVideo(item, chosenTracks, tracks);
+  }
+
+  public void mute(boolean enable) {
+    if (player != null) {
+      Log.i(Tag, "Muting");
+      player.setVolume(enable ? 0.0f : 1.0f);
     }
   }
 
@@ -446,15 +467,6 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
         caller.onPlayback(play);
       }
     }
-  }
-
-  public boolean mute(boolean enable) {
-    if (player != null) {
-      Log.i(Tag, "Muting");
-      player.setVolume(enable ? 0.0f : 1.0f);
-      return true;
-    }
-    return false;
   }
 
   public boolean isPlaying() {
@@ -482,10 +494,10 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
     caller.onNewIntent(intent);
   }
 
-  private boolean playPrevious() {
+  private void playPrevious() {
     Log.i(Tag, "Playing Previous");
     setVideoIntent(previousVideo);
-    return playVideo(previousVideo);
+    playVideo(previousVideo);
   }
 
   public boolean playNext() {
@@ -571,11 +583,11 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
           return;
         if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_VIDEO)
          == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-          showToast(R.string.error_unsupported_video, "");
+          showToast(R.string.error_unsupported_video);
         }
         if (mappedTrackInfo.getTrackTypeRendererSupport(C.TRACK_TYPE_AUDIO)
          == MappingTrackSelector.MappedTrackInfo.RENDERER_SUPPORT_UNSUPPORTED_TRACKS) {
-          showToast(R.string.error_unsupported_audio, "");
+          showToast(R.string.error_unsupported_audio);
         }
       }
       lastSeenTrackGroupArray = trackGroups;
@@ -783,5 +795,22 @@ public class PlaybackHandler implements PlexServerTaskCaller, ExtractorMediaSour
       if (shouldShowPlaybackUI)
         caller.showControls(true);
     }
+  }
+
+
+  public Rational getVideoAspectRatio() {
+
+    if (currentVideo == null || currentVideo.getMedia().isEmpty())
+      return Rational.ZERO;
+
+    return new Rational (Integer.parseInt(currentVideo.getMedia().get(0).getWidth()),
+     Integer.parseInt(currentVideo.getMedia().get(0).getHeight()));
+  }
+
+  public Rect getVideoRect() {
+    if (currentVideo == null || currentVideo.getMedia().isEmpty())
+      return new Rect();
+    return new Rect(0, 0, Integer.parseInt(currentVideo.getMedia().get(0).getWidth()),
+     Integer.parseInt(currentVideo.getMedia().get(0).getHeight()));
   }
 }

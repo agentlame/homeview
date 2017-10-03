@@ -104,6 +104,8 @@ public class FrameRateSwitcher {
         @Override
         public void onReceive(Context context, Intent intent) {
 
+            if (intent.getAction() == null)
+                return;
             if (intent.getAction().equals(intentVal)) {
                 int state = intent.getIntExtra("state", -1);
                 switch (state) {
@@ -314,6 +316,8 @@ public class FrameRateSwitcher {
 
     private Display.Mode[] getModes() {
         WindowManager wm = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+        if (wm == null)
+            return null;
         Display display = wm.getDefaultDisplay();
         return display.getSupportedModes();
     }

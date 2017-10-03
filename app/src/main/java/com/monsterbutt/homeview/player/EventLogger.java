@@ -23,13 +23,14 @@ import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.RendererCapabilities;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.google.android.exoplayer2.metadata.Metadata;
-import com.google.android.exoplayer2.metadata.MetadataRenderer;
+import com.google.android.exoplayer2.metadata.MetadataOutput;
 import com.google.android.exoplayer2.metadata.emsg.EventMessage;
 import com.google.android.exoplayer2.metadata.id3.ApicFrame;
 import com.google.android.exoplayer2.metadata.id3.CommentFrame;
@@ -55,10 +56,10 @@ import java.util.Locale;
 /**
  * Logs player events using {@link Log}.
  */
-public final class EventLogger implements ExoPlayer.EventListener,
+public final class EventLogger implements Player.EventListener,
  AudioRendererEventListener, VideoRendererEventListener, AdaptiveMediaSourceEventListener,
  ExtractorMediaSource.EventListener, DefaultDrmSessionManager.EventListener,
- MetadataRenderer.Output {
+ MetadataOutput {
 
   private static final String TAG = "HV_EventLogger";
   private static final int MAX_TIMELINE_ITEM_LINES = 3;
@@ -101,7 +102,7 @@ public final class EventLogger implements ExoPlayer.EventListener,
   }
 
   @Override
-  public void onPositionDiscontinuity() {
+  public void onPositionDiscontinuity(@Player.DiscontinuityReason int reason) {
     Log.d(TAG, "positionDiscontinuity");
   }
 
@@ -360,6 +361,12 @@ public final class EventLogger implements ExoPlayer.EventListener,
     // Do nothing.
   }
 
+
+  @Override
+  public void onShuffleModeEnabledChanged(boolean shuffleModeEnabled) {
+
+  }
+
   // Internal methods
 
   private void printInternalError(String type, Exception e) {
@@ -412,13 +419,13 @@ public final class EventLogger implements ExoPlayer.EventListener,
 
   private static String getStateString(int state) {
     switch (state) {
-      case ExoPlayer.STATE_BUFFERING:
+      case Player.STATE_BUFFERING:
         return "B";
-      case ExoPlayer.STATE_ENDED:
+      case Player.STATE_ENDED:
         return "E";
-      case ExoPlayer.STATE_IDLE:
+      case Player.STATE_IDLE:
         return "I";
-      case ExoPlayer.STATE_READY:
+      case Player.STATE_READY:
         return "R";
       default:
         return "?";
@@ -468,11 +475,11 @@ public final class EventLogger implements ExoPlayer.EventListener,
 
   private static String getRepeatModeString(@ExoPlayer.RepeatMode int repeatMode) {
     switch (repeatMode) {
-      case ExoPlayer.REPEAT_MODE_OFF:
+      case Player.REPEAT_MODE_OFF:
         return "OFF";
-      case ExoPlayer.REPEAT_MODE_ONE:
+      case Player.REPEAT_MODE_ONE:
         return "ONE";
-      case ExoPlayer.REPEAT_MODE_ALL:
+      case Player.REPEAT_MODE_ALL:
         return "ALL";
       default:
         return "?";

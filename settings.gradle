@@ -1,17 +1,4 @@
 include ':app'
-//include ':test-utils'
-include ':library-core'
-//include ':library-dash'
-include ':library-hls'
-//include ':library-smoothstreaming'
-include ':library-ui'
-include ':extension-ffmpeg'
 
-
-//project(':test-utils').projectDir = new File(settingsDir, 'Exoplayer/testutils')
-project(':library-core').projectDir = new File(settingsDir, 'ExoPlayer/library/core')
-//project(':library-dash').projectDir = new File(settingsDir, 'ExoPlayer/library/dash')
-project(':library-hls').projectDir = new File(settingsDir, 'ExoPlayer/library/hls')
-//project(':library-smoothstreaming').projectDir = new File(settingsDir, 'ExoPlayer/library/smoothstreaming')
-project(':library-ui').projectDir = new File(settingsDir, 'ExoPlayer/library/ui')
-project(':extension-ffmpeg').projectDir = new File(settingsDir, 'ExoPlayer/extensions/ffmpeg')
+gradle.ext.exoplayerRoot = 'ExoPlayer'
+apply from: new File(gradle.ext.exoplayerRoot, 'core_settings.gradle')

@@ -20,6 +20,7 @@ import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.text.SubtitleDecoder;
 import com.google.android.exoplayer2.text.SubtitleDecoderFactory;
+import com.google.android.exoplayer2.text.TextOutput;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.text.cea.Cea608Decoder;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -47,12 +48,12 @@ public class HomeViewPlayer extends SimpleExoPlayer {
     }
 
     public void prepare(PlexVideoItem item, PlexServer server, Context context, ExtractorMediaSource.EventListener listener,
-                        boolean resetPosition, boolean resetState) {
+                        boolean resetPosition) {
         mFactory.mDeviceAudioRenderer.prepareVideo(item);
         super.prepare(new ExtractorMediaSource(Uri.parse(item.getVideoPath(server)),
          new DataSourceFactory(context),
          new DefaultExtractorsFactory(), null, listener)
-         , resetPosition, resetState);
+         , resetPosition, false);
     }
 
     private class DataSourceFactory implements DataSource.Factory {
@@ -159,7 +160,7 @@ public class HomeViewPlayer extends SimpleExoPlayer {
         }
 
         @Override
-        protected void buildTextRenderers(Context context, TextRenderer.Output output,
+        protected void buildTextRenderers(Context context, TextOutput output,
                                           Looper outputLooper, @ExtensionRendererMode int extensionRendererMode,
                                           ArrayList<Renderer> out) {
             out.add(new TextRenderer(output, outputLooper, DEFAULT_SUBS));

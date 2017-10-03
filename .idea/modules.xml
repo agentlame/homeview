@@ -4,10 +4,24 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/HomeView.iml" filepath="$PROJECT_DIR$/HomeView.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/cast/extension-cast.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/cast/extension-cast.iml" />
       <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/ffmpeg/extension-ffmpeg.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/ffmpeg/extension-ffmpeg.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/flac/extension-flac.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/flac/extension-flac.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/gvr/extension-gvr.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/gvr/extension-gvr.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/ima/extension-ima.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/ima/extension-ima.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/leanback/extension-leanback.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/leanback/extension-leanback.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/mediasession/extension-mediasession.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/mediasession/extension-mediasession.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/okhttp/extension-okhttp.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/okhttp/extension-okhttp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/opus/extension-opus.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/opus/extension-opus.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/rtmp/extension-rtmp.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/rtmp/extension-rtmp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/extensions/vp9/extension-vp9.iml" filepath="$PROJECT_DIR$/ExoPlayer/extensions/vp9/extension-vp9.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/all/library.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/all/library.iml" />
       <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/core/library-core.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/core/library-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/dash/library-dash.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/dash/library-dash.iml" />
       <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/hls/library-hls.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/hls/library-hls.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/smoothstreaming/library-smoothstreaming.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/smoothstreaming/library-smoothstreaming.iml" />
       <module fileurl="file://$PROJECT_DIR$/ExoPlayer/library/ui/library-ui.iml" filepath="$PROJECT_DIR$/ExoPlayer/library/ui/library-ui.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ExoPlayer/testutils/testutils.iml" filepath="$PROJECT_DIR$/ExoPlayer/testutils/testutils.iml" />
     </modules>
   </component>
 </project>
