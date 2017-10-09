@@ -116,7 +116,7 @@ public class ContainerActivity extends HomeViewActivity {
 
     public void setQuickJumpList(List<QuickJumpRow> quickjumpList) {
 
-        mQuickList.setAdapter(new ArrayAdapter<>(this, R.layout.quickjumprow, android.R.id.text1, quickjumpList));
+        mQuickList.setAdapter(new ArrayAdapter<>(this, R.layout.quickjumprow, quickjumpList));
     }
 
     public static class QuickJumpRow {

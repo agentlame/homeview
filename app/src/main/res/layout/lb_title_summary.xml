@@ -17,8 +17,6 @@
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionTitle"
         android:textSize="26sp"
-        app:autoSizeTextType="uniform"
-        app:autoSizeMaxTextSize="26sp"
         tools:ignore="SmallSp"
         tools:text="Video Clip Title"/>
 
