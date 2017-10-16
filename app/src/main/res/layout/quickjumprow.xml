@@ -8,7 +8,6 @@
     android:textAppearance="?android:attr/textAppearanceListItemSmall"
     android:textSize="@dimen/jumprow_textsize"
     android:textAlignment="center"
-    android:background="@color/BlueGrey.Primary.Translucent"
     android:paddingStart="?android:attr/listPreferredItemPaddingStart"
     android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
     tools:text="ABCD" />

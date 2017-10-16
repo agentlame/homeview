@@ -84,7 +84,7 @@ public abstract class AbstractDetailsDescriptionPresenter extends Presenter {
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent) {
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.lb_details_description, parent, false));
+        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.lb_details_description_homeview, parent, false));
     }
 
     @Override

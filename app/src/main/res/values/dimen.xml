@@ -124,7 +124,7 @@
     <dimen name="playback_ui_codec_padding_half">3dp</dimen>
     <dimen name="playback_ui_small_row">12sp</dimen>
     <dimen name="playback_ui_card">8dp</dimen>
-    <dimen name="playback_ui_time_top_padding">27dp</dimen>
+    <dimen name="playback_ui_time_top_padding">145dp</dimen>
     <dimen name="playback_ui_time_bottom_padding">15dp</dimen>
     <dimen name="playback_ui_time_sides_padding">56dp</dimen>
     <dimen name="playback_ui_icons_width_large">50dp</dimen>
@@ -134,6 +134,12 @@
     <dimen name="exo_media_button_width">44dp</dimen>
     <dimen name="exo_media_button_height">32dp</dimen>
 
-    <dimen name="lb_vertical_grid_padding_bottom">174dp</dimen>
+
+    <dimen name="top_selection_fragment_margin_top">-105dp</dimen>
+
+    <dimen name="lb_playback_transport_controlbar_margin_start">-55dp</dimen>
+    <dimen name="lb_playback_controls_child_margin_default">24dp</dimen>
+    <dimen name="lb_playback_controls_child_margin_bigger">32dp</dimen>
+    <dimen name="lb_playback_controls_child_margin_biggest">44dp</dimen>
 
 </resources>

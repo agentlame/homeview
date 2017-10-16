@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" >
+
+    <ImageView
+        android:id="@+id/unwatched"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|right"
+        android:src="@drawable/right_flag"
+        android:visibility="invisible"
+        tools:visibility="visible"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/caption_text_size" >
+
+        <include layout="@layout/lb_detail_title" />
+
+        <ProgressBar
+            android:id="@+id/progress"
+            android:layout_width="match_parent"
+            android:layout_height="16dp"
+            tools:progress="50"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:progressTint="?attr/brand_accent"
+            android:indeterminate="false"
+            android:indeterminateOnly="false"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/detail_text_padding"
+            android:paddingBottom="@dimen/detail_text_padding"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tagline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="3"
+                tools:text="Tagline goes here"
+                style="?attr/detailsDescriptionSubtitleStyle" />
+
+            <TextView
+                android:id="@+id/genre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="textEnd"
+                tools:text="Genres, go, here"
+                style="?attr/detailsDescriptionSubtitleStyle" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/detail_text_padding"
+            android:maxLines="5"
+            android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionBody"
+            tools:text="Video Clip Summary\nTest line 2\nTest line 3 Test line 3 Test line 3 Test line 3 Test line 3 Test line 3 Test line 3 Test line 3" />
+
+    </LinearLayout>
+
+</FrameLayout>

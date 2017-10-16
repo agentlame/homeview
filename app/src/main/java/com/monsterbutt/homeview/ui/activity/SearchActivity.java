@@ -33,12 +33,12 @@ public class SearchActivity extends HomeViewActivity {
             String path = data.getLastPathSegment();
             if (path.equals(MediaContentProvider.ID_PLAYBACK)) {
 
-                Intent suggestion = new Intent(getApplicationContext(), PlayerActivity.class);
-                suggestion.setAction(PlayerActivity.ACTION_VIEW);
-                suggestion.putExtra(PlayerActivity.KEY, key);
-                PlexVideoItem vid = intent.getParcelableExtra(PlayerActivity.VIDEO);
+                Intent suggestion = new Intent(getApplicationContext(), PlaybackActivity.class);
+                suggestion.setAction(PlaybackActivity.ACTION_VIEW);
+                suggestion.putExtra(PlaybackActivity.KEY, key);
+                PlexVideoItem vid = intent.getParcelableExtra(PlaybackActivity.VIDEO);
                 if (vid != null)
-                    suggestion.putExtra(PlayerActivity.VIDEO, vid);
+                    suggestion.putExtra(PlaybackActivity.VIDEO, vid);
                 startActivity(suggestion);
                 finish();
                 return;

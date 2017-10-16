@@ -1,11 +1,10 @@
-package com.monsterbutt.homeview.player;
+package com.monsterbutt.homeview.player.track;
 
 
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Stream;
 
 import java.util.ArrayList;

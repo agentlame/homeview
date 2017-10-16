@@ -38,6 +38,7 @@
         <item name="android:divider">@color/BlueGrey.DividerColor</item>
         <item name="brand_color">@color/BlueGrey.Primary</item>
         <item name="card_translucent">@color/BlueGrey.Primary.Translucent</item>
+        <item name="playbackProgressPrimaryColor">@color/BlueGrey.Primary</item>
     </style>
     <style name="Theme.App.BlueGrey.Leanback.Browse" parent="Theme.Leanback.Browse">
         <item name="android:colorPrimary">@color/BlueGrey.Primary</item>

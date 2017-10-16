@@ -13,28 +13,24 @@ import android.view.View;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.Utils;
-import com.monsterbutt.homeview.ui.activity.PlayerActivity;
+import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 
 import java.util.List;
 
 
 public class Chapter extends PlexLibraryItem implements Parcelable {
 
-    public interface OnClickListenerHandler {
-        void chapterSelected(Chapter chapter);
-    }
+    final private us.nineworlds.plex.rest.model.impl.Chapter mChapter;
+    final private String key;
+    final private PlexVideoItem mVideo;
 
-    final us.nineworlds.plex.rest.model.impl.Chapter mChapter;
-    final String key;
-    final PlexVideoItem mVideo;
-
-    public Chapter(PlexVideoItem video, String parentKey, us.nineworlds.plex.rest.model.impl.Chapter chapter) {
+    Chapter(PlexVideoItem video, String parentKey, us.nineworlds.plex.rest.model.impl.Chapter chapter) {
         mChapter = chapter;
         key = parentKey;
         mVideo = video;
     }
 
-    protected Chapter(Parcel in) {
+    private Chapter(Parcel in) {
         mChapter = in.readParcelable(us.nineworlds.plex.rest.model.impl.Chapter.class.getClassLoader());
         key = in.readString();
         mVideo = in.readParcelable(PlexVideoItem.class.getClassLoader());
@@ -190,11 +186,11 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
     @Override
     public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
-        Intent intent = new Intent(fragment.getActivity(), PlayerActivity.class);
-        intent.setAction(PlayerActivity.ACTION_VIEW);
-        intent.putExtra(PlayerActivity.KEY, key);
-        intent.putExtra(PlayerActivity.START_OFFSET, mChapter.getStartTimeOffset());
-        intent.putExtra(PlayerActivity.VIDEO, mVideo);
+        Intent intent = new Intent(fragment.getActivity(), PlaybackActivity.class);
+        intent.setAction(PlaybackActivity.ACTION_VIEW);
+        intent.putExtra(PlaybackActivity.KEY, key);
+        intent.putExtra(PlaybackActivity.START_OFFSET, mChapter.getStartTimeOffset());
+        intent.putExtra(PlaybackActivity.VIDEO, mVideo);
         if (extras != null)
             intent.putExtras(extras);
 
@@ -204,7 +200,7 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
             bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     fragment.getActivity(),
                     transitionView,
-                    PlayerActivity.SHARED_ELEMENT_NAME).toBundle();
+             PlaybackActivity.SHARED_ELEMENT_NAME).toBundle();
         }
         fragment.startActivity(intent, bundle);
         return true;

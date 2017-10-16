@@ -46,7 +46,7 @@ public class NextUpFragment extends Fragment {
   private TextView countdownSeconds;
 
   public NextUpFragment(Context context, PlexServer server, PlexVideoItem item,
-                        long currentTimeLeft, NextUpCallback callback, int height) {
+                        long currentTimeLeft, NextUpCallback callback) {
     this.context = context;
     this.server = server;
     video = item;
@@ -54,6 +54,7 @@ public class NextUpFragment extends Fragment {
     this.callback = callback;
   }
 
+  @SuppressLint("DefaultLocale")
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
@@ -68,11 +69,7 @@ public class NextUpFragment extends Fragment {
     ((TextView) view.findViewById(R.id.end_time)).setText(out);
     countdownSeconds = view.findViewById(R.id.nextup_seconds);
     countdownSeconds.setText(String.format("%d", currentTimeLeft / 1000));
-    view.findViewById(R.id.nextup_close).setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) { clicked(NextUpCallback.Clicked.Close); }
-    });
-    view.findViewById(R.id.nextup_close).requestFocus();
+    view.findViewById(R.id.nextup_startNext).requestFocus();
     view.findViewById(R.id.nextup_startNext).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) { clicked(NextUpCallback.Clicked.StartNext); }
@@ -110,6 +107,7 @@ public class NextUpFragment extends Fragment {
       super(millisInFuture, countDownInterval);
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
     public void onTick(long l) {
       countdownSeconds.setText(String.format("%d", l / 1000));

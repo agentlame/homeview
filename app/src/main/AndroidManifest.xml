@@ -86,7 +86,7 @@
         </activity>
 
         <activity
-            android:name=".ui.activity.PlayerActivity"
+            android:name=".ui.activity.PlaybackActivity"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true"
             android:launchMode="singleTask"

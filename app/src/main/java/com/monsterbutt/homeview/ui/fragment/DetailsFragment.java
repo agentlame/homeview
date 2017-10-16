@@ -45,8 +45,8 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.monsterbutt.homeview.player.MediaCodecCapabilities;
-import com.monsterbutt.homeview.player.MediaTrackSelector;
+import com.monsterbutt.homeview.player.track.MediaCodecCapabilities;
+import com.monsterbutt.homeview.player.track.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.media.Chapter;
 import com.monsterbutt.homeview.plex.media.Movie;
 import com.monsterbutt.homeview.plex.media.Season;
@@ -59,7 +59,7 @@ import com.monsterbutt.homeview.presenters.DetailsDescriptionPresenter;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.ui.PlexItemRow;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
-import com.monsterbutt.homeview.ui.activity.PlayerActivity;
+import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.android.SelectView;
 import com.monsterbutt.homeview.ui.android.SwitchTrackView;
@@ -130,7 +130,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         String key = mItem != null  ? mItem.getKey()
                                     : getActivity().getIntent().getStringExtra(DetailsActivity.KEY);
-        ImageView img = (ImageView) activity.findViewById(android.support.v17.leanback.R.id.details_overview_image);
+        ImageView img = activity.findViewById(android.support.v17.leanback.R.id.details_overview_image);
 
         mBackgroundURL = getActivity().getIntent().getStringExtra(DetailsActivity.BACKGROUND);
         mSelectionHandler = new CardSelectionHandler(this, this, mServer, mItem, img, true, mBackgroundURL);
@@ -307,7 +307,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     public Bundle getPlaySelectionBundle(boolean cardIsScene) {
         Bundle extras = new Bundle();
         if (mTracks != null)
-            extras.putParcelable(PlayerActivity.TRACKS, mTracks);
+            extras.putParcelable(PlaybackActivity.TRACKS, mTracks);
         mThemeHandler.getPlaySelectionBundle(extras, themeKey);
         return extras;
     }

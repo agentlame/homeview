@@ -4,8 +4,8 @@ package com.monsterbutt.homeview.ui.android;
 import android.app.Activity;
 
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.player.MediaTrackSelector;
-import com.monsterbutt.homeview.player.TrackSelector;
+import com.monsterbutt.homeview.player.track.MediaTrackSelector;
+import com.monsterbutt.homeview.player.track.TrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.presenters.CodecCard;

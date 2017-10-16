@@ -1,11 +1,9 @@
-package com.monsterbutt.homeview.player;
+package com.monsterbutt.homeview.player.track;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
-
-import com.monsterbutt.homeview.plex.PlexServer;
 
 import java.util.HashMap;
 import java.util.Map;

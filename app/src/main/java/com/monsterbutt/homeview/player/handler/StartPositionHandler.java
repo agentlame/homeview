@@ -1,19 +1,19 @@
-package com.monsterbutt.homeview.player;
+package com.monsterbutt.homeview.player.handler;
 
 import android.content.Context;
-import android.content.Intent;
 
 import com.monsterbutt.homeview.settings.SettingsManager;
-import com.monsterbutt.homeview.ui.activity.PlayerActivity;
 
-public class StartPosition {
+public class StartPositionHandler {
+
+    static long START_POSITION_DEFAULT = -1;
 
     private boolean mWasReset = false;
     private long mStartPosition = 0;
     private final PlaybackStartType mPlaybackStartType;
     private long mVideoOffset;
 
-    public StartPosition(Context context, long startPosition, long videoOffset) {
+    public StartPositionHandler(Context context, long startPosition, long videoOffset) {
 
         mVideoOffset = videoOffset;
         mStartPosition = startPosition;
@@ -66,7 +66,7 @@ public class StartPosition {
         setVideoOffset(videoOffset);
     }
 
-    public void setVideoOffset(long videoOffset) {
+    private void setVideoOffset(long videoOffset) {
         mVideoOffset = videoOffset;
     }
 

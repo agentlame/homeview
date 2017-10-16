@@ -13,11 +13,11 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.player.MediaCodecCapabilities;
-import com.monsterbutt.homeview.player.MediaTrackSelector;
+import com.monsterbutt.homeview.player.track.MediaCodecCapabilities;
+import com.monsterbutt.homeview.player.track.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.ui.PlexItemRow;
-import com.monsterbutt.homeview.ui.activity.PlayerActivity;
+import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
 
 import org.fourthline.cling.support.model.DIDLObject;
@@ -218,9 +218,9 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
             return false;
         }
 
-        Intent intent = new Intent(fragment.getActivity(), PlayerActivity.class);
-        intent.setAction(PlayerActivity.ACTION_VIEW);
-        intent.putExtra(PlayerActivity.VIDEO, this);
+        Intent intent = new Intent(fragment.getActivity(), PlaybackActivity.class);
+        intent.setAction(PlaybackActivity.ACTION_VIEW);
+        intent.putExtra(PlaybackActivity.VIDEO, this);
         if (extras != null)
             intent.putExtras(extras);
         Bundle bundle = null;
@@ -229,7 +229,7 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
             bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     fragment.getActivity(),
                     transitionView,
-                    PlayerActivity.SHARED_ELEMENT_NAME).toBundle();
+             PlaybackActivity.SHARED_ELEMENT_NAME).toBundle();
         }
         fragment.startActivity(intent, bundle);
         return true;

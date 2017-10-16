@@ -23,19 +23,19 @@ public abstract class SelectViewRow extends SelectView
   protected abstract void cardClicked(PosterCard card);
 
   public void setRow(PlexItemRow row, int initialPosition, SelectViewCaller caller) {
-
     setFragment(new SelectionFragment(row, this, initialPosition, getHeight()), caller);
   }
 
   private void clicked(PosterCard card) {
-
     cardClicked(card);
     release();
   }
 
   @Override
   public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item, RowPresenter.ViewHolder rowViewHolder, Row row) {
-
     clicked((PosterCard) item);
   }
+
+  @Override
+  protected boolean showPlaybackUIOnFragmentSet() { return false; }
 }

@@ -12,7 +12,7 @@ import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
 import com.google.android.exoplayer2.util.MimeTypes;
-import com.monsterbutt.homeview.player.MediaCodecCapabilities;
+import com.monsterbutt.homeview.player.track.MediaCodecCapabilities;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 
 
@@ -38,6 +38,7 @@ public class DeviceAudioTrackRenderer extends MediaCodecAudioRenderer {
         mItem = item;
     }
 
+    @Override
     protected boolean allowPassthrough(String mimeType) {
         return usePassthroughAudio && super.allowPassthrough(mimeType);
     }

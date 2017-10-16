@@ -42,7 +42,7 @@ import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.HubInfo;
 import com.monsterbutt.homeview.ui.activity.ContainerActivity;
 import com.monsterbutt.homeview.ui.activity.DetailsActivity;
-import com.monsterbutt.homeview.ui.activity.PlayerActivity;
+import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -192,16 +192,16 @@ public class UpdateRecommendationsService extends IntentService {
         void processNotifications() {
 
             List<GroupedObject> recommends = new ArrayList<>();
-            for (GroupedObject go : shows.values())
-                recommends.add(go);
-            for (GroupedObject go : movies.values())
-                recommends.add(go);
+            recommends.addAll(shows.values());
+            recommends.addAll(movies.values());
             Collections.sort(recommends);
             if (!recommends.isEmpty())
                 recommends = recommends.subList(0, Math.min(MAX_RECOMMENDATIONS, recommends.size()));
 
             Map<String, Integer> newNotifications = new HashMap<>();
             NotificationManager mgr = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            if (mgr == null)
+                return;
             try {
                 RecommendationBuilder builder = new RecommendationBuilder()
                  .setContext(getApplicationContext())
@@ -425,16 +425,13 @@ public class UpdateRecommendationsService extends IntentService {
             List<Video> recommends = new ArrayList<>();
 
             if (watchNowChannel != null) {
-                for (Video now : watchNowChannel)
-                    recommends.add(now);
+                recommends.addAll(watchNowChannel);
             }
             if (showsChannel != null) {
-                for (Video show : showsChannel)
-                    recommends.add(show);
+                recommends.addAll(showsChannel);
             }
             if (moviesChannel != null) {
-                for (Video movie : moviesChannel)
-                    recommends.add(movie);
+                recommends.addAll(moviesChannel);
             }
             Collections.sort(recommends);
             Subscription sub = MockDatabase.findSubscriptionByName(context, context.getString(R.string.channel_recommended));
@@ -460,7 +457,7 @@ public class UpdateRecommendationsService extends IntentService {
             return null;
         }
 
-        private boolean syncPrograms(long channelId, Context context, PlexServer server,
+        private void syncPrograms(long channelId, Context context, PlexServer server,
                                      List<Video> updateList, boolean excludeWatched) {
             Log.d(TAG, "Sync programs for channel: " + channelId);
 
@@ -478,23 +475,18 @@ public class UpdateRecommendationsService extends IntentService {
             List<Video> originalMovies = new ArrayList<>(MockDatabase.getMovies(context, channelId));
             if (channelId == TvUtil.WATCH_NOW_CHANNEL_ID) {
                 updateChannel(channelId, cachedMovies, originalMovies, server);
-                return true;
             } else {
                 Channel channel = getChannel(channelId);
                 if (channel != null) {
                     if (!channel.isBrowsable()) {
                         Log.d(TAG, "Channel is not browsable: " + channelId);
                         deletePrograms(channelId, originalMovies);
-                        return false;
                     } else {
                         Log.d(TAG, "Channel is browsable: " + channelId);
                         updateChannel(channelId, cachedMovies, originalMovies, server);
-                        return true;
                     }
                 }
             }
-
-            return false;
         }
 
         private void updateChannel(long channelId, List<Video> cachedMovies, List<Video> originalMovies, PlexServer server) {
@@ -637,7 +629,7 @@ public class UpdateRecommendationsService extends IntentService {
                 case TvContractCompat.PreviewProgramColumns.TYPE_MOVIE:
                 case TvContractCompat.PreviewProgramColumns.TYPE_CLIP:
 
-                    appLinkUri = PlayerActivity.URI + movie.getKey();
+                    appLinkUri = PlaybackActivity.URI + movie.getKey();
                     break;
 
                 case TvContractCompat.PreviewProgramColumns.TYPE_TV_SERIES:

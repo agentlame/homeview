@@ -17,7 +17,7 @@ package com.monsterbutt.homeview.presenters;
 import android.content.Context;
 import android.view.View;
 
-import com.monsterbutt.homeview.player.MediaTrackSelector;
+import com.monsterbutt.homeview.player.track.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;

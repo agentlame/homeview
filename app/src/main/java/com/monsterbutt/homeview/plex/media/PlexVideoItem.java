@@ -1,5 +1,6 @@
 package com.monsterbutt.homeview.plex.media;
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
@@ -16,15 +17,15 @@ import android.text.TextUtils;
 import android.view.View;
 
 import com.monsterbutt.homeview.data.VideoContract;
-import com.monsterbutt.homeview.player.MediaCodecCapabilities;
-import com.monsterbutt.homeview.player.MediaTrackSelector;
+import com.monsterbutt.homeview.player.track.MediaCodecCapabilities;
+import com.monsterbutt.homeview.player.track.MediaTrackSelector;
 import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.presenters.CodecPresenter;
 import com.monsterbutt.homeview.provider.MediaContentProvider;
 import com.monsterbutt.homeview.provider.SearchImagesProvider;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.activity.DetailsActivity;
-import com.monsterbutt.homeview.ui.activity.PlayerActivity;
+import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
@@ -39,7 +40,7 @@ import us.nineworlds.plex.rest.model.impl.Video;
 public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelable {
 
     static private final long MillisecondInMinutes = 1000*60;
-    static public String RatingKeyToKey(String key) { return "/library/metadata/" + key; }
+    //static public String RatingKeyToKey(String key) { return "/library/metadata/" + key; }
 
     public static long NEXTUP_DISABLED = -1;
     private static final long MIN_MINUTES_FOR_NEXTUP = 5 * 1000;
@@ -72,7 +73,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return null;
     }
 
-    protected final Video mVideo;
+    final Video mVideo;
     private WatchedState mWatchedState;
 
     protected PlexVideoItem() {
@@ -206,7 +207,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return getCardImageURL();
     }
 
-    public String getContentRating() {
+    private String getContentRating() {
         if (mVideo == null)
             return "";
         return mVideo.getContentRating();
@@ -217,8 +218,12 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return Double.toString(mVideo.getRating());
     }
 
-    public String getYear() {
+    String getYear() {
         return mVideo.getYear();
+    }
+
+    public boolean shouldDiscoverQueue() {
+        return false;
     }
 
     @Override
@@ -235,24 +240,8 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     @Override
     public long getDuration() { return getDurationMs(); }
 
-    public List<Role> getActors() {
-        return mVideo.getActors();
-    }
-
-    public List<Director> getDirectors() {
-        return mVideo.getDirectors();
-    }
-
-    public List<Writer> getWriters() {
-        return mVideo.getWriters();
-    }
-
-    public List<Genre> getGenres() {
+    private List<Genre> getGenres() {
         return mVideo.getGenres();
-    }
-
-    public List<Country> getCountries() {
-        return mVideo.getCountries();
     }
 
     public boolean hasSourceStats() {
@@ -373,10 +362,10 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     @Override
     public boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView) {
 
-        Intent intent = new Intent(fragment.getActivity(), PlayerActivity.class);
-        intent.setAction(PlayerActivity.ACTION_VIEW);
-        intent.putExtra(PlayerActivity.KEY, getKey());
-        intent.putExtra(PlayerActivity.VIDEO, this);
+        Intent intent = new Intent(fragment.getActivity(), PlaybackActivity.class);
+        intent.setAction(PlaybackActivity.ACTION_VIEW);
+        intent.putExtra(PlaybackActivity.KEY, getKey());
+        intent.putExtra(PlaybackActivity.VIDEO, this);
         if (extras != null)
             intent.putExtras(extras);
 
@@ -386,7 +375,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
             bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     fragment.getActivity(),
                     transitionView,
-                    PlayerActivity.SHARED_ELEMENT_NAME).toBundle();
+             PlaybackActivity.SHARED_ELEMENT_NAME).toBundle();
         }
         fragment.startActivity(intent, bundle);
 
@@ -481,7 +470,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return null;
     }
 
-    private boolean addTrackTypeToCodec(Context context, ArrayObjectAdapter adapter, int trackType, MediaTrackSelector selector) {
+    private void addTrackTypeToCodec(Context context, ArrayObjectAdapter adapter, int trackType, MediaTrackSelector selector) {
 
         Stream stream = selector.getSelectedTrack(trackType);
         if (stream != null) {
@@ -489,7 +478,6 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
                 stream.setHeight(getMedia().get(0).getVideoResolution());
             adapter.add(new CodecCard(context, stream, trackType, selector.getCount(trackType)));
         }
-        return (stream != null);
     }
 
     public ListRow getCodecsRow(Context context, PlexServer server, MediaTrackSelector selector) {
@@ -604,7 +592,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
          .trailerUrl(getTrailerURL())
          .height(mVideo.getMedias() != null && !mVideo.getMedias().isEmpty() ? Integer.parseInt(mVideo.getMedias().get(0).getHeight()) : 0)
          .width(mVideo.getMedias() != null && !mVideo.getMedias().isEmpty() ? Integer.parseInt(mVideo.getMedias().get(0).getWidth()) : 0)
-         .genre((String[]) genres.toArray(new String[genres.size()]));
+         .genre(genres.toArray(new String[genres.size()]));
 
         // show title
         // thumbnail
@@ -646,6 +634,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     @Override
     public String getDetailYear(Context context) { return getYear(); }
 
+    @SuppressLint("DefaultLocale")
     @Override
     public String getDetailDuration(Context context) {
         long mins = getDurationInMin();
@@ -682,7 +671,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
                 mVideo.getRelated().get(0).getHubs() : null;
     }
 
-    public String getPathKey() {
+    private String getPathKey() {
 
         return getMedia().get(0).getVideoPart().get(0).getKey();
     }
@@ -711,7 +700,6 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return ret;
     }
 
-    public boolean shouldDiscoverQueue() { return true; }
     public boolean shouldUpdateStatusOnPlayback() { return true; }
 
     public static String getVideoPath(PlexServer server, String url) {
@@ -745,13 +733,13 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
 
     public PendingIntent buildPendingIntent(Context context) {
 
-        Intent playbackIntent = new Intent(context, PlayerActivity.class);
-        playbackIntent.setAction(PlayerActivity.ACTION_VIEW);
-        playbackIntent.putExtra(PlayerActivity.ACTION, PlayerActivity.ACTION_VIEW);
-        playbackIntent.putExtra(PlayerActivity.KEY, getKey());
-        playbackIntent.putExtra(PlayerActivity.VIDEO, this);
+        Intent playbackIntent = new Intent(context, PlaybackActivity.class);
+        playbackIntent.setAction(PlaybackActivity.ACTION_VIEW);
+        playbackIntent.putExtra(PlaybackActivity.ACTION, PlaybackActivity.ACTION_VIEW);
+        playbackIntent.putExtra(PlaybackActivity.KEY, getKey());
+        playbackIntent.putExtra(PlaybackActivity.VIDEO, this);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
-        stackBuilder.addParentStack(PlayerActivity.class);
+        stackBuilder.addParentStack(PlaybackActivity.class);
         stackBuilder.addNextIntent(playbackIntent);
         // Ensure a unique PendingIntents, otherwise all
         // recommendations end up with the same PendingIntent
@@ -759,7 +747,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    public String getTrailerURL() {
+    private String getTrailerURL() {
         String key = mVideo.getPrimaryExtraKey();
         if (!TextUtils.isEmpty(key)) {
             List<Extras> extras = mVideo.getExtras();

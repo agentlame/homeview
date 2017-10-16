@@ -3,23 +3,22 @@ package com.monsterbutt.homeview.ui.android;
 
 import android.app.Activity;
 import android.os.Handler;
+import android.support.v17.leanback.media.PlaybackTransportControlGlue;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.ResumeChoiceCard;
 import com.monsterbutt.homeview.ui.PlexItemRow;
-import com.monsterbutt.homeview.ui.handler.PlaybackHandler;
 
 public class ResumeChoiceView extends SelectViewRow {
 
   private static final int CHOOSER_TIMEOUT = 15 * 1000;
-  private static ResumeChoiceView selectView = null;
 
-  private final PlaybackHandler playbackHandler;
+  private final PlaybackTransportControlGlue playbackHandler;
   private final ChoiceTimeout runnable;
   private final Handler handler;
 
-  private ResumeChoiceView(Activity activity, PlaybackHandler playbackHandler) {
+  private ResumeChoiceView(Activity activity, PlaybackTransportControlGlue playbackHandler) {
     super(activity);
     this.playbackHandler = playbackHandler;
     runnable = new ChoiceTimeout();
@@ -27,9 +26,9 @@ public class ResumeChoiceView extends SelectViewRow {
     handler.postDelayed(runnable, CHOOSER_TIMEOUT);
   }
 
-  public static SelectViewRow getView(Activity activity, PlaybackHandler playbackHandler, long offset,
-                                   SelectView.SelectViewCaller caller) {
-    selectView = new ResumeChoiceView(activity, playbackHandler);
+  public static ResumeChoiceView getView(Activity activity, PlaybackTransportControlGlue playbackHandler, long offset,
+                                      SelectView.SelectViewCaller caller) {
+    ResumeChoiceView selectView = new ResumeChoiceView(activity, playbackHandler);
     selectView.setRow(PlexItemRow.buildResumeChoices(activity, activity.getString(R.string.playback_start_dialog), offset), 0,caller);
     return selectView;
   }
@@ -56,14 +55,16 @@ public class ResumeChoiceView extends SelectViewRow {
   }
 
   @Override
+  protected boolean showPlaybackUIOnFragmentSet() { return true; }
+
+  @Override
   protected boolean shouldShowPlayerUIOnRelease() { return true; }
 
   private class ChoiceTimeout implements Runnable {
 
     @Override
     public void run() {
-      if (selectView != null)
-        selectView.release();
+      ResumeChoiceView.this.release();
     }
   }
 }

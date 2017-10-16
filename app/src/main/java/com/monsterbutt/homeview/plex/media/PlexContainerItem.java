@@ -16,7 +16,7 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.provider.MediaContentProvider;
 import com.monsterbutt.homeview.provider.SearchImagesProvider;
 import com.monsterbutt.homeview.ui.activity.ContainerActivity;
-import com.monsterbutt.homeview.ui.activity.PlayerActivity;
+import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
@@ -464,10 +464,10 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
     @Override
     public boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView) {
 
-        Intent intent = new Intent(fragment.getActivity(), PlayerActivity.class);
-        intent.setAction(PlayerActivity.ACTION_VIEW);
-        intent.putExtra(PlayerActivity.KEY, getKey());
-        intent.putExtra(PlayerActivity.FILTER, getCurrentFilter());
+        Intent intent = new Intent(fragment.getActivity(), PlaybackActivity.class);
+        intent.setAction(PlaybackActivity.ACTION_VIEW);
+        intent.putExtra(PlaybackActivity.KEY, getKey());
+        intent.putExtra(PlaybackActivity.FILTER, getCurrentFilter());
         if (extras != null)
             intent.putExtras(extras);
 
@@ -477,7 +477,7 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
             bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     fragment.getActivity(),
                     transitionView,
-             PlayerActivity.SHARED_ELEMENT_NAME).toBundle();
+             PlaybackActivity.SHARED_ELEMENT_NAME).toBundle();
         }
         fragment.startActivity(intent, bundle);
 

@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.monsterbutt.homeview.model.Video;
+import com.monsterbutt.homeview.player.notifier.ChapterSelectionNotifier;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Chapter;
 import com.monsterbutt.homeview.plex.media.Episode;
@@ -29,7 +30,7 @@ import com.monsterbutt.homeview.presenters.CodecCard;
 import com.monsterbutt.homeview.presenters.PosterCard;
 import com.monsterbutt.homeview.presenters.SceneCard;
 import com.monsterbutt.homeview.ui.activity.DetailsActivity;
-import com.monsterbutt.homeview.ui.activity.PlayerActivity;
+import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.android.ImageCardView;
 
@@ -54,7 +55,7 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
     private final Fragment mFragment;
     private final CardSelectionListener mCardListener;
 
-    private final Chapter.OnClickListenerHandler mChapterClickListener;
+    private final ChapterSelectionNotifier mChapterClickListener;
     private final boolean mUpdateBackgroundOnCardChange;
 
     public CardSelectionHandler(Fragment fragment, PlexServer server) {
@@ -86,7 +87,7 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
     }
 
     private CardSelectionHandler(Fragment fragment, CardSelectionListener cardListener,
-                                Chapter.OnClickListenerHandler chapterListener, PlexServer server,
+                                 ChapterSelectionNotifier chapterListener, PlexServer server,
                                 PlexLibraryItem mainItem, ImageView mainItemImage,
                                 boolean updateBackgroundOnCardChange, String backgroundURI) {
 
@@ -207,10 +208,10 @@ public class CardSelectionHandler extends MediaCardBackgroundHandler
                 String action = "";
                 if (video.category != null && (video.category.equals(Movie.TYPE) || video.category.equals(Episode.TYPE))) {
 
-                    cls = PlayerActivity.class;
-                    action = PlayerActivity.ACTION_VIEW;
-                    urlKey = PlayerActivity.KEY;
-                    sharedKey = PlayerActivity.SHARED_ELEMENT_NAME;
+                    cls = PlaybackActivity.class;
+                    action = PlaybackActivity.ACTION_VIEW;
+                    urlKey = PlaybackActivity.KEY;
+                    sharedKey = PlaybackActivity.SHARED_ELEMENT_NAME;
                 }
                 else {
                     cls = DetailsActivity.class;

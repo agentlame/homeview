@@ -25,6 +25,7 @@ public abstract class SelectView {
 
   protected abstract String getTag();
   protected abstract int getHeight();
+  protected abstract boolean showPlaybackUIOnFragmentSet();
 
   protected void setFragment(Fragment fragment, SelectViewCaller caller) {
 
@@ -32,7 +33,7 @@ public abstract class SelectView {
     this.caller = caller;
     if (fragment != null) {
       if (caller != null)
-        caller.selectionViewState(true, false);
+        caller.selectionViewState(true, showPlaybackUIOnFragmentSet());
       View view = activity.findViewById(R.id.selection_fragment);
       view.setVisibility(View.VISIBLE);
       view.requestFocus();
@@ -46,10 +47,12 @@ public abstract class SelectView {
     return false;
   }
 
+  public synchronized boolean isReleased() { return isReleased; }
+
   public void release() {
 
     synchronized (this) {
-      if (isReleased)
+      if (isReleased())
         return;
       isReleased = true;
     }

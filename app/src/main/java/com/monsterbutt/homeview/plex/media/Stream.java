@@ -12,8 +12,8 @@ import android.view.View;
 
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.player.MediaCodecCapabilities;
-import com.monsterbutt.homeview.player.TrackSelector;
+import com.monsterbutt.homeview.player.track.MediaCodecCapabilities;
+import com.monsterbutt.homeview.player.track.TrackSelector;
 
 import java.util.List;
 
