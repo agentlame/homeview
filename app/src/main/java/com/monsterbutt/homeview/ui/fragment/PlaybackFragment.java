@@ -124,7 +124,7 @@ public class PlaybackFragment extends VideoFragment implements VideoChangedNotif
     super.onResume();
     Log.d(TAG, "onResume");
     ThemeService.stopTheme(getActivity());
-    if (readIntent() && mMediaPlayerGlue != null)
+    if (!readIntent() && mMediaPlayerGlue != null)
       mMediaPlayerGlue.setRefreshRateToCurrentVideo(getActivity());
   }
 
@@ -186,6 +186,17 @@ public class PlaybackFragment extends VideoFragment implements VideoChangedNotif
                      StartPositionHandler startPosition) {
     if (item == null)
       getActivity().finish();
+  }
+
+  @Override
+  protected void onError(int errorCode, CharSequence errorMessage) {
+    ErrorFragment fragment = new ErrorFragment();
+    Bundle args = new Bundle();
+    args.putString(ErrorFragment.MESSAGE, String.valueOf(errorMessage));
+    fragment.setArguments(args);
+    View view = getActivity().findViewById(R.id.error_fragment);
+    view.setVisibility(View.VISIBLE);
+    getFragmentManager().beginTransaction().add(R.id.error_fragment, fragment, "Error").commit();
   }
 
 }

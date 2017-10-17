@@ -9,9 +9,9 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v17.leanback.app.VideoFragment;
 import android.support.v17.leanback.media.PlaybackGlue;
-import android.support.v17.leanback.media.PlaybackTransportControlGlue;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -23,6 +23,7 @@ import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.display.FrameRateSwitcher;
 import com.monsterbutt.homeview.player.HomeViewExoPlayerAdapter;
 import com.monsterbutt.homeview.player.notifier.ChapterSelectionNotifier;
+import com.monsterbutt.homeview.player.notifier.FrameRateSwitchNotifier;
 import com.monsterbutt.homeview.player.track.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.track.MediaTrackSelector;
 import com.monsterbutt.homeview.player.notifier.QueueChangeNotifier;
@@ -53,7 +54,8 @@ import static com.monsterbutt.homeview.ui.activity.PlaybackActivity.ACTION;
 import static com.monsterbutt.homeview.ui.activity.PlaybackActivity.KEY;
 import static com.monsterbutt.homeview.ui.activity.PlaybackActivity.URI;
 
-public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.Observer, ChapterSelectionNotifier.Observer {
+public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.Observer,
+ ChapterSelectionNotifier.Observer, FrameRateSwitchNotifier.Observer {
 
   private static final String TAG = "HV_GlueVideoHandler";
 
@@ -129,17 +131,16 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
     return false;
   }
 
-  private boolean playVideo(PlexVideoItem video, MediaTrackSelector chosenTracks) {
+  private void playVideo(PlexVideoItem video, MediaTrackSelector chosenTracks) {
 
     PlexVideoItem currentVideo = mVideos.currentVideo();
     if (video == null || (currentVideo != null && video.getKey().equals(currentVideo.getKey())))
-      return false;
+      return;
 
     boolean usesDefaultTracks = chosenTracks == null;
     MediaTrackSelector tracks = !usesDefaultTracks ? chosenTracks :
      video.fillTrackSelector(Locale.getDefault().getISO3Language(), MediaCodecCapabilities.getInstance(mGlue.getContext()));
     mVideoChangedNotifier.videoChanged(video, tracks, usesDefaultTracks, new StartPositionHandler(mGlue.getContext(), currStartOffset, video.getViewedOffset()));
-    return true;
   }
 
   @Override
@@ -162,7 +163,7 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
     }
 
     didFirstPlay = false;
-    mVideos.currentVideo(video);
+    mVideos.currentVideo(video, tracks, usesDefaulTracks);
 
     Context context = mGlue.getContext();
     mGlue.setTitle(video.getPlaybackTitle(context));
@@ -187,9 +188,8 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
        }
      });
 
-    ((HomeViewExoPlayerAdapter) mGlue.getPlayerAdapter()).setDataSource(video, tracks, usesDefaulTracks, mServer);
-    if (!setRefreshRateToCurrentVideo((Activity) mGlue.getContext(), video, false, mGlue))
-      mGlue.play();
+    if (!setRefreshRateToCurrentVideo((Activity) mGlue.getContext(), false))
+      mVideos.setCurrentDataSource((HomeViewExoPlayerAdapter) mGlue.getPlayerAdapter());
   }
 
   public void shouldDoFirstPlay() {
@@ -302,7 +302,7 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
     }
   }
 
-  public PlexVideoItem getCurrentVideo() { return mVideos.currentVideo(); }
+  PlexVideoItem getCurrentVideo() { return mVideos.currentVideo(); }
 
   PlexVideoItem getNextVideo() { return mVideos.nextVideo(); }
 
@@ -310,6 +310,19 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
   public void chapterSelected(Chapter chapter) {
     if (getCurrentVideo() != null && chapter != null)
       mGlue.seekTo(chapter.getChapterStart());
+  }
+
+  @Override
+  public void frameRateSwitched(long requestedDelay) {
+
+    final Handler handler = new Handler();
+    handler.postDelayed(new Runnable() {
+        @Override
+        public void run() {
+          handler.removeCallbacks(this);
+          mVideos.setCurrentDataSource((HomeViewExoPlayerAdapter) mGlue.getPlayerAdapter());
+        }
+      }, requestedDelay);
   }
 
   private static class GetFullInfo extends PlexServerTask {
@@ -336,29 +349,43 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
     }
   }
 
-  static public boolean setRefreshRateToCurrentVideo(Activity activity, PlexVideoItem video,
-                                                      boolean force, PlaybackTransportControlGlue player) {
+  public boolean setRefreshRateToCurrentVideo(Activity activity, boolean force) {
+    PlexVideoItem video = getCurrentVideo();
     if (!SettingsManager.getInstance(activity).getBoolean("preferences_device_refreshrate") ||
      video == null || !video.hasSourceStats())
       return false;
-    String refreshRateFormat = video.getMedia().get(0).getVideoFrameRate();
-
-    return FrameRateSwitcher.setDisplayRefreshRate(activity, refreshRateFormat, force, player);
+    FrameRateSwitchNotifier notifier = new FrameRateSwitchNotifier();
+    notifier.register(this);
+    return FrameRateSwitcher.setDisplayRefreshRate(activity,
+     video.getMedia().get(0).getVideoFrameRate(), force, notifier);
   }
 
   private class VideoHolder {
 
     private PlexVideoItem currentVideo = null;
+    private MediaTrackSelector currentTracks = null;
+    private boolean currentUsesDefaultTracks = false;
     private PlexVideoItem previousVideo = null;
     private PlexVideoItem nextVideo = null;
 
     synchronized PlexVideoItem currentVideo() { return currentVideo; }
-    synchronized void currentVideo(PlexVideoItem item) { currentVideo = item; }
+    synchronized void currentVideo(PlexVideoItem item, MediaTrackSelector tracks,
+                                   boolean usesDefaultTracks) {
+      currentVideo = item;
+      currentTracks = tracks;
+      currentUsesDefaultTracks = usesDefaultTracks;
+    }
 
     synchronized PlexVideoItem previousVideo() { return previousVideo; }
     synchronized void previousVideo(PlexVideoItem item) { previousVideo = item; }
 
     synchronized PlexVideoItem nextVideo() { return nextVideo; }
     synchronized void nextVideo(PlexVideoItem item) { nextVideo = item; }
+
+
+    synchronized void setCurrentDataSource(HomeViewExoPlayerAdapter adapter) {
+      adapter.setDataSource(currentVideo, currentTracks, currentUsesDefaultTracks, mServer);
+    }
+
   }
 }

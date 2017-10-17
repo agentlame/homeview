@@ -5,12 +5,12 @@ import android.content.Context;
 import android.hardware.display.DisplayManager;
 import android.os.Build;
 import android.os.Handler;
-import android.support.v17.leanback.media.PlaybackTransportControlGlue;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
+import com.monsterbutt.homeview.player.notifier.FrameRateSwitchNotifier;
 import com.monsterbutt.homeview.settings.SettingsManager;
 
 public class FrameRateSwitcher {
@@ -24,19 +24,19 @@ public class FrameRateSwitcher {
     }*/
 
     public static boolean setDisplayRefreshRate(Activity activity, String refreshRateFormat, boolean force,
-                                                PlaybackTransportControlGlue player) {
+                                                FrameRateSwitchNotifier notifier) {
 
         if (!TextUtils.isEmpty(refreshRateFormat)) {
             Display.Mode currentMode = RefreshRateChooser.getCurrentMode(activity);
             Display.Mode newMode = RefreshRateChooser.getBestFitMode(activity, refreshRateFormat);
             if (currentMode != null) {
                 if (force || newMode != null && currentMode.getRefreshRate() != newMode.getRefreshRate())
-                    return changeMode(activity, newMode, player);
+                    return changeMode(activity, newMode, notifier);
                 Log.i(Tag, "Frame rate left alone");
             }
             else {
                 Log.e(Tag, "Forcing change, Current Mode is bad");
-                return changeMode(activity, newMode, player);
+                return changeMode(activity, newMode, notifier);
             }
         }
         else
@@ -45,14 +45,14 @@ public class FrameRateSwitcher {
     }
 
     private static boolean changeMode(Activity activity, Display.Mode requestedMode,
-                                      PlaybackTransportControlGlue player) {
+                                      FrameRateSwitchNotifier notifier) {
         if (requestedMode == null) {
             Log.e(Tag, "Invalid mode change");
             return false;
         }
         Log.i(Tag, "Changing frame rate to :" + Float.toString(requestedMode.getRefreshRate())
          + " Mode ID : " + requestedMode.getModeId());
-        new DefaultDisplayListener(activity, requestedMode, player);
+        new DefaultDisplayListener(activity, requestedMode, notifier);
         return true;
     }
 
@@ -60,13 +60,21 @@ public class FrameRateSwitcher {
     private static class DefaultDisplayListener implements DisplayManager.DisplayListener {
 
         private final Context context;
-        private final PlaybackTransportControlGlue player;
+        private final FrameRateSwitchNotifier notifier;
+
+        private final Handler handler = new Handler();
+        private final Runnable timeOutTask = new Runnable() {
+            @Override
+            public void run() {
+                finish();
+            }
+        };
 
         DefaultDisplayListener(Activity activity, Display.Mode requestedMode,
-                               PlaybackTransportControlGlue player) {
+                               FrameRateSwitchNotifier notifier) {
 
             this.context = activity;
-            this.player = player;
+            this.notifier = notifier;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 DisplayManager displayManager = context.getSystemService(DisplayManager.class);
                 if (displayManager != null) {
@@ -97,29 +105,13 @@ public class FrameRateSwitcher {
 
             int defaultDisplayId = RefreshRateChooser.getDefaultDisplayId(context);
             if (displayId == defaultDisplayId || defaultDisplayId == RefreshRateChooser.DISPLAY_ID_UNKNOWN)
-            unregister();
-            play();
+                finish();
         }
 
-        private void play() {
-            long delayValue = SettingsManager.getInstance(context).getLong("preferences_device_refreshrate_delay");
-            if (delayValue == 0) {
-                if (player != null)
-                    player.play();
-            }
-            else {
-                Log.d(Tag, "Delaying for : " + delayValue);
-                handler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        handler.removeCallbacks(this);
-                        Log.d(Tag, "Delayed play over");
-                        if (player != null)
-                            player.play();
-                    }
-                }, delayValue);
-            }
+        private void finish() {
+            unregister();
+            if (notifier != null)
+                notifier.frameRateSwitched(SettingsManager.getInstance(context).getLong("preferences_device_refreshrate_delay"));
         }
 
         private void unregister() {
@@ -129,14 +121,6 @@ public class FrameRateSwitcher {
                     displayManager.unregisterDisplayListener(this);
         }
 
-        Handler handler = new Handler();
-        Runnable timeOutTask = new Runnable() {
-            @Override
-            public void run() {
-                unregister();
-                play();
-            }
-        };
     }
 
 }

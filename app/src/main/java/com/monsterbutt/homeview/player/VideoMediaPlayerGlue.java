@@ -164,7 +164,7 @@ public class VideoMediaPlayerGlue<T extends PlayerAdapter> extends PlaybackTrans
 
     if (!wasPausedAfterPlayback)
       return;
-    VideoHandler.setRefreshRateToCurrentVideo(activity, mVideoHandler.getCurrentVideo(), true, null);
+    mVideoHandler.setRefreshRateToCurrentVideo(activity, true);
   }
 
   @Override

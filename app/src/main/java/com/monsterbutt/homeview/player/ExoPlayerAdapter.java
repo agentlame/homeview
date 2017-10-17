@@ -280,7 +280,7 @@ public class ExoPlayerAdapter extends PlayerAdapter implements Player.EventListe
     reset();
     if (mMediaSourceUri != null) {
       MediaSource mediaSource = onCreateMediaSource(mMediaSourceUri);
-      mPlayer.setPlayWhenReady(false);
+      //mPlayer.setPlayWhenReady(false);
       mPlayer.prepare(mediaSource);
     } else {
       return;
