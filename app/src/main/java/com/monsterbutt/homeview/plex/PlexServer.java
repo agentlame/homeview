@@ -31,6 +31,9 @@ import us.nineworlds.plex.rest.PlexappFactory;
 import us.nineworlds.plex.rest.config.impl.Configuration;
 import us.nineworlds.plex.rest.model.impl.Directory;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
+import us.nineworlds.plex.rest.model.impl.Video;
+
+import static org.fourthline.cling.binding.xml.Descriptor.Device.ELEMENT.url;
 
 
 public class PlexServer {
@@ -373,6 +376,44 @@ public class PlexServer {
             }
             catch (Exception e) {
                 Log.e(getClass().getName(), e.toString());
+            }
+        }
+        return ret;
+    }
+
+    public boolean deleteMedia(String key, boolean isContainer) {
+
+        boolean ret = false;
+        if (mFactory != null) {
+            if (!isContainer) {
+                try {
+                    ret = mFactory.deleteMedia(key);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            else {
+                if (key.endsWith(Show.CHILDREN))
+                    key.replace(Show.CHILDREN, Season.ALL_SEASONS);
+                else if (!key.endsWith(Season.ALL_SEASONS))
+                    key += "/" + Season.ALL_SEASONS;
+                try {
+                    MediaContainer container = mFactory.retrieveMovieMetaData(key, true);
+                    if (container != null) {
+                        if (container.getVideos() != null) {
+                            ret = true;
+                            for (Video video : container.getVideos())
+                                ret &= deleteMedia(video.getKey(), false);
+                        } else if (container.getDirectories() != null) {
+                            ret = true;
+                            for (Directory dir : container.getDirectories())
+                                ret &= deleteMedia(dir.getKey(), true);
+                        }
+                    }
+                }
+                catch (Exception e) {
+                    Log.e(getClass().getName(), e.toString());
+                }
             }
         }
         return ret;

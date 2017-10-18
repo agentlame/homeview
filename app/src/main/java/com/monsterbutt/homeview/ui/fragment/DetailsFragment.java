@@ -41,6 +41,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
@@ -101,6 +102,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     final static int ACTION_VIEWSTATUS  = 2;
     final static int ACTION_AUDIO       = 3;
     final static int ACTION_SUBTITLES   = 4;
+    final static int ACTION_DELETE      = 5;
 
     private ArrayObjectAdapter mAdapter;
 
@@ -223,6 +225,8 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                  context.getDrawable(R.drawable.ic_subtitles_white_24dp)));
             }
         }
+        if (mItem != null)
+            adapter.set(ACTION_DELETE, new Action(ACTION_DELETE, context.getString(R.string.delete)));
 
     }
 
@@ -252,6 +256,10 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                 break;
             case ACTION_SUBTITLES:
                 selectTracks(Stream.Subtitle_Stream);
+                break;
+            case ACTION_DELETE:
+                if (mItem != null)
+                    new DeleteTask(this, mItem.getKey(), mItem instanceof Show).execute();
                 break;
         }
     }
@@ -586,4 +594,33 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         }
     }
 
+    private class DeleteTask extends AsyncTask <Void, Void, Boolean> {
+
+        private final DetailsFragment fragment;
+        private final String key;
+        private final boolean isShow;
+
+        DeleteTask(DetailsFragment fragment, String key, boolean isShow) {
+            this.fragment = fragment;
+            this.key = key;
+            this.isShow = isShow;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return mServer.deleteMedia(key, isShow);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+
+            Toast.makeText(fragment.getContext(),
+             success ? R.string.delete_success : R.string.delete_failed,
+             Toast.LENGTH_LONG).show();
+
+            if (!fragment.isDetached() && !fragment.getActivity().isFinishing() &&
+             !fragment.getActivity().isDestroyed())
+            fragment.getActivity().finish();
+        }
+    }
 }

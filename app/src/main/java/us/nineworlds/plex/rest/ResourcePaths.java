@@ -24,6 +24,7 @@
 package us.nineworlds.plex.rest;
 
 import android.net.Uri;
+import android.text.TextUtils;
 
 import java.net.URLEncoder;
 import java.util.StringTokenizer;
@@ -130,8 +131,11 @@ public class ResourcePaths {
 
 	public String getToken() {
 
-		return config.getServerToken() != null || !config.getServerToken().isEmpty() ?
+		String ret = config.getServerToken() != null || !config.getServerToken().isEmpty() ?
 		"X-Plex-Token=" + config.getServerToken() : "";
+		if (!TextUtils.isEmpty(ret))
+			ret += "&X-Plex-Client-Identifier=" + config.getDeviceId();
+		return ret;
 	}
 	
 	public String getWatchedUrl(String key, String ratingKey) {

@@ -307,4 +307,8 @@
     <string name="channel_name">HomeView</string>
     <string name="channel_description">Latest happenings in HomeView</string>
 
+    <string name="delete">Delete</string>
+    <string name="delete_success">Delete succeeded</string>
+    <string name="delete_failed">An error occurred</string>
+
 </resources>

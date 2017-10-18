@@ -238,6 +238,11 @@ public class PlexappFactory {
 		MediaContainer mediaContainer = serializeResource(searchURL);
 		return mediaContainer;
 	}
+
+	public boolean deleteMedia(String key) throws Exception {
+		String url = resourcePath.getEpisodesURL(key) + "?" + getToken();
+		return deleteResource(url);
+	}
 	
 	public String baseURL() {
 		return resourcePath.getRoot();
@@ -300,7 +305,29 @@ public class PlexappFactory {
 		return resourcePath.getMediaTagURL(resourceType, resourceName);//, identifier);
 	}
 
-    /**
+	private boolean deleteResource(String resourceURL) throws Exception {
+
+		boolean ret = false;
+		URL url = new URL(resourceURL);
+
+		HttpURLConnection con = null;
+		try {
+			con = (HttpURLConnection) url.openConnection();
+			con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+			con.setRequestMethod("DELETE");
+			int code = con.getResponseCode();
+			ret = HttpURLConnection.HTTP_OK == code || HttpURLConnection.HTTP_CREATED == code ||
+			HttpURLConnection.HTTP_ACCEPTED == code || HttpURLConnection.HTTP_NO_CONTENT == code;
+		} catch (IOException exception) {
+			exception.printStackTrace();
+		} finally {
+			if (con != null)
+				con.disconnect();
+		}
+		return ret;
+	}
+
+	/**
 	 * Given a resource's URL, read and return the serialized MediaContainer
 	 * @param resourceURL
 	 * @return
