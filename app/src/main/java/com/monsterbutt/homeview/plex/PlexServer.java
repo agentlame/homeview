@@ -371,6 +371,11 @@ public class PlexServer {
         MediaContainer ret = null;
         if (mFactory != null) {
 
+            if (key.endsWith("/" + Season.ALL_SEASONS))
+                key = key.substring(0, key.length() - ("/" + Season.ALL_SEASONS).length());
+            else if (key.endsWith("/" + Show.CHILDREN))
+                key = key.substring(0, key.length() - ("/" + Show.CHILDREN).length());
+
             try {
                 ret = mFactory.retrieveMovieMetaData(key, isShow);
             }
@@ -381,40 +386,17 @@ public class PlexServer {
         return ret;
     }
 
-    public boolean deleteMedia(String key, boolean isContainer) {
+    public boolean deleteMedia(String key) {
 
         boolean ret = false;
         if (mFactory != null) {
-            if (!isContainer) {
-                try {
-                    ret = mFactory.deleteMedia(key);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            try {
+                ret = mFactory.deleteMedia(key);
             }
-            else {
-                if (key.endsWith(Show.CHILDREN))
-                    key.replace(Show.CHILDREN, Season.ALL_SEASONS);
-                else if (!key.endsWith(Season.ALL_SEASONS))
-                    key += "/" + Season.ALL_SEASONS;
-                try {
-                    MediaContainer container = mFactory.retrieveMovieMetaData(key, true);
-                    if (container != null) {
-                        if (container.getVideos() != null) {
-                            ret = true;
-                            for (Video video : container.getVideos())
-                                ret &= deleteMedia(video.getKey(), false);
-                        } else if (container.getDirectories() != null) {
-                            ret = true;
-                            for (Directory dir : container.getDirectories())
-                                ret &= deleteMedia(dir.getKey(), true);
-                        }
-                    }
-                }
-                catch (Exception e) {
-                    Log.e(getClass().getName(), e.toString());
-                }
+            catch (Exception e) {
+                Log.e(getClass().getName(), e.toString());
             }
+
         }
         return ret;
     }

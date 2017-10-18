@@ -259,7 +259,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                 break;
             case ACTION_DELETE:
                 if (mItem != null)
-                    new DeleteTask(this, mItem.getKey(), mItem instanceof Show).execute();
+                    new DeleteTask(this, mItem.getKey()).execute();
                 break;
         }
     }
@@ -598,17 +598,15 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
         private final DetailsFragment fragment;
         private final String key;
-        private final boolean isShow;
 
-        DeleteTask(DetailsFragment fragment, String key, boolean isShow) {
+        DeleteTask(DetailsFragment fragment, String key) {
             this.fragment = fragment;
             this.key = key;
-            this.isShow = isShow;
         }
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-            return mServer.deleteMedia(key, isShow);
+            return mServer.deleteMedia(key);
         }
 
         @Override
