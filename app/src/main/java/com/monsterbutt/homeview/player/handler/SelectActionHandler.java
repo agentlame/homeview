@@ -99,9 +99,9 @@ public class SelectActionHandler implements VideoChangedNotifier.Observer {
     mCurrentVideo = item;
     mTracks = tracks;
 
-    mAudioSelectAction.enabled(mTracks.getCount(Audio_Stream) > 0);
-    mSubititleSelectAction.enabled(mTracks.getCount(Subtitle_Stream) > 0);
-    mChapterSelectAction.enabled(item.hasChapters());
+    mAudioSelectAction.enabled(mTracks != null && mTracks.getCount(Audio_Stream)  > 0);
+    mSubititleSelectAction.enabled(mTracks != null && mTracks.getCount(Subtitle_Stream) > 0);
+    mChapterSelectAction.enabled(item != null && item.hasChapters());
   }
 
   private class SelectAction extends PlaybackControlsRow.MultiAction {
