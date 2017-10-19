@@ -20,7 +20,7 @@ public class UIFragmentHandler
  implements SelectView.SelectViewCaller, UIFragmentNotifier.Observer {
 
   public interface UIHandlerRegister {
-    void register(UIFragmentHandler handler);
+    void register(PlaybackTransportControlGlue glue, UIFragmentHandler handler);
   }
 
   private final VideoFragment mFragment;
@@ -49,7 +49,7 @@ public class UIFragmentHandler
     new SwitchChapterHandler(fragment.getActivity(), this,
      uiFragmentNotifier, switchChapterNotifier, chapterSelectionNotifier);
     if (mFragment.getActivity() instanceof UIHandlerRegister) {
-      ((UIHandlerRegister) mFragment.getActivity()).register(this);
+      ((UIHandlerRegister) mFragment.getActivity()).register(glue, this);
     }
   }
 

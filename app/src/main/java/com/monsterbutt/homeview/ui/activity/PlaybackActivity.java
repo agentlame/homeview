@@ -4,6 +4,7 @@ package com.monsterbutt.homeview.ui.activity;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v17.leanback.media.PlaybackTransportControlGlue;
 import android.support.v4.app.FragmentActivity;
 
 import com.monsterbutt.homeview.R;
@@ -24,7 +25,8 @@ public class PlaybackActivity extends FragmentActivity implements UIFragmentHand
   public static final String SHARED_ELEMENT_NAME = "hero";
   public static final String URI = "homeview://app/playback";
 
-  private UIFragmentHandler UIFragmentHandler;
+  private UIFragmentHandler mUIFragmentHandler;
+  private PlaybackTransportControlGlue mPlaybackGlue;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -48,13 +50,22 @@ public class PlaybackActivity extends FragmentActivity implements UIFragmentHand
   }
 
   @Override
-  public void register(UIFragmentHandler handler) {
-    UIFragmentHandler = handler;
+  public void register(PlaybackTransportControlGlue glue, UIFragmentHandler handler) {
+    mPlaybackGlue = glue;
+    mUIFragmentHandler = handler;
   }
 
   @Override
   public void onBackPressed() {
-    if (!UIFragmentHandler.shouldCancelOnBack())
+    if (!mUIFragmentHandler.shouldCancelOnBack())
       super.onBackPressed();
+  }
+
+
+  @Override
+  public void onVisibleBehindCanceled() {
+    if (mPlaybackGlue != null)
+      mPlaybackGlue.pause();
+    super.onVisibleBehindCanceled();
   }
 }
