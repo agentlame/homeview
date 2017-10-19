@@ -196,6 +196,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     private void setActions(SparseArrayObjectAdapter adapter, boolean isWatched) {
 
         Context context = getActivity();
+        adapter.clear();
         adapter.set(ACTION_PLAY, new Action(ACTION_PLAY, context.getString(R.string.action_play)));
         adapter.set(ACTION_VIEWSTATUS, new Action(ACTION_VIEWSTATUS, context.getString(R.string.action_mark),
                  isWatched ? context.getString(R.string.action_watched) : context.getString(R.string.action_unwatched)));
@@ -225,8 +226,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                  context.getDrawable(R.drawable.ic_subtitles_white_24dp)));
             }
         }
-        if (mItem != null)
-            adapter.set(ACTION_DELETE, new Action(ACTION_DELETE, context.getString(R.string.delete)));
+        adapter.set(ACTION_DELETE, new Action(ACTION_DELETE, context.getString(R.string.delete)));
 
     }
 

@@ -371,11 +371,6 @@ public class PlexServer {
         MediaContainer ret = null;
         if (mFactory != null) {
 
-            if (key.endsWith("/" + Season.ALL_SEASONS))
-                key = key.substring(0, key.length() - ("/" + Season.ALL_SEASONS).length());
-            else if (key.endsWith("/" + Show.CHILDREN))
-                key = key.substring(0, key.length() - ("/" + Show.CHILDREN).length());
-
             try {
                 ret = mFactory.retrieveMovieMetaData(key, isShow);
             }
@@ -390,6 +385,11 @@ public class PlexServer {
 
         boolean ret = false;
         if (mFactory != null) {
+
+            if (key.endsWith("/" + Season.ALL_SEASONS))
+                key = key.substring(0, key.length() - ("/" + Season.ALL_SEASONS).length());
+            else if (key.endsWith("/" + Show.CHILDREN))
+                key = key.substring(0, key.length() - ("/" + Show.CHILDREN).length());
             try {
                 ret = mFactory.deleteMedia(key);
             }
