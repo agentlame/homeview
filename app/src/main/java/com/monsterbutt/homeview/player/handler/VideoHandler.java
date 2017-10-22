@@ -343,7 +343,7 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
       if (params == null || params.length == 0 || !(params[0] instanceof String))
         return false;
       MediaContainer mc = getServer().getVideoMetadata((String) params[0], false);
-      if (mc != null)
+      if (mc != null && mc.getVideos() != null)
         mVideo = PlexVideoItem.getItem(mc.getVideos().get(0));
       return mVideo != null;
     }
