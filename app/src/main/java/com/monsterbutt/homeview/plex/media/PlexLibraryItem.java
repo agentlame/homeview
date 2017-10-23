@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.google.gson.annotations.SerializedName;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.tasks.DeleteTask;
 import com.monsterbutt.homeview.plex.tasks.SetProgressTask;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CardPresenter;
@@ -47,7 +48,9 @@ public abstract class PlexLibraryItem {
         @SerializedName("2")
         PartialWatched(2),
         @SerializedName("3")
-        WatchedAndPartial(3);
+        WatchedAndPartial(3),
+        @SerializedName("4")
+        Removed(4);
 
         private final int value;
         public int getValue() {
@@ -224,6 +227,7 @@ public abstract class PlexLibraryItem {
         final List<ActionChoice> values = new ArrayList<>();
         values.add(new PlayChoice());
         values.add(new DetailsChoice());
+        values.add(new DeleteChoice(server, obj, callback));
         WatchedState state = getWatchedState();
         if (state != WatchedState.Unwatched)
             values.add(new SetUnwatchedChoice(obj, server, callback));
@@ -275,12 +279,34 @@ public abstract class PlexLibraryItem {
         }
     }
 
+    private class DeleteChoice extends ActionChoice {
+
+        private final PlexServer server;
+        private final CardPresenter.LongClickWatchStatusCallback callback;
+        private final CardObject obj;
+
+        public DeleteChoice(PlexServer server, CardObject obj,
+                            CardPresenter.LongClickWatchStatusCallback callback) {
+            super(R.drawable.ic_delete_white_48dp, R.string.delete);
+            this.server = server;
+            this.callback = callback;
+            this.obj = obj;
+        }
+        @Override
+        public void selected(final Fragment fragment, final Bundle extras, final View transitionView) {
+            DeleteTask.runTask(PlexLibraryItem.this, server, fragment,
+             false, obj, callback);
+        }
+
+    }
+
     private class SetUnwatchedChoice extends ActionChoice {
 
         final CardObject obj;
         final PlexServer server;
         final CardPresenter.LongClickWatchStatusCallback callback;
-        public SetUnwatchedChoice(CardObject obj, PlexServer server, CardPresenter.LongClickWatchStatusCallback callback) {
+        public SetUnwatchedChoice(CardObject obj, PlexServer server,
+                                  CardPresenter.LongClickWatchStatusCallback callback) {
             super(R.drawable.ic_watch_later_white_48dp, R.string.action_choice_setunwatched);
             this.callback = callback;
             this.obj = obj;

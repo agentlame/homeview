@@ -14,7 +14,6 @@ import android.support.annotation.NonNull;
 import android.support.v17.leanback.app.VerticalGridFragment;
 import android.support.v17.leanback.widget.TitleView;
 import android.support.v17.leanback.widget.VerticalGridPresenter;
-import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -94,8 +93,15 @@ public class ContainerGridFragment extends VerticalGridFragment
 
         if (items != null && !items.isEmpty()) {
 
-            for (WatchedStatusHandler.UpdateStatus update : items)
+            List<WatchedStatusHandler.UpdateStatus> toRemove = new ArrayList<>();
+            for (WatchedStatusHandler.UpdateStatus update : items) {
+                if (update.state == PlexLibraryItem.WatchedState.Removed) {
+                    toRemove.add(update);
+                    continue;
+                }
                 mGrid.updateItem(update);
+            }
+            mGrid.removeItems(toRemove);
         }
     }
 

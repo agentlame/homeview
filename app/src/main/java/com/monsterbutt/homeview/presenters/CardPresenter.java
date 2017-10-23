@@ -44,6 +44,7 @@ public class CardPresenter extends Presenter {
 
     public interface LongClickWatchStatusCallback {
         void resetSelected(CardObject card);
+        void removeSelected(CardObject card);
     }
 
     private int mSelectedBackgroundColor = -1;

@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.ListIterator;
 
 public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
                                      UILifecycleManager.LifecycleListener,
@@ -49,15 +49,16 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
         }
     }
 
-    private Map<String, GridItem> map = new HashMap<>();
+    private HashMap<String, GridItem> map = new HashMap<>();
     private ArrayObjectAdapter adapter = null;
 
     private WatchedStatusHandler watchedHandler = null;
 
+    /*
     public static PlexItemGrid getGrid(PlexServer server, CardSelectionHandler listener) {
 
         return new PlexItemGrid(server, false, listener);
-    }
+    }*/
 
     public static PlexItemGrid getWatchedStateGrid(PlexServer server, CardSelectionHandler listener) {
 
@@ -73,7 +74,7 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
             watchedHandler = new WatchedStatusHandler(server, this);
     }
 
-    public boolean addItem(Context context, PlexLibraryItem item) {
+    public void addItem(Context context, PlexLibraryItem item) {
 
         String key = item instanceof Folder ? item.getKey() : Long.toString(item.getRatingKey());
         if (!map.containsKey(key)) {
@@ -81,9 +82,7 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
             boolean isEpisode = item instanceof Episode;
             map.put(key, new GridItem(item, adapter.size(), isEpisode));
             adapter.add(isEpisode ? new SceneCard(context, item) : new PosterCard(context, item));
-            return true;
         }
-        return false;
     }
 
     @Override
@@ -127,12 +126,19 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
     public void updatedItemsCallback(WatchedStatusHandler.UpdateStatusList items) {
 
         List<Integer> indexList = new ArrayList<>();
+        List<Integer> indexListToDelete = new ArrayList<>();
         for(WatchedStatusHandler.UpdateStatus update : items) {
 
             if (!map.containsKey(update.key))
                 continue;
 
             GridItem gridItem = map.get(update.key);
+            if (update.state == PlexLibraryItem.WatchedState.Removed) {
+
+                indexListToDelete.add(gridItem.index);
+                map.remove(update.key);
+                continue;
+            }
             gridItem.item.setStatus(update);
             indexList.add(gridItem.index);
         }
@@ -157,6 +163,13 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
 
             adapter.notifyArrayItemRangeChanged(startIndex, indexCount);
         }
+        if (!indexListToDelete.isEmpty()) {
+            Collections.sort(indexListToDelete);
+            ListIterator iter = indexListToDelete.listIterator(indexListToDelete.size());
+            while(iter.hasPrevious()) {
+                adapter.removeItems((Integer) iter.previous(), 1);
+            }
+        }
     }
 
     public ArrayObjectAdapter getAdapter() { return adapter; }
@@ -169,6 +182,25 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
 
         GridItem item = map.get(key);
         return item != null ? item.index : 0;
+    }
+
+    public void removeItems(List<WatchedStatusHandler.UpdateStatus> toRemove) {
+
+        if (toRemove.isEmpty())
+            return;
+        List<Integer> list = new ArrayList<>();
+        for (WatchedStatusHandler.UpdateStatus update : toRemove) {
+
+            GridItem item = map.get(update.key);
+            if (item != null) {
+                list.add(item.index);
+                map.remove(update.key);
+            }
+        }
+        Collections.sort(list);
+        ListIterator iter = list.listIterator(list.size());
+        while(iter.hasPrevious())
+            adapter.removeItems((Integer) iter.previous(), 1);
     }
 
     public void updateItem(WatchedStatusHandler.UpdateStatus update) {
@@ -184,11 +216,17 @@ public class PlexItemGrid implements WatchedStatusHandler.WatchStatusListener,
     @Override
     public void resetSelected(CardObject card) {
         if (card != null) {
-
             int index = adapter.indexOf(card);
             if (index != -1)
                 adapter.notifyArrayItemRangeChanged(index, 1);
         }
+    }
+
+    @Override
+    public void removeSelected(CardObject card) {
+        if (card != null)
+            adapter.remove(card);
+
     }
 
     public void sort(Context context, ItemSort sortType, boolean ascending) {

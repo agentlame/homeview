@@ -41,7 +41,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
@@ -53,6 +52,7 @@ import com.monsterbutt.homeview.plex.media.Movie;
 import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.plex.media.Show;
 import com.monsterbutt.homeview.plex.media.Stream;
+import com.monsterbutt.homeview.plex.tasks.DeleteTask;
 import com.monsterbutt.homeview.plex.tasks.ToggleWatchedStateTask;
 import com.monsterbutt.homeview.presenters.CardObject;
 import com.monsterbutt.homeview.presenters.CustomListRowPresenter;
@@ -258,8 +258,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
                 selectTracks(Stream.Subtitle_Stream);
                 break;
             case ACTION_DELETE:
-                if (mItem != null)
-                    new DeleteTask(this, mItem.getKey()).execute();
+                DeleteTask.runTask(mItem, mServer, this, true, null, null);
                 break;
         }
     }
@@ -594,31 +593,4 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
         }
     }
 
-    private class DeleteTask extends AsyncTask <Void, Void, Boolean> {
-
-        private final DetailsFragment fragment;
-        private final String key;
-
-        DeleteTask(DetailsFragment fragment, String key) {
-            this.fragment = fragment;
-            this.key = key;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            return mServer.deleteMedia(key);
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-
-            Toast.makeText(fragment.getContext(),
-             success ? R.string.delete_success : R.string.delete_failed,
-             Toast.LENGTH_LONG).show();
-
-            if (!fragment.isDetached() && !fragment.getActivity().isFinishing() &&
-             !fragment.getActivity().isDestroyed())
-            fragment.getActivity().finish();
-        }
-    }
 }

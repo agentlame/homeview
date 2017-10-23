@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import us.nineworlds.plex.rest.model.impl.Directory;
@@ -130,9 +131,11 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
         return list;
     }
 
+    @Override
     public void updatedItemsCallback(WatchedStatusHandler.UpdateStatusList items) {
 
         List<Integer> indexList = new ArrayList<>();
+        List<Integer> indexListToDelete = new ArrayList<>();
         if (items != null) {
             for (WatchedStatusHandler.UpdateStatus update : items) {
 
@@ -144,6 +147,11 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
 
                     Object obj = adapter.get(rowItem.index);
                     if (obj != null && obj instanceof PosterCard && ((PosterCard) obj).getRatingsKey().equals(update.key)) {
+
+                        if (update.state == PlexLibraryItem.WatchedState.Removed) {
+                            indexListToDelete.add(rowItem.index);
+                            continue;
+                        }
                         ((PosterCard) obj).setUpdateStatus(update);
                         rowItem.item.setStatus(update);
                         indexList.add(rowItem.index);
@@ -172,25 +180,37 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
 
             adapter.notifyArrayItemRangeChanged(startIndex, indexCount);
         }
+        if (!indexListToDelete.isEmpty()) {
+            Collections.sort(indexListToDelete);
+            ListIterator iter = indexListToDelete.listIterator(indexListToDelete.size());
+            while(iter.hasPrevious())
+                adapter.removeItems((Integer) iter.previous(), 1);
+        }
     }
 
     @Override
     public void resetSelected(CardObject obj) {
 
         if (obj != null) {
-
             int index = adapter.indexOf(obj);
             if (index != -1)
                 adapter.notifyArrayItemRangeChanged(index, 1);
         }
+        if (mRefreshCallback != null)
+            mRefreshCallback.refresh();
+    }
 
+    @Override
+    public void removeSelected(CardObject obj) {
+        if (obj != null)
+            adapter.remove(obj);
         if (mRefreshCallback != null)
             mRefreshCallback.refresh();
     }
 
     public void update() {
         if (hub != null)
-            new GetHubDataTask(server).execute(hub);
+            new GetHubDataTask(this, server, context).execute(hub);
     }
 
     public void update(List<Directory> directories, List<Video> videos) {
@@ -370,12 +390,14 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
         return ret;
     }
 
-    private class GetHubDataTask extends AsyncTask<HubInfo, Void, MediaContainer> {
+    private static class GetHubDataTask extends AsyncTask<HubInfo, Void, MediaContainer> {
 
         private final PlexServer server;
         private final String maxCount;
+        private final PlexItemRow row;
 
-        GetHubDataTask(PlexServer server) {
+        GetHubDataTask(PlexItemRow row, PlexServer server, Context context) {
+            this.row = row;
             this.server = server;
             this.maxCount = SettingsManager.getInstance(context).getString("preferences_navigation_hubsizelimit");
         }
@@ -404,7 +426,7 @@ public class PlexItemRow extends ListRow implements WatchedStatusHandler.WatchSt
                 directories = item.getDirectories();
                 videos = item.getVideos();
             }
-            update(directories, videos);
+            row.update(directories, videos);
         }
     }
 }

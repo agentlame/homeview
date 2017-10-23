@@ -140,7 +140,7 @@ public class WatchedStatusHandler implements UILifecycleManager.LifecycleListene
                 if (params != null && params.length > 0 && params[0] != null) {
 
                     String keys = "";
-                    Map<String, UpdateStatus> map = new HashMap<>();
+                    HashMap<String, UpdateStatus> map = new HashMap<>();
                     for (UpdateStatus item : params[0]) {
 
                         if (!TextUtils.isEmpty(item.key)) {
@@ -152,9 +152,9 @@ public class WatchedStatusHandler implements UILifecycleManager.LifecycleListene
                     }
                     MediaContainer mc = mServer.getRelatedForKey("/library/metadata/" + keys);
 
+                    UpdateStatusList list = new UpdateStatusList();
                     if (mc != null) {
 
-                        UpdateStatusList list = new UpdateStatusList();
 
                         if (mc.getVideos() != null && !mc.getVideos().isEmpty()) {
                             for (Video vid : mc.getVideos()) {
@@ -162,8 +162,11 @@ public class WatchedStatusHandler implements UILifecycleManager.LifecycleListene
                                 UpdateStatus update = new UpdateStatus(Long.toString(vid.getRatingKey()),
                                         vid.getViewOffset(),
                                         PlexVideoItem.getWatchedState(vid));
-                                if (map.containsKey(update.key) && !update.equals(map.get(update.key)))
-                                    list.add(update);
+                                if (map.containsKey(update.key)) {
+                                    if(!update.equals(map.get(update.key)))
+                                        list.add(update);
+                                    map.remove(update.key);
+                                }
                             }
                         }
                         if (mc.getDirectories() != null && !mc.getDirectories().isEmpty()) {
@@ -172,12 +175,20 @@ public class WatchedStatusHandler implements UILifecycleManager.LifecycleListene
                                 UpdateStatus update = new UpdateStatus(Long.toString(dir.getRatingKey()),
                                         Long.valueOf(dir.getViewedLeafCount()),
                                         PlexContainerItem.getWatchedState(dir));
-                                if (map.containsKey(update.key) && !update.equals(map.get(update.key)))
-                                    list.add(update);
+                                if (map.containsKey(update.key)) {
+                                    if(!update.equals(map.get(update.key)))
+                                        list.add(update);
+                                    map.remove(update.key);
+                                }
                             }
                         }
-                        return list;
                     }
+
+                    for(UpdateStatus item : map.values()) {
+                        list.add(new UpdateStatus(item.key, 0, PlexLibraryItem.WatchedState.Removed));
+                    }
+
+                    return list;
                 }
                 return null;
             }

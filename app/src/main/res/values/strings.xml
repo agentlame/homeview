@@ -308,6 +308,10 @@
     <string name="channel_description">Latest happenings in HomeView</string>
 
     <string name="delete">Delete</string>
+    <string name="delete_dialog_title">Delete?</string>
+    <string name="delete_dialog_message">Do you want the server to delete this?</string>
+    <string name="delete_dialog_yes">Yes</string>
+    <string name="delete_dialog_no">No</string>
     <string name="delete_success">Delete succeeded</string>
     <string name="delete_failed">An error occurred</string>
 
