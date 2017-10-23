@@ -74,6 +74,8 @@ public class MediaCardBackgroundHandler implements UILifecycleManager.LifecycleL
             mBackgroundURL = uri;
             Log.d(Tag, "Loading background : " + uri);
             mWaitingBackgroundURL = "";
+            if (mMetrics.widthPixels == 0 || mMetrics.heightPixels == 0)
+                return;
             SimpleTarget<GlideDrawable> target = new SimpleTarget<GlideDrawable>(mMetrics.widthPixels, mMetrics.heightPixels) {
                 @Override
                 public void onResourceReady(GlideDrawable resource,

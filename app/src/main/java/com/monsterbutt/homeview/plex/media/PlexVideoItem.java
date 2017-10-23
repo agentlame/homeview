@@ -425,8 +425,11 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         row.add(VideoContract.VideoEntry.COLUMN_VIDEO_WIDTH, media.getWidth());
         row.add(VideoContract.VideoEntry.COLUMN_VIDEO_URL, getKey());
         row.add(VideoContract.VideoEntry.COLUMN_IS_LIVE, "false");
-        String audio;
-        switch (media.getAudioChannels()) {
+        String audio = "";
+        String channels = media.getAudioChannels();
+        if (TextUtils.isEmpty(channels))
+            channels = "0";
+        switch (channels) {
             case "6":
                 audio = "5.1";
                 break;
@@ -438,6 +441,8 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
                 break;
             case "3":
                 audio = "2.1";
+                break;
+            case "0":
                 break;
             default:
                 audio = Integer.valueOf(media.getAudioChannels()) + ".0";
