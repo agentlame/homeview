@@ -12,6 +12,8 @@ import com.monsterbutt.homeview.provider.MediaContentProvider;
 import com.monsterbutt.homeview.ui.android.HomeViewActivity;
 import com.monsterbutt.homeview.ui.fragment.SearchFragment;
 
+import static android.support.v4.content.IntentCompat.EXTRA_START_PLAYBACK;
+
 
 public class SearchActivity extends HomeViewActivity {
 
@@ -29,9 +31,10 @@ public class SearchActivity extends HomeViewActivity {
         Uri data = intent != null ? intent.getData() : null;
         if (data != null) {
 
+            boolean startPlayback = getIntent().getBooleanExtra(EXTRA_START_PLAYBACK, true);
             String key = intent.getStringExtra(SearchManager.EXTRA_DATA_KEY);
             String path = data.getLastPathSegment();
-            if (path.equals(MediaContentProvider.ID_PLAYBACK)) {
+            if (startPlayback || path.equals(MediaContentProvider.ID_PLAYBACK)) {
 
                 Intent suggestion = new Intent(getApplicationContext(), PlaybackActivity.class);
                 suggestion.setAction(PlaybackActivity.ACTION_VIEW);
@@ -43,7 +46,7 @@ public class SearchActivity extends HomeViewActivity {
                 finish();
                 return;
             }
-            else if (path.equals(MediaContentProvider.ID_DETAIL)) {
+            else {
 
                 Intent suggestion = new Intent(getApplicationContext(), DetailsActivity.class);
                 suggestion.putExtra(DetailsActivity.KEY, key);
