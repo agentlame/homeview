@@ -13,7 +13,9 @@ import android.support.v17.leanback.app.VideoFragmentGlueHost;
 import android.support.v4.app.FragmentActivity;
 import android.transition.TransitionInflater;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.TextClock;
 
@@ -197,6 +199,42 @@ public class PlaybackFragment extends VideoFragment implements VideoChangedNotif
     View view = getActivity().findViewById(R.id.error_fragment);
     view.setVisibility(View.VISIBLE);
     getFragmentManager().beginTransaction().add(R.id.error_fragment, fragment, "Error").commit();
+  }
+
+  private static final float MAX_ASPECT_RATIO_DEFORMATION_FRACTION = 0.01f;
+  @Override
+  protected void onVideoSizeChanged(int videoWidth, int videoHeight) {
+
+    if (getView() == null)
+      return;
+    int screenWidth = getView().getWidth();
+    int screenHeight = getView().getHeight();
+
+    SurfaceView surface = getSurfaceView();
+    ViewGroup.LayoutParams p = surface.getLayoutParams();
+
+    p.width = screenWidth;
+    p.height = screenHeight;
+    if (videoWidth > 0 && videoHeight > 0) {
+      float videoAspectRatio = (float) videoWidth / videoHeight;
+      float viewAspectRatio = (float) screenWidth / screenHeight;
+      float aspectDeformation = videoAspectRatio / viewAspectRatio - 1;
+      if (Math.abs(aspectDeformation) > MAX_ASPECT_RATIO_DEFORMATION_FRACTION) {
+        if (aspectDeformation > 0) {
+          if (screenWidth != videoWidth) {
+            float ratio =  screenWidth / videoWidth;
+            p.height = (int) (screenHeight * ratio);
+          }
+        }
+        else {
+          if (screenHeight != videoHeight) {
+            float ratio = screenHeight / videoHeight;
+            p.width = (int) (screenWidth * ratio);
+          }
+        }
+      }
+    }
+    surface.setLayoutParams(p);
   }
 
 }
