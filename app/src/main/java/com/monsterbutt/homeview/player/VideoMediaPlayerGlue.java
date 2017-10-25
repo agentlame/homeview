@@ -259,6 +259,7 @@ public class VideoMediaPlayerGlue<T extends PlayerAdapter> extends PlaybackTrans
 
   public void release() {
     mPlayStatusHandler.release();
+    mScreenLock.release();
   }
 
 }
