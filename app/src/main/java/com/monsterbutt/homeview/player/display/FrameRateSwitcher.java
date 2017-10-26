@@ -23,12 +23,13 @@ public class FrameRateSwitcher {
         return (requestedMode != null && currentMode != null && currentMode.getModeId() == requestedMode.getModeId());
     }*/
 
-    public static boolean setDisplayRefreshRate(Activity activity, String refreshRateFormat, boolean force,
+    public static boolean setDisplayRefreshRate(Activity activity, String refreshRateFormat,
+                                                String refreshRateNumber, boolean force,
                                                 FrameRateSwitchNotifier notifier) {
 
-        if (!TextUtils.isEmpty(refreshRateFormat)) {
+        if (!TextUtils.isEmpty(refreshRateFormat) || !TextUtils.isEmpty(refreshRateNumber)) {
             Display.Mode currentMode = RefreshRateChooser.getCurrentMode(activity);
-            Display.Mode newMode = RefreshRateChooser.getBestFitMode(activity, refreshRateFormat);
+            Display.Mode newMode = RefreshRateChooser.getBestFitMode(activity, refreshRateFormat, refreshRateNumber);
             if (currentMode != null) {
                 if (force || newMode != null && currentMode.getRefreshRate() != newMode.getRefreshRate())
                     return changeMode(activity, newMode, notifier);

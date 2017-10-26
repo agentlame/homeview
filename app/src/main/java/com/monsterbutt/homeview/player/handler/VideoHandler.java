@@ -46,6 +46,7 @@ import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
 
 import java.util.Locale;
 
+import us.nineworlds.plex.rest.model.impl.Media;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 import static com.monsterbutt.homeview.plex.media.PlexVideoItem.BAD_CHAPTER_START;
@@ -241,7 +242,7 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
     if (task instanceof GetVideoTask) {
       GetVideoTask videoTask = (GetVideoTask) task;
       PlexVideoItem item = videoTask.getVideo();
-      if (item.selectedHasMissingData()) {
+      if (item != null && item.selectedHasMissingData()) {
         new GetFullInfo(this, mServer, videoTask.getChosenTracks()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, item.getKey());
         return;
       }
@@ -352,12 +353,25 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
   public boolean setRefreshRateToCurrentVideo(Activity activity, boolean force) {
     PlexVideoItem video = getCurrentVideo();
     if (!SettingsManager.getInstance(activity).getBoolean("preferences_device_refreshrate") ||
-     video == null || !video.hasSourceStats())
+     video == null || !video.hasSourceStats() || video.getMedia() == null)
+      return false;
+    Media media = video.getMedia().get(0);
+    if (media == null || media.getVideoPart() == null || media.getVideoPart().get(0) == null ||
+     media.getVideoPart().get(0).getStreams() == null)
+      return false;
+    us.nineworlds.plex.rest.model.impl.Stream videoStream = null;
+    for (us.nineworlds.plex.rest.model.impl.Stream stream :  media.getVideoPart().get(0).getStreams()) {
+      if (stream.getStreamType() == Stream.Video_Stream) {
+        videoStream = stream;
+        break;
+      }
+    }
+    if (videoStream == null)
       return false;
     FrameRateSwitchNotifier notifier = new FrameRateSwitchNotifier();
     notifier.register(this);
     return FrameRateSwitcher.setDisplayRefreshRate(activity,
-     video.getMedia().get(0).getVideoFrameRate(), force, notifier);
+     video.getMedia().get(0).getVideoFrameRate(), videoStream.getFrameRate(), force, notifier);
   }
 
   private class VideoHolder {

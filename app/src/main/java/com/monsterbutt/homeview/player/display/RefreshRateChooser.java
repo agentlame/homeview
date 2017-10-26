@@ -15,12 +15,13 @@ class RefreshRateChooser {
 
   private static final float UNKNOWN = (float)0.0;
   private static final float FILM = (float)23.976;
-  private static final float PAL_FILM = (float)25.0;
-  private static final float NTSC_INTERLACED = (float)29.97;
-  private static final float DIGITAL_30 = (float)30.0;
-  private static final float PAL = (float)50.0;
-  private static final float NTSC = (float)59.94;
-  private static final float DIGITAL_60 = (float) 60.0;
+  private static final float DIGITAL_FILM = (float) 24.000;
+  private static final float PAL_FILM = (float)25.000;
+  private static final float NTSC_INTERLACED = (float)29.970;
+  private static final float DIGITAL_30 = (float)30.000;
+  private static final float PAL = (float)50.000;
+  private static final float NTSC = (float)59.940;
+  private static final float DIGITAL_60 = (float) 60.000;
 
   private static final int NO_MATCH = -1;
 
@@ -77,30 +78,32 @@ class RefreshRateChooser {
     }
     else if (NO_MATCH != matchA)
       return matchA;
-    return -1;
+    return NO_MATCH;
   }
 
 
-  private static float convertFrameRate(String frameRate) {
+  private static float convertFrameRate(String frameRateFormat, String desiredFrameRateNumber) {
 
-    float ret = UNKNOWN;
-    if (TextUtils.isEmpty(frameRate))
-      return UNKNOWN;
-    if (frameRate.equals("PAL") || frameRate.startsWith("50"))
-      ret = PAL;
-    else if (frameRate.equals("24p") || frameRate.startsWith("23"))
-      ret = FILM;
-    else if (frameRate.equals("NTSC") || frameRate.startsWith("59"))
-      ret = NTSC;
-    else if (frameRate.startsWith("25"))
-      ret = PAL_FILM;
-    else if (frameRate.startsWith("29"))
-      ret = NTSC_INTERLACED;
-    else if (frameRate.startsWith("30"))
-      ret = DIGITAL_30;
-    else if (frameRate.startsWith("60"))
-      ret = DIGITAL_60;
-    return ret;
+    if (desiredFrameRateNumber.startsWith("50") ||
+     frameRateFormat.equals("PAL") || frameRateFormat.startsWith("50"))
+      return PAL;
+    else if (desiredFrameRateNumber.startsWith("23") ||
+     frameRateFormat.startsWith("23") || frameRateFormat.equals("24p"))
+      return FILM;
+    else if (desiredFrameRateNumber.startsWith("24"))
+      return DIGITAL_FILM;
+    else if (desiredFrameRateNumber.startsWith("29") || frameRateFormat.startsWith("29"))
+      return NTSC_INTERLACED;
+    else if (desiredFrameRateNumber.startsWith("59") ||
+     frameRateFormat.equals("NTSC") || frameRateFormat.startsWith("59"))
+      return NTSC;
+    else if (desiredFrameRateNumber.startsWith("25") || frameRateFormat.startsWith("25"))
+      return PAL_FILM;
+    else if (desiredFrameRateNumber.startsWith("30") || frameRateFormat.startsWith("30"))
+      return DIGITAL_30;
+    else if (desiredFrameRateNumber.startsWith("60") || frameRateFormat.startsWith("60"))
+      return DIGITAL_60;
+    return UNKNOWN;
   }
 
   private static double getFrameDiff(double a, double b) {
@@ -127,16 +130,17 @@ class RefreshRateChooser {
      manager.getDefaultDisplay().getMode() : null;
   }
 
-  static Display.Mode getBestFitMode(Context context, String desiredFrameRate) {
+  static Display.Mode getBestFitMode(Context context, String desiredFrameRateFormat,
+                                     String desiredFrameRateNumber) {
 
-    double desired = convertFrameRate(desiredFrameRate);
+    double desired = convertFrameRate(desiredFrameRateFormat, desiredFrameRateNumber);
     Display.Mode[] possible = getModes(context);
     if (possible == null || possible.length == 0) {
       Log.e(Tag, "Cannot find best fit because no modes");
       return null;
     }
 
-    int ret = -1;
+    int ret = NO_MATCH;
     if (desired == DIGITAL_60)
       ret = findBestForTwoPossibleFrames(possible, DIGITAL_60, NTSC);
     else if (desired == NTSC)
@@ -145,19 +149,21 @@ class RefreshRateChooser {
       ret = findBestForTwoPossibleFrames(possible, PAL, UNKNOWN);
     else if (desired == DIGITAL_30) {
       ret = findBestForTwoPossibleFrames(possible, DIGITAL_30, DIGITAL_60);
-      if (ret == -1)
-        ret =findBestForTwoPossibleFrames(possible, NTSC_INTERLACED, NTSC);
+      if (ret == NO_MATCH)
+        ret = findBestForTwoPossibleFrames(possible, NTSC_INTERLACED, NTSC);
     }
     else if (desired == NTSC_INTERLACED) {
       ret = findBestForTwoPossibleFrames(possible, NTSC_INTERLACED, NTSC);
-      if (ret == -1)
+      if (ret == NO_MATCH)
         ret = findBestForTwoPossibleFrames(possible, DIGITAL_30, DIGITAL_60);
     }
     else if (desired == PAL_FILM)
       ret = findBestForTwoPossibleFrames(possible, PAL_FILM, PAL);
     else if (desired == FILM)
-      ret = findBestForTwoPossibleFrames(possible, FILM, UNKNOWN);
+      ret = findBestForTwoPossibleFrames(possible, FILM, DIGITAL_FILM);
+    else if (desired == DIGITAL_FILM)
+      ret = findBestForTwoPossibleFrames(possible, DIGITAL_FILM, FILM);
 
-    return ret != -1 ? possible[ret] : null;
+    return ret != NO_MATCH ? possible[ret] : null;
   }
 }
