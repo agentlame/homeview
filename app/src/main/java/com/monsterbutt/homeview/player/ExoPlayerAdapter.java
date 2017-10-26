@@ -222,7 +222,7 @@ public class ExoPlayerAdapter extends PlayerAdapter implements Player.EventListe
 
   @Override
   public void seekTo(long newPosition) {
-    if (!mInitialized) {
+    if (!mInitialized || !mPlayer.isCurrentWindowSeekable()) {
       return;
     }
     mPlayer.seekTo(newPosition);
