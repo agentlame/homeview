@@ -16,20 +16,33 @@ public class ScreenLock {
     this.activity = activity;
   }
 
-  public synchronized void obtain() {
-    if (!holdWake) {
-      activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-      holdWake = true;
-      Log.d(Tag, "Stay Awake");
-    }
+  public void obtain() {
+      activity.runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          synchronized (this) {
+            if (!holdWake) {
+              activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+              holdWake = true;
+              Log.d(Tag, "Stay Awake");
+            }
+          }
+        }
+      });
   }
 
   public synchronized void release() {
-    if (holdWake){
-
-      activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-      holdWake = false;
-      Log.d(Tag, "Clear Awake");
-    }
+    activity.runOnUiThread(new Runnable() {
+      @Override
+      public void run() {
+        synchronized (this) {
+          if (holdWake){
+            activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            holdWake = false;
+            Log.d(Tag, "Clear Awake");
+          }
+        }
+      }
+    });
   }
 }

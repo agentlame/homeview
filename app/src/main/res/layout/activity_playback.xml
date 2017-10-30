@@ -39,17 +39,25 @@
         tools:visibility="visible"
         android:visibility="invisible"/>
 
-    <TextClock
-        android:id="@+id/clock"
-        tools:text="23:50"
-        android:layoutDirection="ltr"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:paddingEnd="?attr/browsePaddingEnd"
-        android:paddingStart="0dp"
-        android:paddingTop="?attr/browsePaddingTop"
-        android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionTitle" />
+        android:orientation="vertical"
+        android:background="@drawable/playback_background_high_to_low">
+
+        <TextClock
+            android:id="@+id/clock"
+            tools:text="23:50"
+            android:layoutDirection="ltr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:paddingEnd="?attr/browsePaddingEnd"
+            android:paddingStart="0dp"
+            android:paddingTop="?attr/browsePaddingTop"
+            android:textAppearance="@style/TextAppearance.Leanback.DetailsDescriptionTitle" />
+
+    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/error_fragment"

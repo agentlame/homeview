@@ -149,7 +149,7 @@
     <string name="preferences_nextup_movies">Next movie threshold</string>
     <string name="preferences_nextup_movies_summary">At how many seconds before the end of the current movie do you wish to see the next movie to be played</string>
     <string name="preferences_nextup_movies_dialog">When to advertise the next movie?</string>
-    <string name="preferences_nextup_movies_default">300</string>
+    <string name="preferences_nextup_movies_default">240</string>
 
     <string name="preferences_navigation_hubsizelimit">Main Row Max Size</string>
     <string name="preferences_navigation_hubsizelimit_summary">How many items do you want to limit rows to</string>

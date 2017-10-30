@@ -84,7 +84,7 @@ public class PlaybackFragment extends VideoFragment implements VideoChangedNotif
       Log.w(TAG, "video player cannot obtain audio focus!");
     }
     //PlaybackSeekDiskDataProvider.setDemoSeekProvider(mMediaPlayerGlue);
-    setBackgroundType(BG_LIGHT);
+    setBackgroundType(BG_NONE);
     setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
     setControlsOverlayAutoHideEnabled(true);
     setFadeCompleteListener(new OnFadeCompleteListener() {
