@@ -40,13 +40,13 @@
         android:visibility="invisible"/>
 
     <LinearLayout
+        android:id="@+id/top_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="@drawable/playback_background_high_to_low">
 
         <TextClock
-            android:id="@+id/clock"
             tools:text="23:50"
             android:layoutDirection="ltr"
             android:layout_width="wrap_content"

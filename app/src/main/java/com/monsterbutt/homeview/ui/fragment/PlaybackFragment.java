@@ -17,7 +17,6 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.widget.TextClock;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ui.SubtitleView;
@@ -43,7 +42,7 @@ public class PlaybackFragment extends VideoFragment implements VideoChangedNotif
   private VideoMediaPlayerGlue<ExoPlayerAdapter> mMediaPlayerGlue;
   private final VideoFragmentGlueHost mHost = new VideoFragmentGlueHost(this);
 
-  private TextClock mClock;
+  private View mTopBar;
   private boolean initialized = false;
 
   AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener
@@ -68,7 +67,7 @@ public class PlaybackFragment extends VideoFragment implements VideoChangedNotif
     VideoChangedNotifier videoChangedNotifier = new VideoChangedNotifier();
     videoChangedNotifier.register(this);
     FragmentActivity activity = (FragmentActivity) getActivity();
-    mClock = activity.findViewById(R.id.clock);
+    mTopBar = activity.findViewById(R.id.top_bar);
     mMediaPlayerGlue = new VideoMediaPlayerGlue<>(this,
      PlexServerManager.getInstance(getContext(), (FragmentActivity) getActivity()).getSelectedServer(),
      new ScreenLock(activity),
@@ -95,16 +94,16 @@ public class PlaybackFragment extends VideoFragment implements VideoChangedNotif
           setControlsOverlayAutoHideEnabled(false);
         setControlsOverlayAutoHideEnabled(true);
 
-        mClock.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_in));
-        mClock.setVisibility(View.VISIBLE);
+        mTopBar.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_in));
+        mTopBar.setVisibility(View.VISIBLE);
         visibleNotifier.visibleGUI(true);
       }
 
       @Override
       public void onFadeOutComplete() {
 
-        mClock.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_out));
-        mClock.setVisibility(View.GONE);
+        mTopBar.startAnimation(AnimationUtils.loadAnimation(getActivity(), R.anim.fade_out));
+        mTopBar.setVisibility(View.GONE);
         visibleNotifier.visibleGUI(false);
       }
     });
