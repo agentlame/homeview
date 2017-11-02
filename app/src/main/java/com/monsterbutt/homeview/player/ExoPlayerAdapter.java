@@ -372,6 +372,11 @@ public class ExoPlayerAdapter extends PlayerAdapter implements Player.EventListe
   }
 
   @Override
+  public void onSeekProcessed() {
+
+  }
+
+  @Override
   public void onLoadingChanged(boolean isLoading) {
   }
 
