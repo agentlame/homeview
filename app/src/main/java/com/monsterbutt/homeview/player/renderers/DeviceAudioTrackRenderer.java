@@ -3,6 +3,7 @@ package com.monsterbutt.homeview.player.renderers;
 import android.media.AudioFormat;
 import android.os.Handler;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.audio.AudioCapabilities;
@@ -11,6 +12,7 @@ import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.mediacodec.MediaCodecSelector;
+import com.google.android.exoplayer2.mediacodec.MediaCodecUtil;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.monsterbutt.homeview.player.track.MediaCodecCapabilities;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
@@ -41,6 +43,26 @@ public class DeviceAudioTrackRenderer extends MediaCodecAudioRenderer {
     @Override
     protected boolean allowPassthrough(String mimeType) {
         return usePassthroughAudio && super.allowPassthrough(mimeType);
+    }
+
+
+    @Override
+    protected int supportsFormat(MediaCodecSelector mediaCodecSelector,
+                                 DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, Format format)
+     throws MediaCodecUtil.DecoderQueryException {
+        switch (format.pcmEncoding) {
+
+            case C.ENCODING_PCM_24BIT:
+            case C.ENCODING_PCM_32BIT:
+            case C.ENCODING_PCM_FLOAT:
+                return FORMAT_UNSUPPORTED_SUBTYPE;
+            default:
+            case C.ENCODING_INVALID:
+            case C.ENCODING_PCM_16BIT:
+            case C.ENCODING_PCM_8BIT:
+            case Format.NO_VALUE:
+                return super.supportsFormat(mediaCodecSelector, drmSessionManager, format);
+        }
     }
 
     @Override

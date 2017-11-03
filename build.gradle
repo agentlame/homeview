@@ -84,19 +84,6 @@ def buildExoPlayerJNI(archs) {
     }
 }
 
-def copyFFmpegLib(archAbbrev, arch) {
-
-    copy {
-        from "FFmpeg_Android/android/${archAbbrev}/lib/"
-        into "app/src/main/libs/${arch}"
-        include '*.a'
-        exclude { details ->
-            details.file.name.endsWith('.a') &&
-                    details.file.text.contains('pkgconfig')
-        }
-    }
-}
-
 def copyFFmpegArchToExoPlayer(archAbbrev, arch) {
 
     copyFFmpegHeadersExoPlayer(archAbbrev)
