@@ -29,7 +29,7 @@ public class ErrorFragment extends android.support.v17.leanback.app.ErrorFragmen
       @Override
       public void onClick(View arg0) {
         getFragmentManager().beginTransaction().remove(ErrorFragment.this).commit();
-        getActivity().finish();
+        //getActivity().finish();
       }
     });
   }
