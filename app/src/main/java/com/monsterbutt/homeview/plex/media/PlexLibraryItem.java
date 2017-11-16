@@ -209,7 +209,7 @@ public abstract class PlexLibraryItem {
 
     private class PlayChoice extends ActionChoice {
 
-        PlayChoice() { super(R.drawable.ic_play_circle_outline_white_48dp, R.string.action_choice_play); }
+        PlayChoice() { super(R.drawable.ic_play_circle_filled_white_48dp, R.string.action_choice_play); }
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
             PlexLibraryItem.this.onPlayPressed(fragment, extras, transitionView);
@@ -253,7 +253,7 @@ public abstract class PlexLibraryItem {
         final CardPresenter.LongClickWatchStatusCallback callback;
         SetUnwatchedChoice(CardObject obj, PlexServer server,
                                   CardPresenter.LongClickWatchStatusCallback callback) {
-            super(R.drawable.ic_watch_later_white_48dp, R.string.action_choice_setunwatched);
+            super(R.drawable.ic_bookmark_white_48dp, R.string.action_choice_setunwatched);
             this.callback = callback;
             this.obj = obj;
             this.server = server;

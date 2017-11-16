@@ -107,9 +107,10 @@ public class DetailsOverviewRow extends android.support.v17.leanback.widget.Deta
     boolean isWatched = item.getWatchedState() == PlexLibraryItem.WatchedState.Watched;
     adapter.set(ACTION_PLAY,
      new Action(ACTION_PLAY, context.getString(R.string.action_play), "",
-      context.getDrawable(R.drawable.lb_ic_play)));
+      context.getDrawable(R.drawable.ic_play_circle_filled_white_24dp)));
 
-    int drawableId = isWatched ? R.drawable.ic_visibility_white_24dp : R.drawable.ic_visibility_off_white_24dp;
+    int drawableId = isWatched ? R.drawable.ic_visibility_white_24dp :
+     R.drawable.ic_bookmark_white_24dp;
     adapter.set(ACTION_VIEWSTATUS,
      new Action(ACTION_VIEWSTATUS, context.getString(R.string.action_watched), "",
       context.getDrawable(drawableId)));
