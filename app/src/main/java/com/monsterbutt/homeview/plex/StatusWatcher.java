@@ -161,7 +161,7 @@ public class StatusWatcher {
           media.changeStatus(status);
       }
 
-      if (parent != null) {
+      if (parent != null && parent.media != null) {
         final int newParentLeafTotal = status == C.StatusChanged.SetDeleted ?
          parent.media.getTotalLeaves() - priorLeafTotal : parent.media.getTotalLeaves();
         final int newParentLeafUnwatched = parent.media.getUnwatchedLeaves() +
