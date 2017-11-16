@@ -34,7 +34,7 @@ public class GetVideoTask extends PlexServerTask {
         String metadataKey = (String) params[0];
         if (!metadataKey.isEmpty() && server != null) {
 
-            MediaContainer mc = server.getVideoMetadata(metadataKey, false);
+            MediaContainer mc = server.getVideoMetadata(metadataKey);
             if (mc != null && mc.getVideos() != null)
                 mVideo = PlexVideoItem.getItem(mc.getVideos().get(0));
         }

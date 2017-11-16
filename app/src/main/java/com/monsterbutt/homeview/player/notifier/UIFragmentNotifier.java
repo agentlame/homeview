@@ -1,7 +1,7 @@
 package com.monsterbutt.homeview.player.notifier;
 
 
-import com.monsterbutt.homeview.ui.android.SelectView;
+import com.monsterbutt.homeview.ui.playback.views.SelectView;
 
 public class UIFragmentNotifier {
 
@@ -16,5 +16,7 @@ public class UIFragmentNotifier {
 
   public void setView(SelectView view) { mObserver.setView(view); }
 
-  public boolean releaseSelectView(Class<?> viewClass) { return mObserver.releaseSelectView(viewClass);}
+  public void releaseSelectView(Class<?> viewClass) {
+    mObserver.releaseSelectView(viewClass);
+  }
 }

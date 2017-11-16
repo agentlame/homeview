@@ -1,36 +1,10 @@
 <resources  xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">HomeView</string>
-    <string name="browse_title"><![CDATA[Videos by Your Company]]></string>
-    <string name="related_movies">Related Videos</string>
-    <string name="vertical_grid_title"><![CDATA[Vertical Video Grid]]></string>
     <string name="error">Error</string>
-    <string name="ok">OK</string>
-    <string name="pause">Pause</string>
-    <string name="play">Play</string>
-    <string name="stop">Stop</string>
-    <string name="init_text">00:00</string>
-    <string name="play_pause_description">Play Pause Button</string>
-    <string name="loading">Loading&#8230;</string>
-    <string name="no_video_found">No video was found</string>
-    <string name="about_app">About DemoCast Player</string>
-    <string name="version">Version: %1$s</string>
-    <string name="popular_header">Popular Videos</string>
-    <string name="preferences">PREFERENCES</string>
-    <string name="grid_view">Grid View</string>
-    <string name="error_fragment">Error Fragment</string>
-    <string name="should_start">shouldStart</string>
-    <string name="start_position">startPosition</string>
 
     <!-- Error messages -->
-    <string name="video_error_media_load_timeout">Media loading timed out</string>
-    <string name="video_error_server_inaccessible">Media server was not reachable</string>
-    <string name="video_error_load_error">Failed to load video</string>
-    <string name="video_error_unknown_error">Playback Error</string>
-    <string name="error_fragment_message">An error occurred</string>
     <string name="dismiss_error">Dismiss</string>
-    <string name="oops">Oops</string>
 
-    <string name="unknown">Unknown</string>
     <string name="Season">"Season"</string>
     <string name="Episode">"Episode"</string>
     <string name="episodes">"episodes"</string>
@@ -53,9 +27,6 @@
     <string name="manual_server_choice">Manual Input</string>
     <string name="cancel_server_choice">Cancel</string>
     <string name="cancel_server_desc"></string>
-    <string name="back_server_choice">Back</string>
-    <string name="back_server_desc"></string>
-    <string name="invalid_server">Could not verify server choice</string>
 
     <string name="settings">Settings</string>
     <string name="settings_server">Server</string>
@@ -73,19 +44,13 @@
     <string name="gridview_poster_columns">6</string>
     <string name="gridview_scene_columns">4</string>
 
-    <string name="detailview_header_video">Chapters</string>
     <string name="detailview_header_show">Seasons</string>
     <string name="detailview_header_season">Episodes</string>
-    <string name="detailview_column_count_show">6</string>
-    <string name="detailview_column_count_season">4</string>
-    <string name="detailview_column_count_chapter">4</string>
 
     <string name="extras_row_header">Extras</string>
 
     <string name="action_play">Play</string>
-    <string name="action_mark">Mark as</string>
-    <string name="action_watched">Unwatched</string>
-    <string name="action_unwatched">Watched</string>
+    <string name="action_watched">Watched</string>
 
     <string name="recommendations_max">8</string>
     <string name="recommendations_priority_base">50</string>
@@ -97,8 +62,6 @@
     <string name="search_label">HomeView</string>
     <string name="search_hint">Search for media</string>
     <string name="settings_description">HomeView media</string>
-    <string name="search_hint_shows">Search for shows</string>
-    <string name="settings_description_shows">HomeView Shows</string>
 
 
     <string name="preferences_settings">Settings</string>
@@ -164,9 +127,6 @@
     <string name="preferences_checked_true">On</string>
     <string name="preferences_checked_false">Off</string>
 
-    <string name="queue_name">Playlist</string>
-
-    <string name="start_filter">All</string>
     <string name="chapter">Chapter</string>
     <string name="chapters">Chapters</string>
     <string name="time_divider">:</string>
@@ -175,10 +135,7 @@
     <string name="Disable">Disable</string>
     <string name="skip_forward_seconds">20</string>
     <string name="skip_back_seconds">10</string>
-    <string name="jump_forward_seconds">300</string>
-    <string name="jump_backward_seconds">300</string>
 
-    <string name="nextup_poster">NextUp Poster</string>
     <string name="nextup_comingup">Playing in&#160;</string>
     <string name="nextup_comingup_seconds">&#160;seconds</string>>
     <string name="codeccard_image_desc"></string>
@@ -187,16 +144,10 @@
     <string name="section_toolbar_filter">Filter</string>
     <string name="section_toolbar_sort">Sort</string>
 
-    <string name="container_filter_selection_title">Filters</string>
-    <string name="container_filter_selection_summary">Please choose a filter</string>
-    <string name="container_sort_selection_title">Sort Order</string>
-    <string name="container_sort_selection_summary">Choose a sort.  Reselecting the current choice toggles ascending/descending.</string>
-
     <string name="playback_start_dialog">Resume playback?</string>
     <string name="playback_start_dialog_begin">From the beginning</string>
     <string name="playback_start_dialog_resume">From previous viewed</string>
 
-    <string name="track_dialog">Select a track for playback</string>
     <string name="action_dialog">Available actions</string>
 
     <string name="about_title">About - Licenses"</string>
@@ -206,7 +157,6 @@
     <string name="software">Software</string>
     <string name="passthrough">Passthrough</string>
     <string name="unsupported">Unsupported</string>
-    <string name="subs_off">Off</string>
 
     <string name="january">January</string>
     <string name="february">February</string>
@@ -227,12 +177,7 @@
     <string name="sort_Rating">Rating</string>
     <string name="sort_ReleaseDate">Release Date</string>
     <string name="sort_Title">Title</string>
-    <string name="ascending">Ascending</string>
-    <string name="descending">Descending</string>
 
-    <string name="refresh_switch_fail">Refresh rate switch timed out.</string>
-
-    <string name="deviceDetailsNotYetAvailable">Device not ready</string>
     <string name="mediaservertitle">Media Servers</string>
     <string name="preferences_server_upnp">DLNA Servers</string>
     <string name="upnpbaddevice">There was a problem with the selected UPnP device\'s configuration</string>
@@ -243,9 +188,6 @@
     <string name="preferences_channels_movies">Recently Added Movies Channel</string>
     <string name="preferences_channels_shows">Recently Added Shows Channel</string>
 
-    <string name="channel_added">Channel Added</string>
-    <string name="channel_existed">Channel Existed Already</string>
-
     <string name="channel_recommended">Recomended</string>
     <string name="channel_recommended_description">Shows or movies recently added to your library or currently in progress</string>
     <string name="channel_shows">Recently Added Shows</string>
@@ -253,9 +195,7 @@
     <string name="channel_movies">Recently Added Movies</string>
     <string name="channel_movies_description">Movies recently added to your library</string>
 
-
-    <string name="pip">PIP</string>
-    <string name="jump">Jump</string>
+    <string name="library">Library</string>
 
     <string name="action_choice_play">Play</string>
     <string name="action_choice_details">Details</string>
@@ -274,35 +214,17 @@
     <string name="plex_login_nonempty">Please fill out login and password fields</string>
     <string name="plex_login_failed">Failed to get token for server</string>
 
-    <string name="video">Video</string>
     <string name="audio">Audio</string>
-    <string name="text">Text</string>
-    <string name="retry">Retry</string>
     <string name="selection_disabled">Disabled</string>
-    <string name="selection_default">Default</string>
-    <string name="selection_default_none">Default (none)</string>
-    <string name="unexpected_intent_action">Unexpected intent action: <xliff:g id="action">%1$s</xliff:g></string>
-    <string name="enable_random_adaptation">Enable random adaptation</string>
-    <string name="error_no_decoder">This device does not provide a decoder for <xliff:g id="mime_type">%1$s</xliff:g></string>
-    <string name="error_no_secure_decoder">This device does not provide a secure decoder for <xliff:g id="mime_type">%1$s</xliff:g></string>
-    <string name="error_querying_decoders">Unable to query device decoders</string>
-    <string name="error_instantiating_decoder">Unable to instantiate decoder <xliff:g id="decoder_name">%1$s</xliff:g></string>
     <string name="error_unsupported_video">Media includes video tracks, but none are playable by this device</string>
     <string name="error_unsupported_audio">Media includes audio tracks, but none are playable by this device</string>
 
     <string name="ends_at">Ends at&#160;</string>
 
-    <string name="controls_label">Playback Controls</string>
-    <string name="options_label">Options</string>
-    <string name="chapters_label">Chapters</string>
-
-    <string name="exo_controls_close_description">Close</string>
-    <string name="exo_controls_pip_description">Picture In Picture</string>
     <string name="exo_controls_chapters_description">Chapters</string>
     <string name="exo_controls_audio_description">Audio Tracks</string>
     <string name="exo_controls_subtitles_description">Subtitle Tracks</string>
     <string name="subtitle">Subtitle</string>
-    <string name="track">Track</string>
 
     <string name="channel_name">HomeView</string>
     <string name="channel_description">Latest happenings in HomeView</string>

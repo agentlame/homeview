@@ -1,5 +1,6 @@
 package com.monsterbutt.homeview.plex.media;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -172,15 +173,23 @@ public class Episode extends PlexVideoItem implements Parcelable {
         return getCardImageURL();
     }
 
+    @SuppressLint("DefaultLocale")
     @Override
     public String getCardImageURL() {
+        if (mVideo == null)
+            return "";
 
         String parent = mVideo.getParentThumbNailImageKey();
-        if (parent != null && !parent.isEmpty())
+        if (!TextUtils.isEmpty(parent)) {
+            if (parent.contains("/-1/"))
+                parent = parent.replace("/-1/", String.format("/%d/", mVideo.getParentRatingKey()));
             return parent;
+        }
         parent = mVideo.getGrandParentThumbNailImageKey();
         if (parent == null)
             return "";
+        if (parent.contains("/-1/"))
+            parent = parent.replace("/-1/", String.format("/%d/", mVideo.getGrandparentRatingKey()));
         return parent;
     }
 

@@ -36,7 +36,6 @@ public class MediaCodecCapabilities {
         return gInstance;
     }
 
-    private final Context context;
     private final AudioCapabilities audioCapabilities;
     private final MediaCodecInfo[] regularCodecs;
     private final Map<String, List<MediaCodecInfo>> videoDecoderCodecs = new HashMap<>();
@@ -68,8 +67,6 @@ public class MediaCodecCapabilities {
     }
 
     private MediaCodecCapabilities(Context context) {
-
-        this.context = context;
         audioCapabilities = AudioCapabilities.getCapabilities(context);
         regularCodecs = (new MediaCodecList(MediaCodecList.REGULAR_CODECS)).getCodecInfos();
         fillCodecs();
@@ -133,7 +130,7 @@ public class MediaCodecCapabilities {
                 break;
             case MimeTypes.AUDIO_TRUEHD:
                 if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DOLBY_TRUEHD))
-                    return AudioFormat.ENCODING_DOLBY_TRUEHD;
+                    return C.ENCODING_TRUE_HD;
                 break;
             case MimeTypes.AUDIO_DTS:
                 if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DTS))
@@ -161,7 +158,7 @@ public class MediaCodecCapabilities {
 
     public boolean usePassthroughAudioIfAvailable() {
 
-        return SettingsManager.getInstance(context).getBoolean("preferences_device_passthrough");
+        return SettingsManager.getInstance().getBoolean("preferences_device_passthrough");
     }
 
     public DecodeType determineDecoderType(String trackType, String codec, String profile, long bitDepth) {
@@ -241,7 +238,7 @@ public class MediaCodecCapabilities {
                     if (mimeType.equals(codec.getName()) || codec.getCapabilitiesForType(mimeType) != null)
                         return true;
                 }
-                catch (IllegalArgumentException e) {}
+                catch (IllegalArgumentException ignored) {}
                 String[] types = codec.getSupportedTypes();
                 if (types == null || types.length == 0)
                     continue;

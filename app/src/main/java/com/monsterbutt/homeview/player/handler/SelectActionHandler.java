@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v17.leanback.media.PlaybackTransportControlGlue;
 import android.support.v17.leanback.widget.Action;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
+import android.support.v17.leanback.widget.ListRow;
 import android.support.v17.leanback.widget.PlaybackControlsRow;
 
 import com.monsterbutt.homeview.R;
@@ -22,12 +23,21 @@ import com.monsterbutt.homeview.player.notifier.SwitchTrackNotifier;
 import com.monsterbutt.homeview.player.notifier.VideoChangedNotifier;
 import com.monsterbutt.homeview.player.track.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
+import com.monsterbutt.homeview.ui.presenters.CardPresenter;
+import com.monsterbutt.homeview.ui.presenters.SceneCardExpanded;
+
+import java.util.List;
 
 import static com.monsterbutt.homeview.plex.media.Stream.Audio_Stream;
 import static com.monsterbutt.homeview.plex.media.Stream.Subtitle_Stream;
 
 public class SelectActionHandler implements VideoChangedNotifier.Observer {
+
+  private final static int AUDIO_ID = 84765;
+  private final static int CHAPTERS_ID = 84765;
+  private final static int SUBTITLES_ID = 84765;
 
   private final Activity mActivity;
   private final PlexServer mServer;
@@ -61,10 +71,7 @@ public class SelectActionHandler implements VideoChangedNotifier.Observer {
   }
 
   public void onCreateActions(ArrayObjectAdapter adapter) {
-    if (android.os.Build.VERSION.SDK_INT > 23) {
-      adapter.add(mPipAction);
-    }
-
+    adapter.add(mPipAction);
     adapter.add(mAudioSelectAction);
     adapter.add(mSubititleSelectAction);
     adapter.add(mChapterSelectAction);
@@ -87,8 +94,14 @@ public class SelectActionHandler implements VideoChangedNotifier.Observer {
         mSwitchTrackNotifier.switchTrack(Subtitle_Stream, mTracks);
     } else if (action == mChapterSelectAction) {
       if (mChapterSelectAction.enabled()) {
-        mSwitchChapterNotifier.switchChapter(mCurrentVideo.getChildren(mActivity, mServer, null)
-         , mCurrentVideo.getCurrentChapter(mGlue.getCurrentPosition()));
+
+        List<PlexLibraryItem> items = mCurrentVideo.getChildrenItems();
+        ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(mServer, null, false));
+        ListRow row = new ListRow(adapter);
+        for (PlexLibraryItem item: items)
+          adapter.add(new SceneCardExpanded(mActivity, item));
+        mSwitchChapterNotifier.switchChapter(row,
+         mCurrentVideo.getCurrentChapter(mGlue.getCurrentPosition()));
       }
     }
   }
@@ -146,21 +159,21 @@ public class SelectActionHandler implements VideoChangedNotifier.Observer {
   private class AudioSelectAction extends SelectAction {
 
     AudioSelectAction(Context context) {
-      super(context, R.id.exo_audio_tracks, R.drawable.ic_audiotrack_white_24dp);
+      super(context, AUDIO_ID, R.drawable.ic_audiotrack_white_24dp);
     }
   }
 
   private class ChapterSelectAction extends SelectAction {
 
     ChapterSelectAction(Context context) {
-      super(context, R.id.exo_chapters, R.drawable.ic_playlist_play_white_24dp);
+      super(context, CHAPTERS_ID, R.drawable.ic_playlist_play_white_24dp);
     }
   }
 
   private class SubtitlesSelectAction extends SelectAction {
 
     SubtitlesSelectAction(Context context) {
-      super(context, R.id.exo_subtitle_tracks, R.drawable.ic_subtitles_white_24dp);
+      super(context, SUBTITLES_ID, R.drawable.ic_subtitles_white_24dp);
     }
   }
 }

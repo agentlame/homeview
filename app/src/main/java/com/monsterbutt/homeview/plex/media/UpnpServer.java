@@ -9,8 +9,8 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.View;
 
-import com.monsterbutt.homeview.ui.activity.UpnpItemsActivity;
-import com.monsterbutt.homeview.ui.fragment.UpnpItemsFragment;
+import com.monsterbutt.homeview.ui.upnp.UpnpItemsActivity;
+import com.monsterbutt.homeview.ui.upnp.UpnpItemsFragment;
 
 import org.fourthline.cling.model.meta.Device;
 import org.fourthline.cling.model.meta.RemoteDeviceIdentity;

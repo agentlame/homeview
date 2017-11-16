@@ -6,11 +6,8 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.MatrixCursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v17.leanback.widget.ArrayObjectAdapter;
-import android.support.v17.leanback.widget.HeaderItem;
-import android.support.v17.leanback.widget.ListRow;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,23 +18,22 @@ import android.widget.TextView;
 import com.google.gson.annotations.SerializedName;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.plex.tasks.DeleteTask;
 import com.monsterbutt.homeview.plex.tasks.SetProgressTask;
-import com.monsterbutt.homeview.presenters.CardObject;
-import com.monsterbutt.homeview.presenters.CardPresenter;
-import com.monsterbutt.homeview.presenters.SceneCard;
-import com.monsterbutt.homeview.settings.SettingsManager;
-import com.monsterbutt.homeview.ui.PlexItemRow;
-import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
-import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
+import com.monsterbutt.homeview.ui.presenters.CardObject;
+import com.monsterbutt.homeview.ui.presenters.CardPresenter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import us.nineworlds.plex.rest.model.impl.Hub;
 
+import static com.monsterbutt.homeview.ui.C.StatusChanged.SetUnwatched;
+import static com.monsterbutt.homeview.ui.C.StatusChanged.SetWatched;
 
 public abstract class PlexLibraryItem {
+
 
     public enum WatchedState {
 
@@ -57,17 +53,18 @@ public abstract class PlexLibraryItem {
             return value;
         }
 
-        private WatchedState(int value) {
+        WatchedState(int value) {
             this.value = value;
         }
     }
 
-    static public final int COMPOSITE_COLS = 3;
-    static public final int COMPOSITE_ROW = 2;
-    static public final int COMPOSITE_HEIGHT = 320;
-    static public final int COMPOSITE_WIDTH = 480;
+    static final int COMPOSITE_COLS = 3;
+    static final int COMPOSITE_ROW = 2;
+    static final int COMPOSITE_HEIGHT = 320;
+    static final int COMPOSITE_WIDTH = 480;
 
     public abstract String getKey();
+    public String getParentKey() { return ""; }
 
     public abstract long getRatingKey();
 
@@ -78,8 +75,6 @@ public abstract class PlexLibraryItem {
 
     public abstract String getSectionId();
 
-    public abstract String getSectionTitle();
-
     public abstract String getType();
 
     public abstract String getTitle();
@@ -88,11 +83,7 @@ public abstract class PlexLibraryItem {
 
     public abstract String getThumbnailKey();
 
-    public abstract String getArt();
-
     public abstract long getAddedAt();
-
-    public abstract long getUpdatedAt();
 
     public abstract String getSummary();
 
@@ -126,10 +117,6 @@ public abstract class PlexLibraryItem {
         return "";
     }
 
-    public String getDetailYear(Context context) {
-        return "";
-    }
-
     public String getDetailDuration(Context context) {
         return "";
     }
@@ -142,14 +129,16 @@ public abstract class PlexLibraryItem {
 
     public String getDetailGenre(Context context) { return ""; }
 
-    public WatchedState getWatchedState() { return WatchedState.Watched; };
+    public WatchedState getWatchedState() { return WatchedState.Watched; }
 
-    public int getUnwatchedCount() { return 0; };
+    public int getUnwatchedCount() { return 0; }
 
-    public int getViewedProgress() { return 0; };
-    public long getViewedOffset() { return 0; };
+    public int getTotalLeafCount() { return 0; }
 
-    public void setStatus(WatchedStatusHandler.UpdateStatus status) {}
+    public int getViewedProgress() { return 0; }
+    public long getViewedOffset() { return 0; }
+
+    public void setStatus(WatchedState status) { }
 
     public String getThemeKey(PlexServer server) {
         return "";
@@ -158,7 +147,6 @@ public abstract class PlexLibraryItem {
     public abstract boolean useItemBackgroundArt();
 
     public abstract String getHeaderForChildren(Context context);
-    public boolean shouldChildRowWatchState() { return false; }
 
     public abstract List<PlexLibraryItem> getChildrenItems();
 
@@ -171,49 +159,7 @@ public abstract class PlexLibraryItem {
 
     public abstract boolean onPlayPressed(Fragment fragment, Bundle extras, View transitionView);
 
-    public abstract void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride, boolean isStartOverride);
-
-    public PlexItemRow getChildren(Context context, PlexServer server, CardSelectionHandler listener) {
-
-        boolean skipAllSeason = (this instanceof Show) &&
-                !SettingsManager.getInstance(context).getBoolean("preferences_navigation_showallseason");
-
-        PlexItemRow row = null;
-        List<PlexLibraryItem> children = getChildrenItems();
-        if (children != null) {
-            List<PlexLibraryItem> removals = new ArrayList<>();
-            for (PlexLibraryItem child : children) {
-
-                if (skipAllSeason && child.getKey().endsWith(Season.ALL_SEASONS))
-                    removals.add(child);
-            }
-            if (!removals.isEmpty())
-                children.removeAll(removals);
-        }
-        if (children != null && !children.isEmpty()) {
-            String header = getHeaderForChildren(context);
-            boolean useLandscape = this instanceof Season || this instanceof Episode || this instanceof Movie;
-            row = PlexItemRow.buildChildItemsRow(context, server, header, children,
-                                                shouldChildRowWatchState(), useLandscape, listener);
-        }
-        return row;
-    }
-
-    public ListRow getExtras(Context context, PlexServer server, CardSelectionHandler listener) {
-
-        String title = context != null ? context.getString(R.string.extras_row_header) : "Extras";
-        ListRow row = null;
-        List<PlexLibraryItem> extras = getExtraItems();
-        if (extras != null && !extras.isEmpty()) {
-            // setup bottom row for seasons, episodes, or chapters
-            ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(server, listener, false));
-            row = new ListRow(new HeaderItem(0, title), adapter);
-            for (PlexLibraryItem extra : extras)
-                adapter.add(new SceneCard(context, extra));
-        }
-
-        return row;
-    }
+    public abstract void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride);
 
     public List<Hub> getRelated() {
         return null;
@@ -221,9 +167,9 @@ public abstract class PlexLibraryItem {
 
     public void toggleWatched() {}
 
-    public boolean onLongClicked(CardObject obj, PlexServer server, final Fragment fragment, final Bundle extras,
+    public boolean onLongClicked(CardObject obj, final Fragment fragment, final Bundle extras,
                                  final View transitionView, CardPresenter.LongClickWatchStatusCallback callback) {
-
+        PlexServer server = PlexServerManager.getInstance().getSelectedServer();
         final List<ActionChoice> values = new ArrayList<>();
         values.add(new PlayChoice());
         values.add(new DetailsChoice());
@@ -254,7 +200,7 @@ public abstract class PlexLibraryItem {
         public final int drawable;
         public final int text;
 
-        public ActionChoice(int drawable, int text) {
+        ActionChoice(int drawable, int text) {
             this.drawable = drawable;
             this.text = text;
         }
@@ -263,7 +209,7 @@ public abstract class PlexLibraryItem {
 
     private class PlayChoice extends ActionChoice {
 
-        public PlayChoice() { super(R.drawable.ic_play_circle_outline_white_48dp, R.string.action_choice_play); }
+        PlayChoice() { super(R.drawable.ic_play_circle_outline_white_48dp, R.string.action_choice_play); }
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
             PlexLibraryItem.this.onPlayPressed(fragment, extras, transitionView);
@@ -272,7 +218,7 @@ public abstract class PlexLibraryItem {
 
     private class DetailsChoice extends ActionChoice {
 
-        public DetailsChoice() { super(R.drawable.ic_art_track_white_48dp, R.string.action_choice_details); }
+        DetailsChoice() { super(R.drawable.ic_art_track_white_48dp, R.string.action_choice_details); }
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
             PlexLibraryItem.this.onClicked(fragment, extras, transitionView);
@@ -285,7 +231,7 @@ public abstract class PlexLibraryItem {
         private final CardPresenter.LongClickWatchStatusCallback callback;
         private final CardObject obj;
 
-        public DeleteChoice(PlexServer server, CardObject obj,
+        DeleteChoice(PlexServer server, CardObject obj,
                             CardPresenter.LongClickWatchStatusCallback callback) {
             super(R.drawable.ic_delete_white_48dp, R.string.delete);
             this.server = server;
@@ -294,7 +240,7 @@ public abstract class PlexLibraryItem {
         }
         @Override
         public void selected(final Fragment fragment, final Bundle extras, final View transitionView) {
-            DeleteTask.runTask(PlexLibraryItem.this, server, fragment,
+            new DeleteTask(PlexLibraryItem.this, server, fragment,
              false, obj, callback);
         }
 
@@ -305,7 +251,7 @@ public abstract class PlexLibraryItem {
         final CardObject obj;
         final PlexServer server;
         final CardPresenter.LongClickWatchStatusCallback callback;
-        public SetUnwatchedChoice(CardObject obj, PlexServer server,
+        SetUnwatchedChoice(CardObject obj, PlexServer server,
                                   CardPresenter.LongClickWatchStatusCallback callback) {
             super(R.drawable.ic_watch_later_white_48dp, R.string.action_choice_setunwatched);
             this.callback = callback;
@@ -314,9 +260,10 @@ public abstract class PlexLibraryItem {
         }
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
-            new SetProgressTask(new SetProgressTask.VideoId(server, PlexLibraryItem.this.getKey(),
-                    Long.toString(PlexLibraryItem.this.getRatingKey())), obj.getContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.UNWATCHED);
-            setStatus(new WatchedStatusHandler.UpdateStatus(getKey(), 0, WatchedState.Unwatched));
+            new SetProgressTask(server, PlexLibraryItem.this.getKey(),
+                    Long.toString(PlexLibraryItem.this.getRatingKey()),
+             SetUnwatched).execute(obj.getContext());
+            setStatus(WatchedState.Unwatched);
             if (callback != null)
                 callback.resetSelected(obj);
         }
@@ -327,7 +274,7 @@ public abstract class PlexLibraryItem {
         final CardObject obj;
         final PlexServer server;
         final CardPresenter.LongClickWatchStatusCallback callback;
-        public SetWatchedChoice(CardObject obj, PlexServer server, CardPresenter.LongClickWatchStatusCallback callback) {
+        SetWatchedChoice(CardObject obj, PlexServer server, CardPresenter.LongClickWatchStatusCallback callback) {
             super(R.drawable.ic_visibility_white_48dp, R.string.action_choice_setwatched);
             this.server = server;
             this.obj = obj;
@@ -335,9 +282,10 @@ public abstract class PlexLibraryItem {
         }
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
-            new SetProgressTask(new SetProgressTask.VideoId(server, PlexLibraryItem.this.getKey(),
-                    Long.toString(PlexLibraryItem.this.getRatingKey())), obj.getContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, SetProgressTask.WATCHED);
-            setStatus(new WatchedStatusHandler.UpdateStatus(getKey(), 0, WatchedState.Watched));
+            new SetProgressTask(server, PlexLibraryItem.this.getKey(),
+                    Long.toString(PlexLibraryItem.this.getRatingKey()),
+             SetWatched).execute(obj.getContext());
+            setStatus(WatchedState.Watched);
             if (callback != null)
                 callback.resetSelected(obj);
         }
@@ -348,17 +296,19 @@ public abstract class PlexLibraryItem {
         private final Context context;
         private final List<ActionChoice> values;
 
-        public ActionChoiceArrayAdapter(Context context, List<ActionChoice> values) {
+        ActionChoiceArrayAdapter(Context context, List<ActionChoice> values) {
             super(context, R.layout.lb_actionchoiceitem, values);
             this.context = context;
             this.values = values;
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View row, ViewGroup parent) {
+        public View getView(int position, View row, @NonNull ViewGroup parent) {
             View rowView = row;
             if (rowView == null) {
                 LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                assert inflater != null;
                 rowView = inflater.inflate(R.layout.lb_actionchoiceitem, parent, false);
             }
             final ActionChoice item = values.get(position);
@@ -381,5 +331,9 @@ public abstract class PlexLibraryItem {
     public com.monsterbutt.homeview.model.Video toVideo(Context context, PlexServer server) {
 
         return toVideo(context, new com.monsterbutt.homeview.model.Video.VideoBuilder(), server).build();
+    }
+
+    public boolean updateCounts(int totalCount, int unwatchedCount) {
+        return false;
     }
 }

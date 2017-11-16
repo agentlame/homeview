@@ -4,8 +4,9 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 
+import com.monsterbutt.Homeview;
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.presenters.SettingCard;
+import com.monsterbutt.homeview.ui.presenters.SettingCard;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -19,53 +20,43 @@ import java.util.Map;
 
 public class SettingsManager {
 
-    private static final String mMgrLock = "SettingsLock";
-    private static SettingsManager mMgr = null;
-    private final Context mContext;
+    private static final SettingsManager mMgr = new SettingsManager();
 
     public class SettingsSection {
 
         public final String title;
         public final List<SettingValue> settings;
 
-        public SettingsSection(String title, List<SettingValue> list) {
+        SettingsSection(String title, List<SettingValue> list) {
 
             this.title = title;
             settings = list;
         }
     }
 
-    public static SettingsManager getInstance(Context context) {
-
-        SettingsManager ret = null;
-        synchronized (mMgrLock) {
-
-            if (mMgr == null)
-                mMgr = new SettingsManager(context.getApplicationContext());
-            ret = mMgr;
-        }
-        return ret;
+    public static SettingsManager getInstance() {
+        return mMgr;
     }
 
-
-    List<SettingsSection> mSections = new ArrayList<>();
-    Map<String, SettingValue> mSettings = new HashMap<>();
+    private List<SettingsSection> mSections = new ArrayList<>();
+    private Map<String, SettingValue> mSettings = new HashMap<>();
 
     private static final String PreferenceScreen = "PreferenceScreen";
     private static final String PreferenceCategory = "PreferenceCategory";
 
     private String mTitle = "";
 
-    private SettingsManager(Context context) {
+    private SettingsManager() {
 
-        mContext = context;
+        Context context = Homeview.getAppContext();
+        if (context == null)
+            return;
         Resources res = context.getResources();
         XmlResourceParser xml = res.getXml(R.xml.preferences);
         try {
             xml.next();
             int eventType = xml.getEventType();
             List<SettingValue> row = null;
-            int rowIndex = 0;
             String header = "";
             int id = SettingCard.BASE_RESULT + 1;
             while (eventType != XmlPullParser.END_DOCUMENT)
@@ -85,28 +76,32 @@ public class SettingsManager {
                         case SettingLaunch.NODE_NAME: {
 
                             SettingValue sett = new SettingLaunch(context, xml, id++);
-                            row.add(sett);
+                            if (row != null)
+                                row.add(sett);
                             mSettings.put(sett.key(), sett);
                             break;
                         }
                         case SettingBoolean.NODE_NAME: {
 
                             SettingValue sett = new SettingBoolean(context, xml);
-                            row.add(sett);
+                            if (row != null)
+                                row.add(sett);
                             mSettings.put(sett.key(), sett);
                             break;
                         }
                         case SettingText.NODE_NAME: {
 
                             SettingValue sett = new SettingText(context, header, xml);
-                            row.add(sett);
+                            if (row != null)
+                                row.add(sett);
                             mSettings.put(sett.key(), sett);
                             break;
                         }
                         case SettingArray.NODE_NAME: {
 
                             SettingValue sett = new SettingArray(context, header, xml);
-                            row.add(sett);
+                            if (row != null)
+                                row.add(sett);
                             mSettings.put(sett.key(), sett);
                             break;
                         }
@@ -124,10 +119,7 @@ public class SettingsManager {
                 eventType = xml.next();
             }
         }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-        catch (XmlPullParserException e) {
+        catch (IOException | XmlPullParserException e) {
             e.printStackTrace();
         }
     }
@@ -137,11 +129,8 @@ public class SettingsManager {
     public SettingValue getSetting(String key) { return mSettings.get(key); }
 
     public boolean getBoolean(String key) {
-
         SettingValue val = getSetting(key);
-        if (val instanceof SettingBoolean)
-            return ((SettingBoolean)val).value();
-        return false;
+        return val instanceof SettingBoolean && ((SettingBoolean) val).value();
     }
 
     public String getString(String key) {
@@ -166,11 +155,10 @@ public class SettingsManager {
 
     public List<SettingsSection> getSettingsLayout() { return mSections; }
 
-    public void reloadSetting(String key) {
-
+    void reloadSetting(Context context, String key) {
         SettingValue setting = mSettings.get(key);
         if (setting != null)
-            mSettings.put(setting.key(), setting.reload(mContext));
+            mSettings.put(setting.key(), setting.reload(context));
     }
 
 

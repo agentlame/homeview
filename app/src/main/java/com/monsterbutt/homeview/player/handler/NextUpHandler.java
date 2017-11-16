@@ -14,9 +14,9 @@ import com.monsterbutt.homeview.player.notifier.UIFragmentNotifier;
 import com.monsterbutt.homeview.player.notifier.VideoChangedNotifier;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
-import com.monsterbutt.homeview.ui.android.NextUpView;
-import com.monsterbutt.homeview.ui.android.SelectView;
-import com.monsterbutt.homeview.ui.fragment.NextUpFragment;
+import com.monsterbutt.homeview.ui.playback.views.NextUpView;
+import com.monsterbutt.homeview.ui.playback.views.SelectView;
+import com.monsterbutt.homeview.ui.playback.NextUpFragment;
 
 import static com.monsterbutt.homeview.plex.media.PlexVideoItem.NEXTUP_DISABLED;
 
@@ -107,7 +107,7 @@ public class NextUpHandler extends PlaybackGlue.PlayerCallback
 
         Log.d(Tag, "Next up released (setup)");
         if (nextVideo != null && currentVideo != null) {
-          long time = currentVideo.getNextUpThresholdTrigger(mFragment.getContext());
+          long time = currentVideo.getNextUpThresholdTrigger();
           long pos = mGlue.getCurrentPosition();
           if (shouldShow(pos, time, force)) {
             long delay = time - pos;

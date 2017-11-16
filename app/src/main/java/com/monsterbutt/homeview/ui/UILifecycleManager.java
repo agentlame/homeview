@@ -1,5 +1,7 @@
 package com.monsterbutt.homeview.ui;
 
+import com.monsterbutt.homeview.ui.interfaces.ILifecycleListener;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,58 +9,48 @@ import java.util.Map;
 
 public class UILifecycleManager {
 
-    public interface LifecycleListener {
+  private enum State {
+      Active,
+      Paused,
+      Destroyed
+  }
 
-        void onResume();
-        void onPause();
-        void onDestroyed();
+  private Map<String, ILifecycleListener> listeners = new HashMap<>();
+
+  private List<ILifecycleListener> getList() {
+    List<ILifecycleListener> list = new ArrayList<>();
+    synchronized (this) {
+      list.addAll(listeners.values());
     }
+    return list;
+  }
 
-    private Map<String, LifecycleListener> mListeners = new HashMap<>();
-
-
-    private List<LifecycleListener> getList() {
-
-        List<LifecycleListener> listeners = new ArrayList<>();
-        synchronized (this) {
-
-            listeners.addAll(mListeners.values());
-        }
-        return listeners;
+  public void register(String key, ILifecycleListener listener) {
+    synchronized (this) {
+      listeners.put(key, listener);
     }
+  }
 
-    public void put(String key, LifecycleListener listener) {
-
-        synchronized (this) {
-
-            mListeners.put(key, listener);
-        }
+  public void unregister(String key) {
+    synchronized (this) {
+      if (listeners.containsKey(key))
+        listeners.remove(key);
     }
+  }
 
-    public void remove(String key) {
+  public void resumed() {
+    for (ILifecycleListener listener : getList())
+      listener.onResume();
+  }
 
-        synchronized (this) {
+  public void paused() {
+    for (ILifecycleListener listener : getList())
+      listener.onPause();
+  }
 
-            if (mListeners.containsKey(key))
-                mListeners.remove(key);
-        }
-    }
+  public void destroyed() {
+    for (ILifecycleListener listener : getList())
+      listener.onDestroyed();
+  }
 
-    public void resumed() {
-
-        List<LifecycleListener> listeners = getList();
-        for (LifecycleListener listener : listeners)
-            listener.onResume();
-    }
-
-    public void paused() {
-
-        List<LifecycleListener> listeners = getList();
-        for (LifecycleListener listener : listeners)
-            listener.onPause();
-    }
-
-    public void destroyed() {
-
-    }
 }

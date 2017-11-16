@@ -11,7 +11,7 @@ import com.monsterbutt.homeview.R;
 
 public abstract class SettingValue implements Parcelable {
 
-    public static final String namespace = "http://schemas.android.com/apk/res/android";
+    static final String namespace = "http://schemas.android.com/apk/res/android";
     public static final String Title = "title";
     private static final String Key = "key";
     private static final String Summary = "summary";
@@ -31,7 +31,7 @@ public abstract class SettingValue implements Parcelable {
     private String    mDialogTitle;
     private boolean   mEnabled;
 
-    protected SettingValue(Context context, XmlResourceParser xml) {
+    SettingValue(Context context, XmlResourceParser xml) {
 
         mDrawableId = getIdForResource(xml, Drawable);
         if (INVALID_ID == mDrawableId)
@@ -45,7 +45,7 @@ public abstract class SettingValue implements Parcelable {
         mEnabled = TextUtils.isEmpty(enabled) || !enabled.equalsIgnoreCase(boolFalse);
     }
 
-    protected SettingValue(String name, int drawableId) {
+    SettingValue(String name, int drawableId) {
 
         mDrawableId = drawableId;
         if (INVALID_ID == mDrawableId)
@@ -57,7 +57,7 @@ public abstract class SettingValue implements Parcelable {
         mDialogTitle = "";
     }
 
-    protected SettingValue(Parcel in) {
+    SettingValue(Parcel in) {
 
         mKey = in.readString();
         mDrawableId = in.readInt();
@@ -76,7 +76,7 @@ public abstract class SettingValue implements Parcelable {
         return Integer.valueOf(key.replace("@", ""));
     }
 
-    public static String getStringAttribute(Context context, XmlResourceParser xml, String xmlKey) {
+    static String getStringAttribute(Context context, XmlResourceParser xml, String xmlKey) {
 
         int id = getIdForResource(xml, xmlKey);
         if (id == INVALID_ID)
@@ -84,7 +84,7 @@ public abstract class SettingValue implements Parcelable {
         return context.getResources().getString(id);
     }
 
-    protected static String[] getStringArrayAttribute(Context context, XmlResourceParser xml, String xmlKey) {
+    static String[] getStringArrayAttribute(Context context, XmlResourceParser xml, String xmlKey) {
 
         int id = getIdForResource(xml, xmlKey);
         if (id == INVALID_ID)
@@ -97,7 +97,7 @@ public abstract class SettingValue implements Parcelable {
     public String   title()         { return mTitle; }
     public String   summary()       { return mSummary; }
     public String   dependencyKey() { return mDependencyKey; }
-    public String   dialogTitle()   { return mDialogTitle; }
+    private String   dialogTitle()   { return mDialogTitle; }
     public boolean  enabled()       { return mEnabled; }
 
     @Override

@@ -18,7 +18,6 @@ import com.monsterbutt.homeview.plex.PlexServerManager;
 import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import us.nineworlds.plex.rest.model.impl.Directory;
@@ -41,13 +40,13 @@ public class MediaContentProvider extends ContentProvider {
 
     private ContentResolver mContentResolver;
 
-    protected PlexServer mServer;
 
     @Override
     public boolean onCreate() {
-        Context context = getContext();
+        Context context = getContext() != null ? getContext().getApplicationContext() : null;
+        if (context == null)
+            return false;
         mContentResolver = context.getContentResolver();
-        mServer = PlexServerManager.getInstance(getContext().getApplicationContext(), null).getSelectedServer();
         return true;
     }
 
@@ -100,15 +99,15 @@ public class MediaContentProvider extends ContentProvider {
         });
     }
 
-    protected List<MediaContainer> getMedia(String rawQuery) {
-        return new ArrayList<>();
-    }
 
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
+        PlexServer server = PlexServerManager.getInstance().getSelectedServer();
         MatrixCursor retCursor = getCursor();
+        if (server == null)
+            return retCursor;
 
         switch (sUriMatcher.match(uri)) {
             case VIDEO:
@@ -118,12 +117,12 @@ public class MediaContentProvider extends ContentProvider {
                 if (selectionArgs != null && selectionArgs.length > 0) {
                     rawQuery = selectionArgs[0];
                 }
-                if (!rawQuery.isEmpty() && mServer != null) {
+                if (!rawQuery.isEmpty()) {
                     rawQuery = rawQuery.replace("%", "");
                     if (rawQuery.length() < 3)
                         return null;
 
-                    List<MediaContainer> items = mServer.searchShowsForEpisodes(rawQuery);
+                    List<MediaContainer> items = server.searchShowsForEpisodes(rawQuery);
                     if (items != null) {
                         for (MediaContainer mc : items) {
 
@@ -131,24 +130,33 @@ public class MediaContentProvider extends ContentProvider {
 
                                 String keyOverride = mc.getGrandparentKey();
                                 String yearOverride = mc.getParentYear();
-                                for (Video vid : mc.getVideos())
-                                    PlexVideoItem.getItem(vid).fillQueryRow(retCursor.newRow(), getContext(), keyOverride, yearOverride, false);
+                                for (Video vid : mc.getVideos()) {
+                                    PlexVideoItem item = PlexVideoItem.getItem(vid);
+                                    if (item != null)
+                                        item.fillQueryRow(retCursor.newRow(), getContext(), keyOverride, yearOverride);
+                                }
                             }
                         }
                     }
-                    items = mServer.searchForMedia(rawQuery);
+                    items = server.searchForMedia(rawQuery);
                     if (items != null) {
                         for (MediaContainer mc : items) {
 
                             if (mc.getDirectories() != null) {
 
-                                for (Directory dir : mc.getDirectories())
-                                    PlexContainerItem.getItem(dir).fillQueryRow(retCursor.newRow(), getContext(), null, null, false);
+                                for (Directory dir : mc.getDirectories()) {
+                                    PlexContainerItem item = PlexContainerItem.getItem(dir);
+                                    if (item != null)
+                                        item.fillQueryRow(retCursor.newRow(), getContext(), null, null);
+                                }
                             }
                             if (mc.getVideos() != null) {
 
-                                for (Video vid : mc.getVideos())
-                                    PlexVideoItem.getItem(vid).fillQueryRow(retCursor.newRow(), getContext(), null, null, false);
+                                for (Video vid : mc.getVideos()) {
+                                    PlexVideoItem item = PlexVideoItem.getItem(vid);
+                                    if (item != null)
+                                        item.fillQueryRow(retCursor.newRow(), getContext(), null, null);
+                                }
                             }
                         }
                     }
@@ -160,8 +168,7 @@ public class MediaContentProvider extends ContentProvider {
             }
         }
 
-        if (retCursor != null)
-            retCursor.setNotificationUri(mContentResolver, uri);
+        retCursor.setNotificationUri(mContentResolver, uri);
         return retCursor;
     }
 

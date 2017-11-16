@@ -1,10 +1,12 @@
 package com.monsterbutt.homeview.provider;
 
+import android.annotation.SuppressLint;
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -19,53 +21,51 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 
+@SuppressLint("Registered")
 public class ImageContentProvider extends ContentProvider {
-
-    private PlexServer server;
 
     @Override
     public boolean onCreate() {
-
-        server = PlexServerManager.getInstance(getContext().getApplicationContext(), null).getSelectedServer();
         return true;
     }
 
     @Nullable
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         return null;
     }
 
     @Nullable
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         return null;
     }
 
     @Nullable
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         return null;
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         return 0;
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         return 0;
     }
 
     @Override
-    public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+    public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
 
-        ParcelFileDescriptor[] pipe = null;
+        ParcelFileDescriptor[] pipe;
         try {
             String decodedUrl = uri.toString().replaceFirst(getContentURI(), "");
             pipe = ParcelFileDescriptor.createPipe();
 
+            PlexServer server = PlexServerManager.getInstance().getSelectedServer();
             HttpURLConnection connection = (HttpURLConnection) new URL(server.makeServerURL(decodedUrl)).openConnection();
 
             new TransferThread(connection.getInputStream(),

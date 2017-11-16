@@ -13,7 +13,7 @@ import android.view.View;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.Utils;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.playback.PlaybackActivity;
 
 import java.util.List;
 
@@ -67,11 +67,6 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public String getSectionTitle() {
-        return "";
-    }
-
-    @Override
     public String getType() {
         return "chapter";
     }
@@ -92,17 +87,7 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public String getArt() {
-        return null;
-    }
-
-    @Override
     public long getAddedAt() {
-        return 0;
-    }
-
-    @Override
-    public long getUpdatedAt() {
         return 0;
     }
 
@@ -212,7 +197,7 @@ public class Chapter extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride, boolean isStartOverride) {
+    public void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride) {
 
     }
 

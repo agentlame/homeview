@@ -1,6 +1,5 @@
 package com.monsterbutt.homeview.player.handler;
 
-import android.content.Context;
 
 import com.monsterbutt.homeview.settings.SettingsManager;
 
@@ -13,12 +12,12 @@ public class StartPositionHandler {
     private final PlaybackStartType mPlaybackStartType;
     private long mVideoOffset;
 
-    public StartPositionHandler(Context context, long startPosition, long videoOffset) {
+    StartPositionHandler(long startPosition, long videoOffset) {
 
         mVideoOffset = videoOffset;
         mStartPosition = startPosition;
 
-        String startKey = SettingsManager.getInstance(context).getString("preferences_playback_resume");
+        String startKey = SettingsManager.getInstance().getString("preferences_playback_resume");
         switch(startKey) {
             case "ask":
                 mPlaybackStartType = PlaybackStartType.Ask;
@@ -32,7 +31,7 @@ public class StartPositionHandler {
         }
     }
 
-    public PlaybackStartType getStartType() {
+    PlaybackStartType getStartType() {
 
         if (mStartPosition >= 0)
             return PlaybackStartType.Resume;
@@ -41,11 +40,11 @@ public class StartPositionHandler {
         return mPlaybackStartType;
     }
 
-    public long getVideoOffset() {
+    long getVideoOffset() {
         return mVideoOffset;
     }
 
-    public long getStartPosition() {
+    long getStartPosition() {
 
         if (mStartPosition >= 0 && !mWasReset)
             return mStartPosition;

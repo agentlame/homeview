@@ -41,8 +41,9 @@ import com.monsterbutt.homeview.plex.tasks.GetVideoTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTask;
 import com.monsterbutt.homeview.plex.tasks.PlexServerTaskCaller;
 import com.monsterbutt.homeview.settings.SettingsManager;
-import com.monsterbutt.homeview.ui.activity.ContainerActivity;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.C;
+import com.monsterbutt.homeview.ui.grid.GridActivity;
+import com.monsterbutt.homeview.ui.playback.PlaybackActivity;
 
 import java.util.Locale;
 
@@ -51,9 +52,9 @@ import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 import static com.monsterbutt.homeview.plex.media.PlexVideoItem.BAD_CHAPTER_START;
 import static com.monsterbutt.homeview.plex.media.PlexVideoItem.START_CHAPTER_THRESHOLD;
-import static com.monsterbutt.homeview.ui.activity.PlaybackActivity.ACTION;
-import static com.monsterbutt.homeview.ui.activity.PlaybackActivity.KEY;
-import static com.monsterbutt.homeview.ui.activity.PlaybackActivity.URI;
+import static com.monsterbutt.homeview.ui.playback.PlaybackActivity.ACTION;
+import static com.monsterbutt.homeview.ui.playback.PlaybackActivity.KEY;
+import static com.monsterbutt.homeview.ui.playback.PlaybackActivity.URI;
 
 public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.Observer,
  ChapterSelectionNotifier.Observer, FrameRateSwitchNotifier.Observer {
@@ -141,7 +142,8 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
     boolean usesDefaultTracks = chosenTracks == null;
     MediaTrackSelector tracks = !usesDefaultTracks ? chosenTracks :
      video.fillTrackSelector(Locale.getDefault().getISO3Language(), MediaCodecCapabilities.getInstance(mGlue.getContext()));
-    mVideoChangedNotifier.videoChanged(video, tracks, usesDefaultTracks, new StartPositionHandler(mGlue.getContext(), currStartOffset, video.getViewedOffset()));
+    mVideoChangedNotifier.videoChanged(video, tracks, usesDefaultTracks,
+     new StartPositionHandler(currStartOffset, video.getViewedOffset()));
   }
 
   @Override
@@ -202,7 +204,7 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
     PlexVideoItem currentVideo = mVideos.currentVideo();
     new GetVideoQueueTask(this, mServer).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, currentVideo.getKey());
 
-    StartPositionHandler startPosition = new StartPositionHandler(mGlue.getContext(), currStartOffset, currentVideo.getViewedOffset());
+    StartPositionHandler startPosition = new StartPositionHandler(currStartOffset, currentVideo.getViewedOffset());
     long startPos = startPosition.getStartPosition();
     if (startPos > 0)
         mGlue.seekTo(startPos);
@@ -288,16 +290,16 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
     if (currentVideo != null) {
 
       Activity activity = mFragment.getActivity();
-      Intent intent = new Intent(activity, ContainerActivity.class);
+      Intent intent = new Intent(activity, GridActivity.class);
       String key = String.format("/library/sections/%s/all", currentVideo.getSectionId());
       if (currentVideo instanceof Episode) {
         key = String.format("%s/%s", ((Episode) currentVideo).getShowKey(), Season.ALL_SEASONS);
-        intent.putExtra(ContainerActivity.EPISODEIST, true);
+        intent.putExtra(C.EPISODEIST, true);
       }
       key += "?" + mServer.getToken();
-      intent.putExtra(ContainerActivity.KEY, key);
-      intent.putExtra(ContainerActivity.BACKGROUND, currentVideo.getBackgroundImageURL());
-      intent.putExtra(ContainerActivity.SELECTED, Long.toString(mVideos.nextVideo.getRatingKey()));
+      intent.putExtra(C.KEY, key);
+      intent.putExtra(C.BACKGROUND, currentVideo.getBackgroundImageURL());
+      intent.putExtra(C.SELECTED, Long.toString(mVideos.nextVideo.getRatingKey()));
       activity.startActivity(intent, null);
       mVideoChangedNotifier.finish();
     }
@@ -343,7 +345,7 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
 
       if (params == null || params.length == 0 || !(params[0] instanceof String))
         return false;
-      MediaContainer mc = getServer().getVideoMetadata((String) params[0], false);
+      MediaContainer mc = getServer().getVideoMetadata((String) params[0]);
       if (mc != null && mc.getVideos() != null)
         mVideo = PlexVideoItem.getItem(mc.getVideos().get(0));
       return mVideo != null;
@@ -352,7 +354,7 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
 
   public boolean setRefreshRateToCurrentVideo(Activity activity, boolean force) {
     PlexVideoItem video = getCurrentVideo();
-    if (!SettingsManager.getInstance(activity).getBoolean("preferences_device_refreshrate") ||
+    if (!SettingsManager.getInstance().getBoolean("preferences_device_refreshrate") ||
      video == null || !video.hasSourceStats() || video.getMedia() == null)
       return false;
     Media media = video.getMedia().get(0);

@@ -1,5 +1,6 @@
 package com.monsterbutt.homeview.plex.media;
 
+import android.annotation.SuppressLint;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -10,7 +11,8 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.view.View;
 
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.ui.activity.ContainerActivity;
+import com.monsterbutt.homeview.ui.C;
+import com.monsterbutt.homeview.ui.grid.GridActivity;
 import com.monsterbutt.homeview.R;
 
 import us.nineworlds.plex.rest.model.impl.Directory;
@@ -60,7 +62,7 @@ public class Season extends PlexContainerItem implements Parcelable {
         }
     };
 
-    public long getSeasonNum() {
+    private long getSeasonNum() {
         return mDirectory.getIndex();
     }
 
@@ -68,19 +70,19 @@ public class Season extends PlexContainerItem implements Parcelable {
         return mDirectory.getParentTitle();
     }
 
-    public String getShowSummary() {
+  private String getShowSummary() {
         return mDirectory.getParentSummary();
     }
 
-    public String getShowThumbKey() {
+  private String getShowThumbKey() {
         return mDirectory.getParentThumbKey();
     }
 
-    public int getEpisodeCount() {
+  private int getEpisodeCount() {
         return Integer.valueOf(mDirectory.getLeafCount());
     }
 
-    public int getUnwatchedEpisodeCount() {
+  private int getUnwatchedEpisodeCount() {
         return getEpisodeCount() - Integer.valueOf(mDirectory.getViewedLeafCount());
     }
 
@@ -90,6 +92,7 @@ public class Season extends PlexContainerItem implements Parcelable {
     }
 
     @Override
+    @SuppressLint("DefaultLocale")
     public String getCardContent(Context context) {
 
         String ret = String.format("%d %s", getEpisodeCount(),
@@ -105,6 +108,7 @@ public class Season extends PlexContainerItem implements Parcelable {
     }
 
     @Override
+    @SuppressLint("DefaultLocale")
     public String getDetailSubtitle(Context context) {
         String ret = String.format("%s %s %d %s", getTitle(), context.getString(R.string.mid_dot), getEpisodeCount(),
          context.getString(R.string.episodes));
@@ -121,10 +125,10 @@ public class Season extends PlexContainerItem implements Parcelable {
     @Override
     public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
-        Intent intent = new Intent(fragment.getActivity(), ContainerActivity.class);
-        intent.putExtra(ContainerActivity.KEY, getKey());
-        intent.putExtra(ContainerActivity.EPISODEIST, true);
-        intent.putExtra(ContainerActivity.BACKGROUND, getBackgroundImageURL());
+        Intent intent = new Intent(fragment.getActivity(), GridActivity.class);
+        intent.putExtra(C.KEY, getKey());
+        intent.putExtra(C.EPISODEIST, true);
+        intent.putExtra(C.BACKGROUND, getBackgroundImageURL());
         if (extras != null)
             intent.putExtras(extras);
 
@@ -134,7 +138,7 @@ public class Season extends PlexContainerItem implements Parcelable {
             bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
                     fragment.getActivity(),
                     transitionView,
-                    ContainerActivity.SHARED_ELEMENT_NAME).toBundle();
+                    GridActivity.SHARED_ELEMENT_NAME).toBundle();
         }
         fragment.startActivity(intent, bundle);
 

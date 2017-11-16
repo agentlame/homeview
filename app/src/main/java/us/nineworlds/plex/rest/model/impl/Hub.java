@@ -11,7 +11,7 @@ import java.util.List;
 
 
 @Root(name="Hub")
-public class Hub implements Parcelable {
+public class Hub implements Parcelable, IContainer{
 
     public Hub() {}
 
@@ -83,6 +83,10 @@ public class Hub implements Parcelable {
             return new Hub[size];
         }
     };
+
+    public long getParentIndex() {
+        return 0;
+    }
 
     public int getSize() { return size; }
     public void setSize(int size) { this.size = size; }

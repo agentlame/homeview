@@ -624,4 +624,12 @@ public class Video extends AbstractPlexObject implements Parcelable {
 
 	public long getLastViewedAt() { return lastViewedAt; }
 	public String getPrimaryExtraKey() { return primaryExtraKey; }
+
+	public void setGrandparentKey(String key) {
+		grandparentKey = key;
+	}
+
+	public void setGrandparentRatingKey(long key) {
+		grandparentRatingKey = key;
+	}
 }

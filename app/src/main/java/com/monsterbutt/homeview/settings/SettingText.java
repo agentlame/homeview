@@ -7,7 +7,7 @@ import android.os.Parcel;
 
 public class SettingText extends SettingValue {
 
-    public static final String NODE_NAME = "EditTextPreference";
+    static final String NODE_NAME = "EditTextPreference";
 
     private static final String DefaultValue = "defaultValue";
 
@@ -15,7 +15,7 @@ public class SettingText extends SettingValue {
     private final String mDefValue;
     private final String mSectionTitle;
 
-    public SettingText(Context context, String sectionTitle, XmlResourceParser xml) {
+    SettingText(Context context, String sectionTitle, XmlResourceParser xml) {
 
         super(context, xml);
         mSectionTitle = sectionTitle;
@@ -23,7 +23,7 @@ public class SettingText extends SettingValue {
         reload(context);
     }
 
-    public SettingText(Parcel in) {
+    private SettingText(Parcel in) {
         super(in);
         mDefValue = in.readString();
         mValue = in.readString();
@@ -43,13 +43,13 @@ public class SettingText extends SettingValue {
     };
 
     public String value() { return mValue; }
-    public String defValue() { return mDefValue; }
+    private String defValue() { return mDefValue; }
     public String sectionTitle() { return mSectionTitle; }
 
     public void value(Context context, String value) {
 
         mValue = value;
-        context.getSharedPreferences("", Context.MODE_PRIVATE).edit().putString(key(), value).commit();
+        context.getSharedPreferences("", Context.MODE_PRIVATE).edit().putString(key(), value).apply();
     }
 
     @Override

@@ -125,12 +125,11 @@ class MediaTrackType implements Parcelable {
         }
     }
 
-    int setSelectedTrack(Stream stream) {
+    void setSelectedTrack(Stream stream) {
 
         selected = null;
         if (stream != null && streams.contains(stream))
             selected = stream;
-        return selected == null || selected.getIndex() == null ? TrackSelector.TrackTypeOff : Integer.parseInt(selected.getIndex());
     }
 
     MediaTrackSelector.StreamChoiceArrayAdapter getTracks(Context context) {
@@ -142,13 +141,6 @@ class MediaTrackType implements Parcelable {
         list.add(0, new Stream.StreamChoiceDisable(context, selected == null, this.getStreamType()));
 
         return adapter;
-    }
-
-    MediaCodecCapabilities.DecodeType getDecodeStatusForSelected() {
-
-        if (selected == null)
-            return MediaCodecCapabilities.DecodeType.Unsupported;
-        return selected.getDecodeStatus();
     }
 
     Stream getSelectedTrack() {

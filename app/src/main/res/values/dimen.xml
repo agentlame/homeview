@@ -6,66 +6,30 @@
     <dimen name="CARD_PORTRAIT_WIDTH">120dp</dimen>
     <dimen name="CARD_PORTRAIT_HEIGHT">180dp</dimen>
 
-    <dimen name="CARD_LANDSCAPE_WIDTH">320dp</dimen>
-    <dimen name="CARD_LANDSCAPE_HEIGHT">180dp</dimen>
-
     <dimen name="CARD_EPISODE_WIDTH">190dp</dimen>
     <dimen name="CARD_EPISODE_HEIGHT">107dp</dimen>
 
     <dimen name="CARD_SECTION_WIDTH">190dp</dimen>
     <dimen name="CARD_SECTION_HEIGHT">126dp</dimen>
 
-    <dimen name="CARD_CODEC_WIDTH">100dp</dimen>
-    <dimen name="CARD_CODEC_HEIGHT">60dp</dimen>
-
     <dimen name="POSTER_WIDTH">120dp</dimen>
     <dimen name="POSTER_HEIGHT">180dp</dimen>
 
-    <dimen name="DETAIL_POSTER_WIDTH">120dp</dimen>
-    <dimen name="DETAIL_POSTER_HEIGHT">180dp</dimen>
+    <dimen name="DETAIL_POSTER_WIDTH">140dp</dimen>
+    <dimen name="DETAIL_POSTER_HEIGHT">210dp</dimen>
 
-    <dimen name="DETAIL_THUMBNAIL_WIDTH">320dp</dimen>
-    <dimen name="DETAIL_THUMBNAIL_HEIGHT">180dp</dimen>
-
-    <dimen name="BACKGROUND_WIDTH">1920dp</dimen>
-    <dimen name="BACKGROUND_HEIGHT">1080dp</dimen>
-
-    <dimen name="playback_overlay_width">@dimen/DETAIL_POSTER_WIDTH</dimen>
-    <dimen name="playback_overlay_height">@dimen/DETAIL_POSTER_HEIGHT</dimen>
+    <dimen name="DETAIL_THUMBNAIL_WIDTH">249dp</dimen>
+    <dimen name="DETAIL_THUMBNAIL_HEIGHT">140dp</dimen>
 
     <dimen name="jumprow_textsize">10sp</dimen>
     <dimen name="jumprow_dividerheight">1.0sp</dimen>
 
-    <dimen name="expanded_actionbar_start_height">150dp</dimen>
-
-    <dimen name="section_button_padding">90dp</dimen>
-
-    <dimen name="section_textsize">44dp</dimen>
-    <dimen name="section_bottompadding">20dp</dimen>
-
     <dimen name="progress_height">2dp</dimen>
-    <dimen name="flag_text_padding">5dp</dimen>
     <dimen name="caption_text_size">12sp</dimen>
     <dimen name="flag_text_size">11sp</dimen>
     <dimen name="caption_text_size_secondary">10sp</dimen>
-    <dimen name="caption_text_size_tiertiery">8sp</dimen>
 
-    <dimen name="nextup_poster_height">90dp</dimen>
-    <dimen name="nextup_poster_width">165dp</dimen>
-    <dimen name="nextup_text_width">124dp</dimen>
-    <dimen name="nextup_view_margin">30dp</dimen>
-    <dimen name="nextup_view_padding">8dp</dimen>
-
-    <dimen name="nextup_view_padding_small">4dp</dimen>
-    <dimen name="nextup_view_textsize_main">12sp</dimen>
-    <dimen name="nextup_view_textsize_secondary">10sp</dimen>
-    <dimen name="nextup_view_textsize_tiertiery">8sp</dimen>
-    <dimen name="nextup_btn_height">20dp</dimen>
-
-    <dimen name="detail_side_padding">20dp</dimen>
     <dimen name="detail_text_padding">4dp</dimen>
-    <dimen name="detail_icons_height">40dp</dimen>
-    <dimen name="detail_icons_height_padding">5dp</dimen>
 
     <dimen name="codeccard_height">60dp</dimen>
     <dimen name="codeccard_width">140dp</dimen>
@@ -80,8 +44,6 @@
     <dimen name="about_text">14sp</dimen>
     <dimen name="about_padding">16dp</dimen>
     <dimen name="about_list_padding">48dp</dimen>
-
-    <dimen name="subtitle_text_size">24sp</dimen>
 
     <dimen name="codec_choice_image_minwidth">50dp</dimen>
     <dimen name="codec_choice_image_maxwidth">60dp</dimen>
@@ -100,8 +62,6 @@
     <dimen name="toolbar_list_padding_top">0dp</dimen>
     <dimen name="toolbar_buttonheight">25dp</dimen>
 
-    <dimen name="lb_playback_controls_padding_top">320dp</dimen>
-
     <dimen name="lb_details_overview_action_items_margin">16dp</dimen>
 
     <dimen name="lb_hovercard_margin_top">12dp</dimen>
@@ -111,18 +71,10 @@
 
     <dimen name="icon_side_margin">8dp</dimen>
 
-    <dimen name="playback_ui_title_row">26sp</dimen>
-    <dimen name="playback_ui_clock_row">26sp</dimen>
-    <dimen name="playback_ui_subtitle_row">12sp</dimen>
-    <dimen name="playback_ui_date_row">12sp</dimen>
     <dimen name="playback_text_padding">12dp</dimen>
-    <dimen name="playback_text_smallpadding">6dp</dimen>
     <dimen name="playback_ui_studio_height">24dp</dimen>
     <dimen name="playback_ui_icons_height">14dp</dimen>
-    <dimen name="playback_ui_codec_border">8dp</dimen>
     <dimen name="playback_ui_codec_padding">4dp</dimen>
-    <dimen name="playback_ui_codec_padding_half">3dp</dimen>
-    <dimen name="playback_ui_small_row">12sp</dimen>
     <dimen name="playback_ui_card">8dp</dimen>
     <dimen name="playback_ui_time_top_padding">145dp</dimen>
     <dimen name="playback_ui_time_bottom_padding">15dp</dimen>

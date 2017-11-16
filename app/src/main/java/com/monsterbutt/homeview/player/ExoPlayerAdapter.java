@@ -74,7 +74,7 @@ public class ExoPlayerAdapter extends PlayerAdapter implements Player.EventListe
   /**
    * Constructor.
    */
-  public ExoPlayerAdapter(Context context, RenderersFactory factory, TrackSelector selector, SubtitleView view) {
+  ExoPlayerAdapter(Context context, RenderersFactory factory, TrackSelector selector, SubtitleView view) {
     mContext = context;
     mPlayer = ExoPlayerFactory.newSimpleInstance(factory == null ? new DefaultRenderersFactory(context) : factory,
      selector == null ? new DefaultTrackSelector() : selector,
@@ -110,7 +110,7 @@ public class ExoPlayerAdapter extends PlayerAdapter implements Player.EventListe
     mPlayer.stop();
   }
 
-  void changeToUninitialized() {
+  private void changeToUninitialized() {
     if (mInitialized) {
       mInitialized = false;
       notifyBufferingStartEnd();
@@ -124,7 +124,7 @@ public class ExoPlayerAdapter extends PlayerAdapter implements Player.EventListe
    * Notify the state of buffering. For example, an app may enable/disable a loading figure
    * according to the state of buffering.
    */
-  void notifyBufferingStartEnd() {
+  private void notifyBufferingStartEnd() {
     getCallback().onBufferingStateChanged(ExoPlayerAdapter.this,
      mBufferingStart || !mInitialized);
   }
@@ -179,7 +179,7 @@ public class ExoPlayerAdapter extends PlayerAdapter implements Player.EventListe
     mHandler.postDelayed(mRunnable, getUpdatePeriod());
   }
 
-  int getUpdatePeriod() {
+  private int getUpdatePeriod() {
     return 16;
   }
 
@@ -240,22 +240,17 @@ public class ExoPlayerAdapter extends PlayerAdapter implements Player.EventListe
   /**
    * Sets the media source of the player with a given URI.
    *
-   * @return Returns <code>true</code> if uri represents a new media; <code>false</code>
    * otherwise.
    * @see ExoPlayer#prepare(MediaSource)
    */
-  public boolean setDataSource(Uri uri) {
+  void setDataSource(Uri uri) {
     if (mMediaSourceUri != null ? mMediaSourceUri.equals(uri) : uri == null) {
-      return false;
+      return;
     }
     mMediaSourceUri = uri;
     prepareMediaForPlaying();
-    return true;
   }
 
-  public int getAudioStreamType() {
-    return mAudioStreamType;
-  }
 
   public void setAudioStreamType(@C.StreamType int audioStreamType) {
     mAudioStreamType = audioStreamType;

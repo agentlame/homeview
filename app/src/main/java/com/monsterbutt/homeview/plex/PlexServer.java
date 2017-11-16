@@ -3,6 +3,7 @@ package com.monsterbutt.homeview.plex;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.JsonReader;
 import android.util.Log;
@@ -12,7 +13,9 @@ import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.plex.media.Show;
 import com.monsterbutt.homeview.services.UpdateRecommendationsService;
+import com.monsterbutt.homeview.ui.C;
 import com.monsterbutt.homeview.ui.HubInfo;
+import com.monsterbutt.homeview.ui.interfaces.IMediaObserver;
 
 import java.io.BufferedOutputStream;
 import java.io.InputStreamReader;
@@ -31,9 +34,6 @@ import us.nineworlds.plex.rest.PlexappFactory;
 import us.nineworlds.plex.rest.config.impl.Configuration;
 import us.nineworlds.plex.rest.model.impl.Directory;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
-import us.nineworlds.plex.rest.model.impl.Video;
-
-import static org.fourthline.cling.binding.xml.Descriptor.Device.ELEMENT.url;
 
 
 public class PlexServer {
@@ -44,8 +44,8 @@ public class PlexServer {
     private static final String PREFS_LAST_SERVER_PORT  = "LastServerPort";
     private static final String PREFS_TOKENS            = "ServerTokens";
     private static final String PREFS_DEVICE_ID         = "DeviceId";
+    private static final String BASE_DEVICE_ID           = "-HomeView-Android";
     public static final  String DEFAULT_SERVER_PORT     = "32400";
-    public static final String BASE_DEVICE_ID           = "-HomeView-Android";
     public static final long INVALID_RATING_KEY         = 0;
 
     public enum SearchType {SEARCH_EPISODE,
@@ -55,12 +55,16 @@ public class PlexServer {
     private  String mServerName;
     private Configuration mConfiguration = new Configuration();
     private PlexappFactory mFactory = null;
-    private boolean mIsPIPActive = false;
     private long mCurrentPlayingRatingKey = INVALID_RATING_KEY;
     private HashMap<String, String> mTokens = new HashMap<>();
     private String mServerKey;
 
+    private StatusWatcher statusWatcher = null;
+
     public PlexServer(Context context) {
+
+        if (context == null)
+            return;
 
         SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         readTokens(prefs);
@@ -83,6 +87,19 @@ public class PlexServer {
         }
     }
 
+    @Override
+    public boolean equals(Object r) {
+      if (!(r instanceof PlexServer))
+        return false;
+      else if (r == this)
+        return true;
+      PlexServer rServer = (PlexServer) r;
+      return mServerName.equals(rServer.mServerName) &&
+          mServerKey.equals(rServer.mServerKey) &&
+          mConfiguration.getHost().equals(rServer.mConfiguration.getHost()) &&
+          mConfiguration.getPort().equals(rServer.mConfiguration.getPort());
+    }
+
     private String makeServerKey(String name, String host, String port) {
         return name + ":" + host + ":" + port;
     }
@@ -96,7 +113,7 @@ public class PlexServer {
             ret = UUID.randomUUID().toString() + BASE_DEVICE_ID;
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
                     .putString(PREFS_DEVICE_ID, ret)
-                    .commit();
+                    .apply();
         }
         return ret;
     }
@@ -143,31 +160,31 @@ public class PlexServer {
     public String getServerName() { return mServerName; }
     public String getServerAddress() { return String.format("%s:%s", mConfiguration.getHost(), mConfiguration.getPort()); }
 
-    public void saveAsLastServer(Context context) {
+    void saveAsLastServer(Context context) {
 
         synchronized (this) {
 
-            String tokens = "";
+            StringBuilder tokens = new StringBuilder();
             Set<String> keys = mTokens.keySet();
             for (String key : keys) {
-                if (!tokens.isEmpty())
-                    tokens += ";";
-                tokens += key + "|" + mTokens.get(key);
+                if (tokens.length() > 0)
+                    tokens.append(";");
+                tokens.append(key).append("|").append(mTokens.get(key));
             }
 
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
                     .putString(PREFS_LAST_SERVER_NAME, mServerName)
                     .putString(PREFS_LAST_SERVER_HOST, mConfiguration.getHost())
                     .putString(PREFS_LAST_SERVER_PORT, mConfiguration.getPort())
-                    .putString(PREFS_TOKENS, tokens)
-                    .commit();
+                    .putString(PREFS_TOKENS, tokens.toString())
+                    .apply();
         }
     }
 
-    public boolean isValid() { return !mServerName.isEmpty() && !mConfiguration.getHost().isEmpty()
+    public boolean isValid() { return !TextUtils.isEmpty(mServerName) && !mConfiguration.getHost().isEmpty()
         && hasServerToken(); }
 
-    public boolean verifyInstance(Context context) {
+    boolean verifyInstance() {
 
         boolean ret = false;
         synchronized (this) {
@@ -216,7 +233,7 @@ public class PlexServer {
 
             try {
                 if (!TextUtils.isEmpty(hub.key))
-                    ret = mFactory.retrieveVideoMetaData(hub.path);
+                    ret = mFactory.retrieveMetaData(hub.path, false);
 
             } catch (Exception e) {
 
@@ -306,30 +323,13 @@ public class PlexServer {
         return ret;
     }
 
-    public MediaContainer getSection(String sectionKey) {
-
-        MediaContainer ret = null;
-        if (mFactory != null) {
-
-            try {
-                ret = mFactory.retrieveSections(sectionKey);
-            }
-            catch (Exception e) {
-                Log.e(getClass().getName(), e.toString());
-            }
-        }
-        return ret;
-    }
-
     public MediaContainer getSectionFilter(String sectionKey, String filter) {
 
         MediaContainer ret = null;
         if (mFactory != null) {
-
             try {
                 ret = mFactory.retrieveSections(sectionKey, filter);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 Log.e(getClass().getName(), e.toString());
             }
         }
@@ -342,7 +342,7 @@ public class PlexServer {
         if (mFactory != null) {
 
             try {
-                ret = mFactory.retrieveVideoMetaData(key);
+                ret = mFactory.retrieveMetaData(key, false);
             }
             catch (Exception e) {
                 Log.e(getClass().getName(), e.toString());
@@ -366,13 +366,13 @@ public class PlexServer {
         return ret;
     }
 
-    public MediaContainer getVideoMetadata(String key, boolean isShow) {
+    public MediaContainer getVideoMetadata(String key) {
 
         MediaContainer ret = null;
         if (mFactory != null) {
 
             try {
-                ret = mFactory.retrieveMovieMetaData(key, isShow);
+                ret = mFactory.retrieveMetaData(key, true);
             }
             catch (Exception e) {
                 Log.e(getClass().getName(), e.toString());
@@ -382,7 +382,8 @@ public class PlexServer {
     }
 
     public boolean deleteMedia(String key) {
-
+        if (statusWatcher != null)
+            statusWatcher.changeStatus(key, C.StatusChanged.SetDeleted);
         boolean ret = false;
         if (mFactory != null) {
 
@@ -401,7 +402,7 @@ public class PlexServer {
         return ret;
     }
 
-    public MediaContainer searchForMedia(String section, String filter, SearchType type, String query) {
+    private MediaContainer searchForMedia(String section, SearchType type, String query) {
 
         MediaContainer ret = null;
         if (mFactory != null) {
@@ -429,7 +430,7 @@ public class PlexServer {
     }
 
 
-    public List<MediaContainer> searchForMedia(Directory section, String filter, String query) {
+    private List<MediaContainer> searchForMedia(Directory section, String query) {
 
         List<MediaContainer> ret = new ArrayList<>();
         if (mFactory != null) {
@@ -440,17 +441,17 @@ public class PlexServer {
 
                 if (type.equals(Show.TYPE)) {
 
-                    MediaContainer result = searchForMedia(key, filter, SearchType.SEARCH_SERIES, query);
+                    MediaContainer result = searchForMedia(key, SearchType.SEARCH_SERIES, query);
                     if (result != null && result.getDirectories() != null && !result.getDirectories().isEmpty())
                         ret.add(result);
 
-                    result = searchForMedia(key, filter, SearchType.SEARCH_EPISODE, query);
+                    result = searchForMedia(key, SearchType.SEARCH_EPISODE, query);
                     if (result != null && result.getVideos() != null && !result.getVideos().isEmpty())
                         ret.add(result);
                 }
                 else if (type.equals(Movie.TYPE)) {
 
-                    MediaContainer result = searchForMedia(key, filter, SearchType.SEARCH_MOVIES, query);
+                    MediaContainer result = searchForMedia(key, SearchType.SEARCH_MOVIES, query);
                     if (result != null && result.getVideos() != null && !result.getVideos().isEmpty())
                         ret.add(result);
                 }
@@ -464,7 +465,7 @@ public class PlexServer {
     }
 
 
-    public List<MediaContainer> searchShowsForEpisodes(String filter, String query) {
+    public List<MediaContainer> searchShowsForEpisodes(String query) {
 
         List<MediaContainer> ret = new ArrayList<>();
         if (mFactory != null) {
@@ -479,13 +480,13 @@ public class PlexServer {
                         if (!section.getType().equals(Show.TYPE))
                             continue;
 
-                        MediaContainer shows = searchForMedia(section.getKey(), filter, SearchType.SEARCH_SERIES, query);
+                        MediaContainer shows = searchForMedia(section.getKey(), SearchType.SEARCH_SERIES, query);
                         if (shows != null && shows.getDirectories() != null) {
 
                             for (Directory show : shows.getDirectories()) {
 
                                 String showKey = show.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS);
-                                MediaContainer showResult = mFactory.retrieveMovieMetaData(showKey, false);
+                                MediaContainer showResult = mFactory.retrieveMetaData(showKey, true);
                                 if (showResult != null && showResult.getVideos() != null) {
 
                                     showResult.setGrandparentKey(show.getKey());
@@ -504,7 +505,7 @@ public class PlexServer {
         return ret;
     }
 
-    public List<MediaContainer> searchForMedia(String filter, String query) {
+    public List<MediaContainer> searchForMedia(String query) {
 
         List<MediaContainer> ret = new ArrayList<>();
         if (mFactory != null) {
@@ -516,7 +517,7 @@ public class PlexServer {
 
                     for (Directory dir : sections.getDirectories()) {
 
-                        List<MediaContainer> results = searchForMedia(dir, filter, query);
+                        List<MediaContainer> results = searchForMedia(dir, query);
                         if (!results.isEmpty())
                             ret.addAll(results);
                     }
@@ -530,14 +531,6 @@ public class PlexServer {
         return ret;
     }
 
-    public List<MediaContainer> searchForMedia(String query) {
-        return searchForMedia(PlexContainerItem.ALL, query);
-    }
-
-    public List<MediaContainer> searchShowsForEpisodes(String query) {
-        return searchShowsForEpisodes(PlexContainerItem.ALL, query);
-    }
-
     private void updateNotifications(Context context) {
 
         if (context != null) {
@@ -548,8 +541,9 @@ public class PlexServer {
 
     public boolean setUnwatched(String key, String ratingKey, Context context) {
 
+        if (statusWatcher != null)
+            statusWatcher.changeStatus(key, C.StatusChanged.SetUnwatched);
         if (mFactory != null) {
-
             Log.d("PlexServer", "Setting UnWatched for : " + ratingKey);
             try {
                 return mFactory.setUnWatched(key, ratingKey);
@@ -565,6 +559,8 @@ public class PlexServer {
     public boolean setWatched(String key, String ratingKey, Context context) {
 
         boolean ret = false;
+        if (statusWatcher != null)
+            statusWatcher.changeStatus(key, C.StatusChanged.SetWatched);
         if (mFactory != null) {
             Log.d("PlexServer", "Setting Watched for : " + ratingKey);
             try {
@@ -578,11 +574,12 @@ public class PlexServer {
         return ret;
     }
 
-    public boolean toggleWatchedState(String key, String ratingKey, boolean isWatched, Context context) {
+    public void toggleWatchedState(String key, String ratingKey, boolean isWatched, Context context) {
 
         if (isWatched)
-            return setUnwatched(key, ratingKey, context);
-        return setWatched(key, ratingKey, context);
+            setUnwatched(key, ratingKey, context);
+        else
+            setWatched(key, ratingKey, context);
     }
 
     public boolean setProgress(String key, String ratingKey, long progress) {
@@ -607,14 +604,6 @@ public class PlexServer {
         if (!TextUtils.isEmpty(theme))
             theme = makeServerURL(theme);
         return theme;
-    }
-
-    public boolean isPIPActive() {
-        return mIsPIPActive;
-    }
-
-    public void isPIPActive(boolean active) {
-        mIsPIPActive = active;
     }
 
     public void setCurrentPlayingVideoRatingKey(long ratingKey) {
@@ -653,23 +642,21 @@ public class PlexServer {
             mConfiguration.fillRequestProperties(con);
             con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             OutputStream os = new BufferedOutputStream(con.getOutputStream());
-            StringBuilder data = new StringBuilder();
-            data.append(URLEncoder.encode("user[login]", "UTF-8"));
-            data.append("=");
-            data.append(URLEncoder.encode(user, "UTF-8"));
-            data.append("&");
-            data.append(URLEncoder.encode("user[password]", "UTF-8"));
-            data.append("=");
-            data.append(URLEncoder.encode(pass, "UTF-8"));
-            os.write(data.toString().getBytes());
+            String data = URLEncoder.encode("user[login]", "UTF-8") +
+             "=" +
+             URLEncoder.encode(user, "UTF-8") +
+             "&" +
+             URLEncoder.encode("user[password]", "UTF-8") +
+             "=" +
+             URLEncoder.encode(pass, "UTF-8");
+            os.write(data.getBytes());
             os.flush();
             int responseCode = con.getResponseCode();
             if (responseCode != HttpsURLConnection.HTTP_OK &&
                 responseCode != HttpsURLConnection.HTTP_CREATED)
                 return false;
 
-            JsonReader reader = new JsonReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
-            try {
+            try (JsonReader reader = new JsonReader(new InputStreamReader(con.getInputStream(), "UTF-8"))) {
                 reader.beginObject();
                 String userObj = reader.nextName();
                 if (userObj.equals("user")) {
@@ -690,8 +677,6 @@ public class PlexServer {
                     reader.endObject();
                 }
                 reader.endObject();
-            } finally {
-                reader.close();
             }
 
         } catch (Exception ex) {
@@ -702,5 +687,15 @@ public class PlexServer {
             }
         }
         return ret;
+    }
+
+    public synchronized StatusWatcher.StatusWatcherObserver registerUIObserver(@NonNull IMediaObserver observer) {
+        if (statusWatcher == null)
+            statusWatcher = new StatusWatcher();
+        return statusWatcher.registerObserver(observer);
+    }
+
+    void release() {
+        statusWatcher = null;
     }
 }

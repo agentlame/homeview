@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.monsterbutt.homeview">
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.monsterbutt.homeview">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -22,7 +23,8 @@
         android:required="true" />
 
     <application
-        android:allowBackup="true"
+        android:name="com.monsterbutt.Homeview"
+        android:allowBackup="false"
         android:icon="@drawable/launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -30,13 +32,12 @@
         android:theme="@style/AppTheme">
 
         <activity
-            android:name=".ui.activity.OnBoardingActivity"
+            android:name=".ui.main.MainActivity"
             android:banner="@drawable/banner"
             android:icon="@drawable/launcher"
             android:label="@string/app_name"
             android:logo="@drawable/launcher"
-            android:screenOrientation="landscape"
-            android:noHistory="true" >
+            android:screenOrientation="landscape">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -54,25 +55,17 @@
 
         </activity>
 
-        <activity
-            android:name=".ui.activity.MainActivity"
-            android:banner="@drawable/banner"
-            android:icon="@drawable/launcher"
-            android:label="@string/app_name"
-            android:logo="@drawable/launcher"
-            android:screenOrientation="landscape" />
-
-        <activity android:name=".ui.activity.AboutActivity" />
-        <activity android:name=".ui.activity.ServerChoiceActivity" />
-        <activity android:name=".ui.activity.SettingsActivity" />
-        <activity android:name=".ui.activity.SettingEditTextActivity" />
-        <activity android:name=".ui.activity.SettingsArrayActivity" />
-        <activity android:name=".ui.activity.SectionHubActivity" />
-        <activity android:name=".ui.activity.UpnpServersActivity" />
-        <activity android:name=".ui.activity.UpnpItemsActivity" />
+        <activity android:name=".ui.settings.AboutActivity" />
+        <activity android:name=".ui.main.ServerChoiceActivity" />
+        <activity android:name=".ui.settings.SettingsActivity" />
+        <activity android:name=".ui.settings.SettingEditTextActivity" />
+        <activity android:name=".ui.settings.SettingsArrayActivity" />
+        <activity android:name=".ui.sectionhub.SectionHubActivity" />
+        <activity android:name=".ui.upnp.UpnpServersActivity" />
+        <activity android:name=".ui.upnp.UpnpItemsActivity" />
 
         <activity
-            android:name="com.monsterbutt.homeview.ui.activity.SearchActivity"
+            android:name="com.monsterbutt.homeview.ui.search.SearchActivity"
             android:exported="true" >
 
             <intent-filter>
@@ -86,7 +79,7 @@
         </activity>
 
         <activity
-            android:name=".ui.activity.PlaybackActivity"
+            android:name=".ui.playback.PlaybackActivity"
             android:resizeableActivity="true"
             android:supportsPictureInPicture="true"
             android:launchMode="singleTask"
@@ -104,7 +97,7 @@
         </activity>
 
         <activity
-            android:name=".ui.activity.DetailsActivity" >
+            android:name=".ui.details.DetailsActivity" >
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -118,7 +111,7 @@
         </activity>
 
         <activity
-            android:name=".ui.activity.ContainerActivity" >
+            android:name=".ui.grid.GridActivity" >
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -152,7 +145,7 @@
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <receiver
-            android:name="com.monsterbutt.homeview.receivers.OnInstallReceiver"
+            android:name="com.monsterbutt.homeview.OnInstallReceiver"
             android:enabled="true"
             android:exported="true">
 
@@ -163,7 +156,7 @@
         </receiver>
 
         <receiver
-            android:name="com.monsterbutt.homeview.ui.activity.BootupActivity"
+            android:name="com.monsterbutt.homeview.BootupActivity"
             android:enabled="true"
             android:exported="false">
 
@@ -176,17 +169,20 @@
         <provider
             android:name=".provider.MediaContentProvider"
             android:authorities="com.monsterbutt.homeview.provider.MediaContentProvider"
-            android:exported="true" />
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
 
         <provider
             android:name="com.monsterbutt.homeview.provider.BackgroundContentProvider"
             android:authorities="com.monsterbutt.homeview.provider.BackgroundContentProvider"
-            android:exported="true" />
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
 
         <provider
             android:name="com.monsterbutt.homeview.provider.SearchImagesProvider"
             android:authorities="com.monsterbutt.homeview.provider.SearchImagesProvider"
-            android:exported="true" />
+            android:exported="true"
+            tools:ignore="ExportedContentProvider"/>
 
     </application>
 

@@ -18,22 +18,14 @@ public class VideoFormat extends PlexLibraryItem implements Parcelable {
     private final Media mMedia;
     private final int mType;
 
-    public final static int VideoFormat_Type_Codec = 1;
-    public final static int VideoFormat_Type_Resolution = 2;
-    public final static int VideoFormat_Type_FrameRate = 3;
-    public final static int VideoFormat_Type_AspectRatio = 4;
 
     public final static String VideoCodec = "videoCodec";
     public final static String VideoResolution = "videoResolution";
     public final static String VideoFrameRate = "videoFrameRate";
     public final static String VideoAspectRatio = "aspectRatio";
 
-    public VideoFormat(Media media, int type) {
-        mMedia = media;
-        mType = type;
-    }
 
-    protected VideoFormat(Parcel in) {
+    private VideoFormat(Parcel in) {
         mMedia = in.readParcelable(Media.class.getClassLoader());
         mType = in.readInt();
     }
@@ -66,11 +58,6 @@ public class VideoFormat extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public String getSectionTitle() {
-        return "";
-    }
-
-    @Override
     public String getType() {
         return Integer.toString(mType);
     }
@@ -91,17 +78,7 @@ public class VideoFormat extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public String getArt() {
-        return null;
-    }
-
-    @Override
     public long getAddedAt() {
-        return 0;
-    }
-
-    @Override
-    public long getUpdatedAt() {
         return 0;
     }
 
@@ -186,7 +163,7 @@ public class VideoFormat extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride, boolean isStartOverride) {
+    public void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride) {
 
     }
 

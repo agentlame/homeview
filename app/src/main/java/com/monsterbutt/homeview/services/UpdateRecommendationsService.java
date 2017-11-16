@@ -40,9 +40,9 @@ import com.monsterbutt.homeview.plex.media.Show;
 import com.monsterbutt.homeview.provider.BackgroundContentProvider;
 import com.monsterbutt.homeview.settings.SettingsManager;
 import com.monsterbutt.homeview.ui.HubInfo;
-import com.monsterbutt.homeview.ui.activity.ContainerActivity;
-import com.monsterbutt.homeview.ui.activity.DetailsActivity;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.grid.GridActivity;
+import com.monsterbutt.homeview.ui.details.DetailsActivity;
+import com.monsterbutt.homeview.ui.playback.PlaybackActivity;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -106,8 +106,7 @@ public class UpdateRecommendationsService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        Context context = getApplicationContext();
-        PlexServer server = PlexServerManager.getInstance(context, null).getSelectedServer();
+        PlexServer server = PlexServerManager.getInstance().getSelectedServer();
         if (server == null)
             return;
 
@@ -117,6 +116,7 @@ public class UpdateRecommendationsService extends IntentService {
 
         long excludeKey = server.getCurrentPlayingVideoRatingKey();
 
+        Context context = getApplicationContext();
         NotificationHandler notifications = new NotificationHandler(context, server, excludeKey);
         ChannelHandler channels = new ChannelHandler(context, server);
         for (Hub hub : container.getHubs()) {
@@ -331,7 +331,7 @@ public class UpdateRecommendationsService extends IntentService {
             if (hubIdentifier.equals(homeShows) || hubIdentifier.equals(homeMovies)) {
 
                 String limitResultsKey = "&X-Plex-Container-Start=0&X-Plex-Container-Size=";
-                String maxCount = SettingsManager.getInstance(context).getString("preferences_navigation_hubsizelimit");
+                String maxCount = SettingsManager.getInstance().getString("preferences_navigation_hubsizelimit");
                 MediaContainer mc = server.getHubsData(new HubInfo(hub.getTitle(), hub.getKey(), hub.getKey() + limitResultsKey + maxCount));
                 vids = mc.getVideos();
                 dirs = mc.getDirectories();
@@ -369,7 +369,7 @@ public class UpdateRecommendationsService extends IntentService {
                     item = PlexVideoItem.getItem(currVid);
                     List<PlexLibraryItem> extras = item != null ? item.getExtraItems() : null;
                     if (item != null && (extras == null || extras.isEmpty())) {
-                        MediaContainer mc = server.getVideoMetadata(item.getKey(), false);
+                        MediaContainer mc = server.getVideoMetadata(item.getKey());
                         if (mc != null) {
                             PlexVideoItem newItem = PlexVideoItem.getItem(mc.getVideos().get(0));
                             if (newItem != null && newItem.getKey().equals(item.getKey()))
@@ -639,7 +639,7 @@ public class UpdateRecommendationsService extends IntentService {
 
                 default:
 
-                    appLinkUri = ContainerActivity.URI + movie.getKey();
+                    appLinkUri = GridActivity.URI + movie.getKey();
                     break;
             }
             builder

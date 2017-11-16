@@ -41,7 +41,7 @@ public class GetVideoQueueTask extends PlexServerTask {
 
             final long BAD_RATING_KEY = 0;
             long keyCheck = BAD_RATING_KEY;
-            MediaContainer mc = server.getVideoMetadata(metadataKey, false);
+            MediaContainer mc = server.getVideoMetadata(metadataKey);
             if (mc != null && mc.getDirectories() != null) {
 
                 String viewGroup = mc.getViewGroup();
@@ -50,9 +50,9 @@ public class GetVideoQueueTask extends PlexServerTask {
 
                         // show seasons, get all episodes of show, first unwatched is current
                         Directory all = mc.getDirectories().get(0);
-                        mc = server.getVideoMetadata(all.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS), false);
+                        mc = server.getVideoMetadata(all.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS));
                         if (mc != null && mc.getVideos() == null)
-                            mc = server.getVideoMetadata(all.getKey(), false);
+                            mc = server.getVideoMetadata(all.getKey());
                         break;
                     case Show.TYPE:
 
@@ -64,14 +64,14 @@ public class GetVideoQueueTask extends PlexServerTask {
                         for (Directory dir : mc.getDirectories()) {
 
                             MediaContainer show = server.getVideoMetadata(
-                             dir.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS), false);
+                             dir.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS));
                             if (show != null && show.getVideos() != null)
                                 mc.getVideos().addAll(show.getVideos());
                         }
                         break;
                     case SECONDARY:
 
-                        mc = server.getVideoMetadata(metadataKey + "/all", false);
+                        mc = server.getVideoMetadata(metadataKey + "/all");
                         if (mc.getVideos() == null) {
 
                             if (mc.getVideos() == null)
@@ -79,7 +79,7 @@ public class GetVideoQueueTask extends PlexServerTask {
                             for (Directory dir : mc.getDirectories()) {
 
                                 MediaContainer show = server.getVideoMetadata(
-                                 dir.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS), false);
+                                 dir.getKey().replace(PlexContainerItem.CHILDREN, Season.ALL_SEASONS));
                                 if (show != null && show.getVideos() != null)
                                     mc.getVideos().addAll(show.getVideos());
                             }
@@ -108,7 +108,7 @@ public class GetVideoQueueTask extends PlexServerTask {
                         // no viewgroup with grandparent is a episode, get all episodes for show
                         mc = server.getVideoMetadata(vid.getKey().replace(Long.toString(keyCheck),
                                 Long.toString(vid.getGrandparentRatingKey()))
-                                + "/" + Season.ALL_SEASONS, false);
+                                + "/" + Season.ALL_SEASONS);
                     }
                 }
                 else if (viewGroup.equals(Episode.TYPE)){
@@ -132,7 +132,7 @@ public class GetVideoQueueTask extends PlexServerTask {
                         replaceKey = Long.toString(first.getGrandparentRatingKey());
                     String showKey = first.getKey().replace(Long.toString(first.getRatingKey()),
                             replaceKey) + "/" + Season.ALL_SEASONS;
-                    mc = server.getVideoMetadata(showKey, false);
+                    mc = server.getVideoMetadata(showKey);
                 }
             }
             // movie, use list, current is first unwatched
@@ -141,6 +141,11 @@ public class GetVideoQueueTask extends PlexServerTask {
 
                 PlexVideoItem lastItem = null;
                 for (Video vid : mc.getVideos()) {
+                    if (vid.getType().equals(Episode.TYPE) && TextUtils.isEmpty(vid.getGrandparentKey())) {
+                        vid.setGrandparentKey(vid.getParentKey().replace(
+                         Long.toString(vid.getParentRatingKey()), Long.toString(mc.getKey())));
+                        vid.setGrandparentRatingKey(mc.getKey());
+                    }
 
                     boolean isFirst = (keyCheck == BAD_RATING_KEY && vid.getViewCount() == 0)
                             || keyCheck == vid.getRatingKey();

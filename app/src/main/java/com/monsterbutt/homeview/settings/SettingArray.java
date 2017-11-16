@@ -18,13 +18,13 @@ public class SettingArray extends SettingValue implements Parcelable {
         public final String value;
         public final String key;
 
-        public ArrayValue(Parcel in) {
+        ArrayValue(Parcel in) {
             value = in.readString();
             index = in.readInt();
             key = in.readString();
         }
 
-        public ArrayValue(int index, String value, String key) {
+        ArrayValue(int index, String value, String key) {
             this.index = index;
             this.value = value;
             this.key = key;
@@ -65,24 +65,24 @@ public class SettingArray extends SettingValue implements Parcelable {
     }
 
 
-    public static final String NODE_NAME = "ListPreference";
+    static final String NODE_NAME = "ListPreference";
 
     private final static String Entries = "entries";
     private final static String EntryValues = "entryValues";
     private final static String DefaultValue = "defaultValue";
 
-    HashMap<String, ArrayValue> mEntriesMap = new HashMap<>();
-    final String mDefValue;
-    String mValue;
+    private HashMap<String, ArrayValue> mEntriesMap = new HashMap<>();
+    private final String mDefValue;
+    private String mValue;
 
-    final String mSectionTitle;
+    private final String mSectionTitle;
 
-    public SettingArray(Context context, String sectionTitle, XmlResourceParser xml) {
+    SettingArray(Context context, String sectionTitle, XmlResourceParser xml) {
         super(context, xml);
 
         final String[] entries = getStringArrayAttribute(context, xml, Entries);
         final String[] entriesValue = getStringArrayAttribute(context, xml, EntryValues);
-        assert(entries.length == entriesValue.length);
+        if (entries.length != entriesValue.length) throw new AssertionError();
         for (int i = 0; i < entries.length; ++i)
             mEntriesMap.put(entriesValue[i], new ArrayValue(i, entries[i], entriesValue[i]));
 
@@ -91,7 +91,7 @@ public class SettingArray extends SettingValue implements Parcelable {
         reload(context);
     }
 
-    public SettingArray(Parcel in) {
+    private SettingArray(Parcel in) {
         super(in);
         mDefValue = in.readString();
         mValue = in.readString();
@@ -121,14 +121,14 @@ public class SettingArray extends SettingValue implements Parcelable {
     public void currentValue(Context context, String value) {
 
         mValue = value;
-        context.getSharedPreferences("", Context.MODE_PRIVATE).edit().putString(key(), value).commit();
+        context.getSharedPreferences("", Context.MODE_PRIVATE).edit().putString(key(), value).apply();
 
-        SettingsManager.getInstance(context).reloadSetting(key());
+        SettingsManager.getInstance().reloadSetting(context, key());
     }
 
     public String currentValue() { return mValue; }
     public Map<String, ArrayValue> values() { return mEntriesMap; }
-    public String defValue() { return mDefValue; }
+    private String defValue() { return mDefValue; }
     public String sectionTitle() { return mSectionTitle; }
 
     public String getValueText() {

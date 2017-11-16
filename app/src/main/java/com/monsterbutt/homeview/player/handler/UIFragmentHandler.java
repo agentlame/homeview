@@ -14,7 +14,7 @@ import com.monsterbutt.homeview.player.notifier.UIFragmentNotifier;
 import com.monsterbutt.homeview.player.notifier.VideoChangedNotifier;
 import com.monsterbutt.homeview.player.track.TrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.ui.android.SelectView;
+import com.monsterbutt.homeview.ui.playback.views.SelectView;
 
 public class UIFragmentHandler
  implements SelectView.SelectViewCaller, UIFragmentNotifier.Observer {

@@ -7,21 +7,21 @@ import android.os.Parcel;
 
 public class SettingBoolean extends SettingValue {
 
-    public static final String NODE_NAME = "CheckBoxPreference";
+    static final String NODE_NAME = "CheckBoxPreference";
 
     private static final String DefaultValue = "defaultValue";
 
-    protected boolean mValue;
-    protected final boolean mDefValue;
+    private boolean mValue;
+    private final boolean mDefValue;
 
-    public SettingBoolean(Context context, XmlResourceParser xml) {
+    SettingBoolean(Context context, XmlResourceParser xml) {
 
         super(context, xml);
         mDefValue = xml.getAttributeBooleanValue(namespace, DefaultValue, false);
         reload(context);
     }
 
-    public SettingBoolean(Parcel in) {
+    private SettingBoolean(Parcel in) {
         super(in);
         mDefValue = in.readInt() == 1;
         mValue = in.readInt() == 1;
@@ -40,12 +40,12 @@ public class SettingBoolean extends SettingValue {
     };
 
     public boolean value() { return mValue; }
-    public boolean defValue() { return mDefValue; }
+    private boolean defValue() { return mDefValue; }
 
     public void value(Context context, boolean value) {
 
         mValue = value;
-        context.getSharedPreferences("", Context.MODE_PRIVATE).edit().putBoolean(key(), value).commit();
+        context.getSharedPreferences("", Context.MODE_PRIVATE).edit().putBoolean(key(), value).apply();
     }
 
     @Override

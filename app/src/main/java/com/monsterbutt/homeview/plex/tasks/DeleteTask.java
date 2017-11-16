@@ -6,21 +6,52 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
-import com.monsterbutt.homeview.presenters.CardObject;
-import com.monsterbutt.homeview.presenters.CardPresenter;
+import com.monsterbutt.homeview.ui.presenters.CardObject;
+import com.monsterbutt.homeview.ui.presenters.CardPresenter;
 
 public class DeleteTask {
 
-  public static void runTask(PlexLibraryItem item, final PlexServer server, final Fragment fragment,
+  private interface Callback {
+    void callback(boolean success);
+  }
+
+  private final Fragment fragment;
+  private final boolean finishAfterDelete;
+  private final CardPresenter.LongClickWatchStatusCallback callback;
+  private final CardObject card;
+
+  public DeleteTask(final PlexLibraryItem item, final PlexServer server, Fragment fragment,
                              final boolean finishAfterDelete, final CardObject card,
                              final CardPresenter.LongClickWatchStatusCallback callback) {
+    this.fragment = fragment;
+    this.finishAfterDelete = finishAfterDelete;
+    this.callback = callback;
+    this.card = card;
+
     if (item != null && !TextUtils.isEmpty(item.getKey())) {
+
+      final Callback taskCallback = new Callback() {
+        @Override
+        public void callback(boolean success) {
+          Toast.makeText(DeleteTask.this.fragment.getContext(),
+           success ? R.string.delete_success : R.string.delete_failed,
+           Toast.LENGTH_LONG).show();
+          if (DeleteTask.this.callback == null && DeleteTask.this.finishAfterDelete &&
+           !DeleteTask.this.fragment.isDetached() && !DeleteTask.this.fragment.getActivity().isFinishing() &&
+           !DeleteTask.this.fragment.getActivity().isDestroyed()) {
+            DeleteTask.this.fragment.getActivity().finish();
+          } else if (DeleteTask.this.callback != null && !DeleteTask.this.finishAfterDelete && DeleteTask.this.card != null) {
+            DeleteTask.this.callback.removeSelected(DeleteTask.this.card);
+          }
+        }
+      };
 
       final String key = item.getKey();
       Context context = fragment.getContext();
@@ -30,7 +61,7 @@ public class DeleteTask {
       alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, context.getString(R.string.delete_dialog_yes),
        new DialogInterface.OnClickListener() {
          public void onClick(DialogInterface dialog, int which) {
-           new DeleteMediaTask(key, server, fragment, finishAfterDelete, callback, card).execute();
+           new DeleteMediaTask(key, server, taskCallback).execute();
            dialog.dismiss();
          }
        });
@@ -46,21 +77,14 @@ public class DeleteTask {
 
   private static class DeleteMediaTask extends AsyncTask<Void, Void, Boolean> {
 
-    private final Fragment fragment;
     private final String key;
     private final PlexServer server;
-    private final boolean finishAfterDelete;
-    private final CardPresenter.LongClickWatchStatusCallback callback;
-    private final CardObject card;
+    private final Callback callback;
 
-    DeleteMediaTask(String key, PlexServer server, Fragment fragment, boolean finishAfterDelete,
-                    CardPresenter.LongClickWatchStatusCallback callback, CardObject card) {
-      this.fragment = fragment;
+    DeleteMediaTask(@NonNull String key, @NonNull PlexServer server, @NonNull Callback callback) {
       this.key = key;
       this.server = server;
       this.callback = callback;
-      this.finishAfterDelete = finishAfterDelete;
-      this.card = card;
     }
 
     @Override
@@ -70,18 +94,7 @@ public class DeleteTask {
 
     @Override
     protected void onPostExecute(Boolean success) {
-
-      Toast.makeText(fragment.getContext(),
-       success ? R.string.delete_success : R.string.delete_failed,
-       Toast.LENGTH_LONG).show();
-
-      if (callback == null && finishAfterDelete &&
-       !fragment.isDetached() && !fragment.getActivity().isFinishing() &&
-       !fragment.getActivity().isDestroyed()) {
-        fragment.getActivity().finish();
-      } else if (callback != null && !finishAfterDelete && card != null) {
-        callback.removeSelected(card);
-      }
+      callback.callback(success);
     }
   }
 }

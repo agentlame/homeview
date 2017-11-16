@@ -8,8 +8,8 @@ import com.monsterbutt.homeview.player.track.MediaTrackSelector;
 import com.monsterbutt.homeview.player.notifier.UIFragmentNotifier;
 import com.monsterbutt.homeview.player.notifier.VideoChangedNotifier;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
-import com.monsterbutt.homeview.ui.android.ResumeChoiceView;
-import com.monsterbutt.homeview.ui.android.SelectView;
+import com.monsterbutt.homeview.ui.playback.views.ResumeChoiceView;
+import com.monsterbutt.homeview.ui.playback.views.SelectView;
 
 public class ResumeChoiceHandler implements VideoChangedNotifier.Observer {
 

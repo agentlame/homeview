@@ -2,13 +2,13 @@ package com.monsterbutt.homeview.player.handler;
 
 
 import android.app.Activity;
+import android.support.v17.leanback.widget.ListRow;
 
 import com.monsterbutt.homeview.player.notifier.ChapterSelectionNotifier;
 import com.monsterbutt.homeview.player.notifier.SwitchChapterNotifier;
 import com.monsterbutt.homeview.player.notifier.UIFragmentNotifier;
-import com.monsterbutt.homeview.ui.PlexItemRow;
-import com.monsterbutt.homeview.ui.android.SelectChapterView;
-import com.monsterbutt.homeview.ui.android.SelectView;
+import com.monsterbutt.homeview.ui.playback.views.SelectChapterView;
+import com.monsterbutt.homeview.ui.playback.views.SelectView;
 
 public class SwitchChapterHandler implements SwitchChapterNotifier.Observer {
 
@@ -28,9 +28,8 @@ public class SwitchChapterHandler implements SwitchChapterNotifier.Observer {
     switchChapterNotifier.register(this);
   }
 
-
   @Override
-  public void switchChapter(PlexItemRow row, int initialPosition) {
+  public void switchChapter(ListRow row, int initialPosition) {
     SelectChapterView view  = new SelectChapterView(mActivity, mChapterSelectionNotifier);
     view.setRow(row, initialPosition, mCaller);
     mUIFragmentNotifier.setView(view);

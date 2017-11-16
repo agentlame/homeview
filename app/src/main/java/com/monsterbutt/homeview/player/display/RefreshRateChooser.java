@@ -2,7 +2,6 @@ package com.monsterbutt.homeview.player.display;
 
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;

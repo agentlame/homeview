@@ -11,8 +11,8 @@
             android:drawable="@drawable/ic_settings_remote_white_48dp">
 
             <intent
-                android:targetPackage="com.monsterbutt.homeview.ui.activity"
-                android:targetClass="com.monsterbutt.homeview.ui.activity.ServerChoiceActivity"/>
+                android:targetPackage="com.monsterbutt.homeview.ui.main"
+                android:targetClass="com.monsterbutt.homeview.ui.main.ServerChoiceActivity"/>
 
         </Preference>
 
@@ -22,8 +22,8 @@
             android:drawable="@drawable/ic_rss_feed_white_48dp">
 
             <intent
-                android:targetPackage="com.monsterbutt.homeview.ui.activity"
-                android:targetClass="com.monsterbutt.homeview.ui.activity.UpnpServersActivity"/>
+                android:targetPackage="com.monsterbutt.homeview.ui.upnp"
+                android:targetClass="com.monsterbutt.homeview.ui.upnp.UpnpServersActivity"/>
 
         </Preference>
 
@@ -179,8 +179,8 @@
             android:drawable="@drawable/ic_help_white_48dp">
 
             <intent
-                android:targetPackage="com.monsterbutt.homeview.ui.activity"
-                android:targetClass="com.monsterbutt.homeview.ui.activity.AboutActivity"/>
+                android:targetPackage="com.monsterbutt.homeview.ui.settings"
+                android:targetClass="com.monsterbutt.homeview.ui.settings.AboutActivity"/>
 
         </Preference>
     </PreferenceCategory>

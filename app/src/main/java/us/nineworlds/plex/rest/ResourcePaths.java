@@ -104,7 +104,7 @@ public class ResourcePaths {
 		return getHostPort() + key;
 	}
 	
-	public String getMovieMetaDataURL(String key, boolean getExtra, boolean isShow) {
+	public String getMovieMetaDataURL(String key, boolean getExtra) {
 
 		if (!getExtra) {
 			String ret = getHostPort() + key;
@@ -122,8 +122,6 @@ public class ResourcePaths {
 			mark +=  getToken() + "&";
 
 		String ret = getHostPort() + key + mark + "includeChapters=1&checkFiles=1&includeExtras=1&includeRelated=1";
-		if (!isShow)
-			ret += "&includeRelatedCount=0";
 		if (key.endsWith("all") && key.startsWith("/library/sections/"))
 			ret = ret.replace("&checkFiles=1", "");
 		return ret;

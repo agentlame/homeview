@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.v17.leanback.widget.ListRow;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.View;
@@ -16,9 +15,7 @@ import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.track.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.track.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.ui.PlexItemRow;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
-import com.monsterbutt.homeview.ui.handler.CardSelectionHandler;
+import com.monsterbutt.homeview.ui.playback.PlaybackActivity;
 
 import org.fourthline.cling.support.model.DIDLObject;
 import org.fourthline.cling.support.model.Res;
@@ -240,11 +237,6 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
     }
 
     @Override
-    public boolean shouldDiscoverQueue() {
-        return false;
-    }
-
-    @Override
     public boolean shouldUpdateStatusOnPlayback() {
         return false;
     }
@@ -252,16 +244,6 @@ public class UpnpItem  extends PlexVideoItem implements Parcelable {
     @Override
     public MediaTrackSelector fillTrackSelector(String baseLanguageCode, MediaCodecCapabilities capabilities) {
 
-        return null;
-    }
-
-    @Override
-    public ListRow getCodecsRow(Context context, PlexServer server, MediaTrackSelector selector) {
-        return null;
-    }
-
-    @Override
-    public PlexItemRow getChildren(Context context, PlexServer server, CardSelectionHandler listener) {
         return null;
     }
 

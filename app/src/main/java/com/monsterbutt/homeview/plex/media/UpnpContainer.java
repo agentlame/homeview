@@ -8,8 +8,8 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.view.View;
 
-import com.monsterbutt.homeview.ui.activity.UpnpItemsActivity;
-import com.monsterbutt.homeview.ui.fragment.UpnpItemsFragment;
+import com.monsterbutt.homeview.ui.upnp.UpnpItemsActivity;
+import com.monsterbutt.homeview.ui.upnp.UpnpItemsFragment;
 
 import org.fourthline.cling.support.model.DIDLObject;
 import org.fourthline.cling.support.model.container.Container;

@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 
+import com.monsterbutt.Homeview;
 import com.monsterbutt.homeview.player.display.ScreenLock;
 import com.monsterbutt.homeview.player.handler.ControlHandler;
 import com.monsterbutt.homeview.player.handler.PlayStatusHandler;
@@ -35,7 +36,7 @@ import com.monsterbutt.homeview.player.notifier.SwitchTrackNotifier;
 import com.monsterbutt.homeview.player.notifier.VideoChangedNotifier;
 import com.monsterbutt.homeview.player.track.TrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.presenters.PlaybackTransportRowPresenter;
+import com.monsterbutt.homeview.ui.presenters.PlaybackTransportRowPresenter;
 
 import static com.monsterbutt.homeview.plex.media.PlexVideoItem.BAD_CHAPTER_START;
 import static com.monsterbutt.homeview.plex.media.PlexVideoItem.START_CHAPTER_THRESHOLD;
@@ -60,8 +61,6 @@ public class VideoMediaPlayerGlue<T extends PlayerAdapter> extends PlaybackTrans
   private final SelectActionHandler mSelectActionHandler;
   private final PlayStatusHandler mPlayStatusHandler;
 
-  private final PlexServer mServer;
-
   private final ScreenLock mScreenLock;
   private boolean wasPausedAfterPlayback = false;
 
@@ -74,7 +73,6 @@ public class VideoMediaPlayerGlue<T extends PlayerAdapter> extends PlaybackTrans
     super(fragment.getContext(), impl);
 
     mScreenLock = screenLock;
-    mServer = server;
 
     Context context = fragment.getContext();
 
@@ -90,11 +88,11 @@ public class VideoMediaPlayerGlue<T extends PlayerAdapter> extends PlaybackTrans
 
     mSelectActionHandler = new SelectActionHandler(fragment.getActivity(), server, this,
      videoChangedNotifier, switchTrackNotifier, switchChapterNotifier);
-    mVideoHandler = new VideoHandler(fragment, this, mServer,
+    mVideoHandler = new VideoHandler(fragment, this, server,
      videoChangedNotifier, queueChangeNotifier, chapterSelectionNotifier);
     mControlHandler = new ControlHandler(fragment.getActivity(), this, videoChangedNotifier,
      playbackGuiVisibleNotifier);
-    mUIHandler = new UIFragmentHandler(fragment, mServer, this, mVideoHandler,
+    mUIHandler = new UIFragmentHandler(fragment, server, this, mVideoHandler,
      videoChangedNotifier, queueChangeNotifier, seekOccuredNotifier,
      switchTrackNotifier, switchChapterNotifier, chapterSelectionNotifier, trackSelector);
     mPlayStatusHandler = new PlayStatusHandler(fragment, server, this,
@@ -190,7 +188,7 @@ public class VideoMediaPlayerGlue<T extends PlayerAdapter> extends PlaybackTrans
 
   public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
     Log.d(TAG, "PIP Mode changed, is in PIP: " + isInPictureInPictureMode);
-    mServer.isPIPActive(isInPictureInPictureMode);
+    Homeview.isPIPActive(isInPictureInPictureMode);
   }
 
   @Override

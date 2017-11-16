@@ -184,10 +184,11 @@ public class TvUtil {
     JobInfo.Builder builder = new JobInfo.Builder(1, componentName);
     builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);
 
-    JobScheduler scheduler =
-     (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+    JobScheduler scheduler = (JobScheduler) context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+    if (scheduler != null) {
+      Log.d(TAG, "Scheduled channel creation.");
 
-    Log.d(TAG, "Scheduled channel creation.");
-    scheduler.schedule(builder.build());
+      scheduler.schedule(builder.build());
+    }
   }
 }

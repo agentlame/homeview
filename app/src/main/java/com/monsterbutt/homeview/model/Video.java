@@ -29,8 +29,9 @@ import android.view.View;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
-import com.monsterbutt.homeview.presenters.CardObject;
+import com.monsterbutt.homeview.ui.presenters.CardObject;
 import com.monsterbutt.homeview.provider.SearchImagesProvider;
+import com.monsterbutt.homeview.ui.C;
 
 import java.io.Serializable;
 
@@ -53,6 +54,7 @@ public final class Video extends CardObject implements Parcelable, Serializable,
     public final String studio;
     public final String rating;
     public final String key;
+    public final String parentKey;
     public final String filePath;
     public final String serverPath;
     public final long   duration;
@@ -86,6 +88,7 @@ public final class Video extends CardObject implements Parcelable, Serializable,
             final String studio,
             final String rating,
             final String key,
+            final String parentKey,
             final String filePath,
             final String serverPath,
             final long duration,
@@ -123,6 +126,7 @@ public final class Video extends CardObject implements Parcelable, Serializable,
         this.studio = studio;
         this.rating = rating;
         this.key = key;
+        this.parentKey = parentKey;
         this.filePath = filePath;
         this.serverPath = serverPath;
         this.duration = duration;
@@ -155,6 +159,7 @@ public final class Video extends CardObject implements Parcelable, Serializable,
         studio = in.readString();
         rating = in.readString();
         key = in.readString();
+        parentKey = in.readString();
         filePath = in.readString();
         serverPath = in.readString();
         duration = in.readLong();
@@ -191,6 +196,11 @@ public final class Video extends CardObject implements Parcelable, Serializable,
     public String getKey() { return key; }
 
     @Override
+    public String getParentKey() {
+        return null;
+    }
+
+    @Override
     public boolean equals(Object m) {
         return m instanceof Video && id == ((Video) m).id;
     }
@@ -212,6 +222,7 @@ public final class Video extends CardObject implements Parcelable, Serializable,
         dest.writeString(studio);
         dest.writeString(rating);
         dest.writeString(key);
+        dest.writeString(parentKey);
         dest.writeString(filePath);
         dest.writeString(serverPath);
         dest.writeLong(duration);
@@ -247,6 +258,7 @@ public final class Video extends CardObject implements Parcelable, Serializable,
         s += ", bgImageUrl:\"" + bgImageUrl + "\"";
         s += ", rating:\"" + rating + "\"";
         s += ", key:\"" + key + "\"";
+        s += ", parentKey:\"" + parentKey + "\"";
         s += ", filePath:\"" + filePath + "\"";
         s += ", serverPath:\"" + serverPath + "\"";
         s += ", frameRate:\"" + frameRate + "\"";
@@ -296,6 +308,9 @@ public final class Video extends CardObject implements Parcelable, Serializable,
     }
 
     @Override
+    public String getSortTitle() { return getTitle(); }
+
+    @Override
     public String getContent() {
         return subtitle;
     }
@@ -328,6 +343,21 @@ public final class Video extends CardObject implements Parcelable, Serializable,
     @Override
     public PlexLibraryItem.WatchedState getWatchedState() {
         return watched;
+    }
+
+    @Override
+    public boolean updateStatus(C.StatusChanged status, int totalCount, int unwatchedCount) {
+        return false;
+    }
+
+    @Override
+    public int getTotalLeaves() {
+        return 0;
+    }
+
+    @Override
+    public int getUnwatchedLeaves() {
+        return 0;
     }
 
     @Override
@@ -376,6 +406,7 @@ public final class Video extends CardObject implements Parcelable, Serializable,
         private String studio = "";
         private String rating = "";
         private String key = "";
+        private String parentKey = "";
         private String filePath = "";
         private String serverPath = "";
         private long   duration = 0;
@@ -447,6 +478,11 @@ public final class Video extends CardObject implements Parcelable, Serializable,
 
         public VideoBuilder key(String key) {
             this.key = key;
+            return this;
+        }
+
+        public VideoBuilder parentKey(String parentKey) {
+            this.parentKey = parentKey;
             return this;
         }
 
@@ -555,6 +591,7 @@ public final class Video extends CardObject implements Parcelable, Serializable,
                     "",
                     "",
                     "",
+                    "",
                     0,
                     0,
                     Watched,
@@ -587,6 +624,7 @@ public final class Video extends CardObject implements Parcelable, Serializable,
                     studio,
                     rating,
                     key,
+                    parentKey,
                     filePath,
                     serverPath,
                     duration,

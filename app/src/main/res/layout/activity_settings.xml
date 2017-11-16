@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_browse_fragment"
-    android:name="com.monsterbutt.homeview.ui.fragment.SettingsFragment"
+    android:name="com.monsterbutt.homeview.ui.settings.SettingsFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.activity.SettingsActivity"
+    tools:context=".ui.settings.SettingsActivity"
     tools:deviceIds="tv"
     tools:ignore="MergeRootFrame" />

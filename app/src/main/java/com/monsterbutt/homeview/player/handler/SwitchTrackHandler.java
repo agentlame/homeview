@@ -8,8 +8,8 @@ import com.monsterbutt.homeview.player.notifier.UIFragmentNotifier;
 import com.monsterbutt.homeview.player.track.MediaTrackSelector;
 import com.monsterbutt.homeview.player.track.TrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.ui.android.SelectView;
-import com.monsterbutt.homeview.ui.android.SwitchTrackView;
+import com.monsterbutt.homeview.ui.playback.views.SelectView;
+import com.monsterbutt.homeview.ui.playback.views.SwitchTrackView;
 
 public class SwitchTrackHandler implements SwitchTrackNotifier.Observer {
 

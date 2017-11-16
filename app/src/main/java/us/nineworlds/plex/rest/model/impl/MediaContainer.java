@@ -33,7 +33,7 @@ import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 
 @Root(name="MediaContainer")
-public class MediaContainer implements Parcelable {
+public class MediaContainer implements Parcelable, IContainer {
 
 	public MediaContainer() {}
 
@@ -257,48 +257,8 @@ public class MediaContainer implements Parcelable {
 		this.size = size;
 	}
 
-	public int getAllowSync() {
-		return allowSync;
-	}
-
-	public void setAllowSync(int allowSync) {
-		this.allowSync = allowSync;
-	}
-
-	public String getIdentifier() {
-		return identifier;
-	}
-
-	public void setIdentifier(String identifier) {
-		this.identifier = identifier;
-	}
-
-	public String getMediaTagPrefix() {
-		return mediaTagPrefix;
-	}
-
-	public void setMediaTagPrefix(String mediaTagPrefix) {
-		this.mediaTagPrefix = mediaTagPrefix;
-	}
-
-	public long getMediaTagVersion() {
-		return mediaTagVersion;
-	}
-
 	public String getArt() {
 		return art;
-	}
-
-	public void setArt(String art) {
-		this.art = art;
-	}
-
-	public int getSortAsc() {
-		return sortAsc;
-	}
-
-	public void setSortAsc(int sortAsc) {
-		this.sortAsc = sortAsc;
 	}
 
 	public String getContent() {

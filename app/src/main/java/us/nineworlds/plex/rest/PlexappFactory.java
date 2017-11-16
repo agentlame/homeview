@@ -208,15 +208,8 @@ public class PlexappFactory {
 		return mediaContainer;
 	}
 
-	public MediaContainer retrieveVideoMetaData(String key) throws Exception {
-		String episodesURL = resourcePath.getMovieMetaDataURL(key, false, false);
-		MediaContainer mediaContainer = serializeResource(episodesURL);
-		return mediaContainer;
-	}
-
-
-	public MediaContainer retrieveMovieMetaData(String key, boolean isShow) throws Exception {
-		String episodesURL = resourcePath.getMovieMetaDataURL(key, true, isShow);
+	public MediaContainer retrieveMetaData(String key, boolean getExtra) throws Exception {
+		String episodesURL = resourcePath.getMovieMetaDataURL(key, getExtra);
 		MediaContainer mediaContainer = serializeResource(episodesURL);
 		return mediaContainer;
 	}

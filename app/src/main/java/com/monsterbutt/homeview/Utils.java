@@ -14,12 +14,9 @@
 
 package com.monsterbutt.homeview;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Point;
 import android.text.TextUtils;
-import android.view.Display;
-import android.view.WindowManager;
-import android.widget.Toast;
 
 /**
  * A collection of utility methods, all static.
@@ -32,67 +29,17 @@ public class Utils {
     private Utils() {
     }
 
-    /**
-     * Returns the screen/display size
-     */
-    public static Point getDisplaySize(Context context) {
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        Display display = wm.getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        return size;
-    }
-
-    /**
-     * Shows a (long) toast
-     */
-    public static void showToast(Context context, String msg) {
-        Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
-    }
-
-    /**
-     * Shows a (long) toast.
-     */
-    public static void showToast(Context context, int resourceId) {
-        Toast.makeText(context, context.getString(resourceId), Toast.LENGTH_LONG).show();
-    }
-
     public static int convertDpToPixel(Context ctx, int dp) {
         float density = ctx.getResources().getDisplayMetrics().density;
         return Math.round((float) dp * density);
     }
 
-    /**
-     * Formats time in milliseconds to hh:mm:ss string format.
-     */
-    public static String formatMillis(int millis) {
-        String result = "";
-        int hr = millis / 3600000;
-        millis %= 3600000;
-        int min = millis / 60000;
-        millis %= 60000;
-        int sec = millis / 1000;
-        if (hr > 0) {
-            result += hr + ":";
-        }
-        if (min >= 0) {
-            if (min > 9) {
-                result += min + ":";
-            } else {
-                result += "0" + min + ":";
-            }
-        }
-        if (sec > 9) {
-            result += sec;
-        } else {
-            result += "0" + sec;
-        }
-        return result;
-    }
 
-    public static long MsInSeconds = 1000;
-    public static long SecondsInMinutes = 60;
-    public static long MinutesInHours = 60;
+
+    private final static long MsInSeconds = 1000;
+    private final static long SecondsInMinutes = 60;
+    private final static long MinutesInHours = 60;
+    @SuppressLint("DefaultLocale")
     public static String timeMStoString(Context context, long timeMs) {
 
         String div = context.getString(R.string.time_divider);
@@ -116,7 +63,7 @@ public class Utils {
         return String.format("%s %s, %s", month, tokens[2], tokens[0]);
     }
 
-    public static String getMonth(Context context, int month) {
+    private static String getMonth(Context context, int month) {
 
         if (context == null)
             return "";

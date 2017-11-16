@@ -10,8 +10,6 @@ import android.database.MatrixCursor;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.v17.leanback.widget.ArrayObjectAdapter;
-import android.support.v17.leanback.widget.ListRow;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.View;
@@ -19,16 +17,14 @@ import android.view.View;
 import com.monsterbutt.homeview.data.VideoContract;
 import com.monsterbutt.homeview.player.track.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.track.MediaTrackSelector;
-import com.monsterbutt.homeview.presenters.CodecCard;
-import com.monsterbutt.homeview.presenters.CodecPresenter;
 import com.monsterbutt.homeview.provider.MediaContentProvider;
 import com.monsterbutt.homeview.provider.SearchImagesProvider;
 import com.monsterbutt.homeview.settings.SettingsManager;
-import com.monsterbutt.homeview.ui.activity.DetailsActivity;
-import com.monsterbutt.homeview.ui.activity.PlaybackActivity;
+import com.monsterbutt.homeview.ui.C;
+import com.monsterbutt.homeview.ui.details.DetailsActivity;
+import com.monsterbutt.homeview.ui.playback.PlaybackActivity;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.ui.handler.WatchedStatusHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,6 +119,9 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     @Override
+    public String getParentKey() { return mVideo.getParentKey(); }
+
+    @Override
     public long getRatingKey() {
         return mVideo.getRatingKey();
     }
@@ -130,11 +129,6 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     @Override
     public String getSectionId() {
         return mVideo.getLibrarySectionID();
-    }
-
-    @Override
-    public String getSectionTitle() {
-        return mVideo.getLibrarySectionTitle();
     }
 
     @Override
@@ -159,18 +153,8 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     @Override
-    public String getArt() {
-        return mVideo.getBackgroundImageKey();
-    }
-
-    @Override
     public long getAddedAt() {
         return mVideo.getTimeAdded();
-    }
-
-    @Override
-    public long getUpdatedAt() {
-        return mVideo.getTimeUpdated();
     }
 
     @Override
@@ -220,10 +204,6 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
 
     String getYear() {
         return mVideo.getYear();
-    }
-
-    public boolean shouldDiscoverQueue() {
-        return false;
     }
 
     @Override
@@ -291,12 +271,19 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     @Override
-    public void setStatus(WatchedStatusHandler.UpdateStatus status) {
-
+    public void setStatus(WatchedState status) {
         if (mVideo == null)
             return;
-        mVideo.setViewOffset(status.viewedOffset);
-        mWatchedState = status.state;
+        switch (status) {
+            case Watched:
+                mWatchedState = WatchedState.Watched;
+                mVideo.setViewOffset(0);
+                break;
+            case Unwatched:
+                mWatchedState = WatchedState.Unwatched;
+                mVideo.setViewOffset(0);
+                break;
+        }
     }
 
     @Override
@@ -341,8 +328,9 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
         Intent intent = new Intent(fragment.getActivity(), DetailsActivity.class);
-        intent.putExtra(DetailsActivity.ITEM, this);
-        intent.putExtra(DetailsActivity.BACKGROUND, getBackgroundImageURL());
+        intent.putExtra(C.ITEM, this);
+        intent.putExtra(C.BACKGROUND, getBackgroundImageURL());
+        intent.putExtra(C.TYPE, getType());
         if (extras != null)
             intent.putExtras(extras);
 
@@ -383,7 +371,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     @Override
-    public void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride, boolean isStartOverride) {
+    public void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride) {
 
         Media media = mVideo.getMedias().get(0);
         boolean isMovie = this instanceof Movie;
@@ -452,7 +440,7 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         row.add(VideoContract.VideoEntry.COLUMN_PRODUCTION_YEAR, year);
         row.add(VideoContract.VideoEntry.COLUMN_DURATION, getDurationMs());
         row.add(VideoContract.VideoEntry.COLUMN_BG_IMAGE_URL, SearchImagesProvider.CONTENT_URI + getBackgroundImageURL());
-        row.add(VideoContract.VideoEntry.COLUMN_SHOULDSTART, isStartOverride ? 1 : 0);
+        row.add(VideoContract.VideoEntry.COLUMN_SHOULDSTART, 0);
         row.add(VideoContract.VideoEntry.COLUMN_KEY, getKey());
         row.add(VideoContract.VideoEntry.COLUMN_SERVERPATH, getMedia().get(0).getVideoPart().get(0).getKey());
         row.add(VideoContract.VideoEntry.COLUMN_FILEPATH, getMedia().get(0).getVideoPart().get(0).getFilename());
@@ -475,65 +463,25 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         return null;
     }
 
-    private void addTrackTypeToCodec(Context context, ArrayObjectAdapter adapter, int trackType, MediaTrackSelector selector) {
-
-        Stream stream = selector.getSelectedTrack(trackType);
-        if (stream != null) {
-            if (trackType == Stream.Video_Stream)
-                stream.setHeight(getMedia().get(0).getVideoResolution());
-            adapter.add(new CodecCard(context, stream, trackType, selector.getCount(trackType)));
-        }
-    }
-
-    public ListRow getCodecsRow(Context context, PlexServer server, MediaTrackSelector selector) {
-
-        ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CodecPresenter(server));
-        adapter.add(new CodecCard(context, getMedia().get(0)));
-        addTrackTypeToCodec(context, adapter, Stream.Video_Stream, selector);
-        addTrackTypeToCodec(context, adapter, Stream.Audio_Stream, selector);
-        addTrackTypeToCodec(context, adapter, Stream.Subtitle_Stream, selector);
-
-        return new ListRow(null, adapter);
-    }
-
     public boolean hasChapters() {
 
         return (mVideo != null && mVideo.getChapters() != null && !mVideo.getChapters().isEmpty());
     }
 
-    public long[] getChapters() {
-
-        if (mVideo == null)
-            return null;
-        List<us.nineworlds.plex.rest.model.impl.Chapter> list = mVideo.getChapters();
-        if (list == null || list.isEmpty())
-            return null;
-        long[] ret = new long[list.size()];
-        int i = 0;
-        for (us.nineworlds.plex.rest.model.impl.Chapter chapter : list)
-            ret[i++] = chapter.getStartTimeOffset();
-        return ret;
-    }
-
     public static long START_CHAPTER_THRESHOLD = 5000;
     public static long BAD_CHAPTER_START = -1;
     public long getPreviousChapterStart(long position) {
-
         long ret = BAD_CHAPTER_START;
         if (hasChapters()) {
-
             us.nineworlds.plex.rest.model.impl.Chapter lastChapter = null;
             for (us.nineworlds.plex.rest.model.impl.Chapter chapter : mVideo.getChapters()) {
-
                 if (chapter.getStartTimeOffset() + START_CHAPTER_THRESHOLD > position) {
-
                     if (lastChapter != null)
                         ret = lastChapter.getStartTimeOffset();
                     break;
                 }
                 lastChapter = chapter;
             }
-
             if (ret == 0 && position < START_CHAPTER_THRESHOLD)
                 ret = BAD_CHAPTER_START;
         }
@@ -609,9 +557,9 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
         // content rating
     }
 
-    public long getNextUpThresholdTrigger(Context context) {
+    public long getNextUpThresholdTrigger() {
 
-        long threshold = Long.valueOf(SettingsManager.getInstance(context).
+        long threshold = Long.valueOf(SettingsManager.getInstance().
                 getString(this instanceof Episode ? "preferences_playback_nextup_episode"
                         : "preferences_playback_nextup_movies").trim());
         long ret = NEXTUP_DISABLED;
@@ -635,9 +583,6 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
 
     @Override
     public String getDetailContent(Context context) { return ""; }
-
-    @Override
-    public String getDetailYear(Context context) { return getYear(); }
 
     @SuppressLint("DefaultLocale")
     @Override

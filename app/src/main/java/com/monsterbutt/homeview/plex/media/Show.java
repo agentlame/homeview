@@ -12,8 +12,9 @@ import android.view.View;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.settings.SettingsManager;
-import com.monsterbutt.homeview.ui.activity.ContainerActivity;
-import com.monsterbutt.homeview.ui.activity.DetailsActivity;
+import com.monsterbutt.homeview.ui.C;
+import com.monsterbutt.homeview.ui.grid.GridActivity;
+import com.monsterbutt.homeview.ui.details.DetailsActivity;
 import com.monsterbutt.homeview.R;
 
 
@@ -99,14 +100,14 @@ public class Show extends PlexContainerItem implements Parcelable {
     @Override
     public boolean onClicked(Fragment fragment, Bundle extras, View transitionView) {
 
-        boolean collapseSingleSeason = SettingsManager.getInstance(fragment.getActivity())
+        boolean collapseSingleSeason = SettingsManager.getInstance()
                                             .getBoolean("preferences_navigation_collapsesingleseason");
         if (collapseSingleSeason && mDirectory.getChildCount() == 1) {
 
-            Intent intent = new Intent(fragment.getActivity(), ContainerActivity.class);
-            intent.putExtra(ContainerActivity.KEY, getKey().replace(Season.CHILDREN, Season.ALL_SEASONS));
-            intent.putExtra(ContainerActivity.EPISODEIST, true);
-            intent.putExtra(ContainerActivity.BACKGROUND, getBackgroundImageURL());
+            Intent intent = new Intent(fragment.getActivity(), GridActivity.class);
+            intent.putExtra(C.KEY, getKey().replace(Season.CHILDREN, Season.ALL_SEASONS));
+            intent.putExtra(C.EPISODEIST, true);
+            intent.putExtra(C.BACKGROUND, getBackgroundImageURL());
             if (extras != null)
                 intent.putExtras(extras);
 
@@ -116,15 +117,15 @@ public class Show extends PlexContainerItem implements Parcelable {
                 bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
                         fragment.getActivity(),
                         transitionView,
-                        ContainerActivity.SHARED_ELEMENT_NAME).toBundle();
+                        GridActivity.SHARED_ELEMENT_NAME).toBundle();
             }
             fragment.startActivity(intent, bundle);
         }
         else {
 
             Intent intent = new Intent(fragment.getActivity(), DetailsActivity.class);
-            intent.putExtra(DetailsActivity.ITEM, this);
-            intent.putExtra(DetailsActivity.BACKGROUND, getBackgroundImageURL());
+            intent.putExtra(C.ITEM, this);
+            intent.putExtra(C.BACKGROUND, getBackgroundImageURL());
             if (extras != null)
                 intent.putExtras(extras);
 

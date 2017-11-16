@@ -107,11 +107,6 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public String getSectionTitle() {
-        return null;
-    }
-
-    @Override
     public String getType() { return Long.toString(mStream.getStreamType()); }
 
     public long getStreamType() { return mStream.getStreamType(); }
@@ -139,17 +134,7 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public String getArt() {
-        return null;
-    }
-
-    @Override
     public long getAddedAt() {
-        return 0;
-    }
-
-    @Override
-    public long getUpdatedAt() {
         return 0;
     }
 
@@ -243,7 +228,7 @@ public class Stream extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride, boolean isStartOverride) {
+    public void fillQueryRow(MatrixCursor.RowBuilder row, Context context, String keyOverride, String yearOverride) {
 
     }
 
@@ -332,10 +317,6 @@ public class Stream extends PlexLibraryItem implements Parcelable {
         }
 
         return "";
-    }
-
-    public int getTrackTypeIndex() {
-        return mTrackTypeIndex;
     }
 
     private String getFrameRate () { return mStream.getFrameRate(); }

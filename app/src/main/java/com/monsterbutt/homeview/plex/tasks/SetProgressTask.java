@@ -4,48 +4,48 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.ui.C;
 
-public class SetProgressTask extends AsyncTask<Long, Void, Boolean> {
+public class SetProgressTask extends AsyncTask<Context, Void, Boolean> {
 
-    public static class VideoId {
+  private final PlexServer server;
+  private final String     key;
+  private final String     ratingKey;
+  private final C.StatusChanged status;
+  private final long offset;
 
-        public final PlexServer server;
-        public final String     key;
-        public final String     ratingKey;
+  SetProgressTask(PlexServer server, String key, String ratingKey, long offset) {
+    this(server, key, ratingKey, C.StatusChanged.Refresh, offset);
+  }
 
-        public VideoId(PlexServer server, String key, String ratingKey) {
+  public SetProgressTask(PlexServer server, String key, String ratingKey, C.StatusChanged status) {
+    this(server, key, ratingKey, status, 0);
+  }
 
-            this.server = server;
-            this.key = key;
-            this.ratingKey = ratingKey;
-        }
+  private SetProgressTask(PlexServer server, String key, String ratingKey,
+                          C.StatusChanged status, long offset) {
+    this.server = server;
+    this.key = key;
+    this.ratingKey = ratingKey;
+    this.status = status;
+    this.offset = offset;
+  }
+
+  @Override
+  protected Boolean doInBackground(Context[] params) {
+    Context context = params != null && params.length > 0 ? params[0] : null;
+    boolean ret = false;
+    switch (status) {
+      case SetWatched:
+        ret = server.setWatched(key, ratingKey, context);
+        break;
+      case SetUnwatched:
+        ret = server.setUnwatched(key, ratingKey, context);
+        break;
+      case Refresh:
+        ret = server.setProgress(key, ratingKey, offset);
+        break;
     }
-
-    public final static long UNWATCHED = 0;
-    public final static long WATCHED = -1;
-
-    private final VideoId id;
-    private final Context context;
-    public SetProgressTask(VideoId id, Context context) {
-        this.id = id;
-        this.context = context;
-    }
-
-    @Override
-    protected Boolean doInBackground(Long[] params) {
-
-        if (params == null || params.length == 0)
-            return false;
-
-        boolean ret;
-        long progressMs = params[0];
-        if (progressMs == WATCHED)
-            ret = id.server.setWatched(id.key, id.ratingKey, context);
-        else if (progressMs == UNWATCHED)
-            ret = id.server.setUnwatched(id.key, id.ratingKey, context);
-        else
-            ret = id.server.setProgress(id.key, id.ratingKey, progressMs);
-
-        return ret;
-    }
+    return ret;
+  }
 }

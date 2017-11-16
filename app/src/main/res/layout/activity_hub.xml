@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_browse_fragment"
-    android:name="com.monsterbutt.homeview.ui.fragment.SectionHubFragment"
+    android:name="com.monsterbutt.homeview.ui.sectionhub.SectionHubFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     style="@style/AppTheme.Browse"
-    tools:context=".ui.activity.SectionHubActivity"
+    tools:context=".ui.sectionhub.SectionHubActivity"
     tools:deviceIds="tv"
     tools:ignore="MergeRootFrame" />

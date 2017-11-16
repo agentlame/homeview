@@ -87,7 +87,7 @@ public class FrameRateSwitcher {
             params.preferredDisplayModeId = requestedMode.getModeId();
             activity.getWindow().setAttributes(params);
 
-            long timeOutValue = SettingsManager.getInstance(context).getLong("preferences_device_refreshrate_timeout");
+            long timeOutValue = SettingsManager.getInstance().getLong("preferences_device_refreshrate_timeout");
             if (timeOutValue > 0)
                 timeOutValue = 10000; // 5 second timeout
             handler.postDelayed(timeOutTask, timeOutValue);
@@ -112,7 +112,7 @@ public class FrameRateSwitcher {
         private void finish() {
             unregister();
             if (notifier != null)
-                notifier.frameRateSwitched(SettingsManager.getInstance(context).getLong("preferences_device_refreshrate_delay"));
+                notifier.frameRateSwitched(SettingsManager.getInstance().getLong("preferences_device_refreshrate_delay"));
         }
 
         private void unregister() {
