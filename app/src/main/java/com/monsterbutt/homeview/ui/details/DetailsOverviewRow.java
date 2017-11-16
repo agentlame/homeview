@@ -15,51 +15,31 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.monsterbutt.homeview.R;
-import com.monsterbutt.homeview.player.track.MediaTrackSelector;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.tasks.DeleteTask;
-import com.monsterbutt.homeview.ui.details.interfaces.IDetailObject;
+import com.monsterbutt.homeview.ui.details.interfaces.IDetailsItem;
+import com.monsterbutt.homeview.ui.details.interfaces.IDetailsItemUpdateNotifier;
+import com.monsterbutt.homeview.ui.details.interfaces.IDetailsItemUpdateListener;
 import com.monsterbutt.homeview.ui.interfaces.ICardSelectionListener;
 
 
 public class DetailsOverviewRow extends android.support.v17.leanback.widget.DetailsOverviewRow
- implements OnActionClickedListener {
-
-  private static class Container implements IDetailObject {
-
-    private final PlexLibraryItem item;
-    private MediaTrackSelector tracks;
-
-    Container(PlexLibraryItem item, MediaTrackSelector tracks) {
-      this.item = item;
-      this.tracks = tracks;
-    }
-
-    @Override
-    public PlexLibraryItem item() {
-      return item;
-    }
-
-    @Override
-    public MediaTrackSelector tracks() {
-      return tracks;
-    }
-  }
+ implements OnActionClickedListener, IDetailsItemUpdateListener {
 
   private final static int ACTION_PLAY        = 1;
   private final static int ACTION_VIEWSTATUS  = 2;
   private final static int ACTION_DELETE      = 5;
 
   private final BaseFragment fragment;
-  private final PlexServer server;
 
-  DetailsOverviewRow(final BaseFragment fragment, PlexServer server, PlexLibraryItem item) {
-    super(new Container(item, null));
+  DetailsOverviewRow(final BaseFragment fragment, IDetailsItem obj, IDetailsItemUpdateNotifier notifier) {
+    super(obj);
     this.fragment = fragment;
-    this.server = server;
 
+    PlexServer server = obj.server();
+    PlexLibraryItem item = obj.item();
     boolean usePoster = !(item instanceof Episode);
     final Context context = fragment.getContext();
 
@@ -84,21 +64,28 @@ public class DetailsOverviewRow extends android.support.v17.leanback.widget.Deta
     SparseArrayObjectAdapter actions = new SparseArrayObjectAdapter();
     setActionsAdapter(actions);
     setActions();
+    notifier.register(this);
   }
 
-  private void toggleWatched() {
-    Container item = getContainer();
-    new ToggleWatchedStateTask(server, item.item()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, fragment.getContext());
-    refresh(item.item(), item.tracks());
-  }
-
-  public void refresh(PlexLibraryItem item, MediaTrackSelector tracks) {
+  @Override
+  public void update(IDetailsItem obj) {
     setItem(null);
-    setItem(new Container(item, tracks));
+    setItem(obj);
     setActions();
   }
 
-  private Container getContainer() { return (Container) getItem(); }
+  @Override
+  public String getKey() {
+    return DetailsOverviewRow.class.getCanonicalName();
+  }
+
+  private void toggleWatched() {
+    IDetailsItem item = getContainer();
+    new ToggleWatchedStateTask(getContainer().server(), item.item()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, fragment.getContext());
+    update(item);
+  }
+
+  private IDetailsItem getContainer() { return (IDetailsItem) getItem(); }
 
   private void setActions() {
     PlexLibraryItem item = getContainer().item();
@@ -121,7 +108,8 @@ public class DetailsOverviewRow extends android.support.v17.leanback.widget.Deta
 
   @Override
   public void onActionClicked(Action action) {
-    PlexLibraryItem item = getContainer().item();
+    IDetailsItem obj = getContainer();
+    PlexLibraryItem item = obj.item();
     switch ((int) action.getId()) {
       case ACTION_PLAY:
         Bundle bundle = fragment instanceof ICardSelectionListener ?
@@ -132,7 +120,7 @@ public class DetailsOverviewRow extends android.support.v17.leanback.widget.Deta
         toggleWatched();
         break;
       case ACTION_DELETE:
-        new DeleteTask(item, server, fragment, true, null, null);
+        new DeleteTask(item, obj.server(), fragment, true, null, null);
         break;
     }
   }

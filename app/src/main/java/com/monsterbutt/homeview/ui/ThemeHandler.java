@@ -15,8 +15,6 @@ import java.util.HashSet;
 
 public class ThemeHandler implements ILifecycleListener {
 
-    public final static String key = "themehandler";
-
     private final Context context;
     private final boolean mStopThemeOnResume;
     private HashSet<String> playedThemes = new HashSet<>();
@@ -37,7 +35,7 @@ public class ThemeHandler implements ILifecycleListener {
     }
 
     @Override
-    public void onResume() {
+    public void onResume(UILifecycleManager lifecycleMgr) {
         mContinueTheme = false;
         String lastPlayed = ThemeService.getLastThemePlayed();
         if (mStopThemeOnResume
@@ -46,7 +44,7 @@ public class ThemeHandler implements ILifecycleListener {
     }
 
     @Override
-    public void onPause() {
+    public void onPause(UILifecycleManager lifecycleMgr) {
 
         if (mContinueTheme || playedThemes.isEmpty())
             return;
@@ -54,12 +52,10 @@ public class ThemeHandler implements ILifecycleListener {
     }
 
     @Override
-    public void onDestroyed() {}
-
-    @Override
-    public void release() {
-
+    public void onDestroyed(UILifecycleManager lifecycleMgr) {
+        lifecycleMgr.unregister(ThemeHandler.class.getCanonicalName());
     }
+
 
     public Bundle getPlaySelectionBundle(Bundle extras, String key) {
 

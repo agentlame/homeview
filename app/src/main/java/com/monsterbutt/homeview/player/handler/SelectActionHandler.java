@@ -26,7 +26,7 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.ui.presenters.CardPresenter;
-import com.monsterbutt.homeview.ui.presenters.SceneCardExpanded;
+import com.monsterbutt.homeview.ui.presenters.SceneCard;
 
 import java.util.List;
 
@@ -99,7 +99,7 @@ public class SelectActionHandler implements VideoChangedNotifier.Observer {
         ArrayObjectAdapter adapter = new ArrayObjectAdapter(new CardPresenter(mServer, null, false));
         ListRow row = new ListRow(adapter);
         for (PlexLibraryItem item: items)
-          adapter.add(new SceneCardExpanded(mActivity, item));
+          adapter.add(new SceneCard(mActivity, item));
         mSwitchChapterNotifier.switchChapter(row,
          mCurrentVideo.getCurrentChapter(mGlue.getCurrentPosition()));
       }

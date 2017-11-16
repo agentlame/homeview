@@ -45,8 +45,6 @@ public class BackgroundHandler implements ILifecycleListener {
 
     private boolean skippedFirstSection = false;
 
-    private final UILifecycleManager lifecycleManager;
-
     private PlexServer server;
     private final static String Tag = "HV_BackgroundHandler";
 
@@ -56,10 +54,9 @@ public class BackgroundHandler implements ILifecycleListener {
     }
 
     public BackgroundHandler(Activity activity, PlexServer server,
-                             UILifecycleManager lifecycleManager, String backgroundURI) {
-        this.lifecycleManager = lifecycleManager;
-        if (lifecycleManager != null)
-            lifecycleManager.register(BackgroundHandler.class.getCanonicalName(), this);
+                             UILifecycleManager lifeCycleMgr, String backgroundURI) {
+        if (lifeCycleMgr != null)
+            lifeCycleMgr.register(BackgroundHandler.class.getCanonicalName(), this);
         mActivity = activity;
         mDefaultBackground = mActivity.getDrawable(R.drawable.default_background);
         mMetrics = new DisplayMetrics();
@@ -161,10 +158,8 @@ public class BackgroundHandler implements ILifecycleListener {
     }
 
     @Override
-    public void onResume() {
-
+    public void onResume(UILifecycleManager lifeCycleMgr) {
         synchronized (this) {
-
             mBackgroundManager = BackgroundManager.getInstance(mActivity);
             if (!mBackgroundManager.isAttached())
                 mBackgroundManager.attach(mActivity.getWindow());
@@ -179,19 +174,11 @@ public class BackgroundHandler implements ILifecycleListener {
     }
 
     @Override
-    public void onPause() {
-
-        killTimer();
-    }
+    public void onPause(UILifecycleManager lifeCycleMgr) { killTimer(); }
 
     @Override
-    public void onDestroyed() {
-    }
-
-    @Override
-    public void release() {
-        if (lifecycleManager != null)
-            lifecycleManager.unregister(BackgroundHandler.class.getCanonicalName());
+    public void onDestroyed(UILifecycleManager lifeCycleMgr) {
+        lifeCycleMgr.unregister(BackgroundHandler.class.getCanonicalName());
     }
 
     private class UpdateBackgroundTask extends TimerTask {

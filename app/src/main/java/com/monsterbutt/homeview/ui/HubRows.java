@@ -41,13 +41,32 @@ public abstract class HubRows implements IServerObserver, ILifecycleListener, IH
     this.context = fragment.getContext();
     this.server = server;
     this.adapter = adapter;
-    this.lifeCycleMgr = lifeCycleMgr;
 
     new ThemeHandler(lifeCycleMgr, context, null, true);
     lifeCycleMgr.register(HubRows.class.getCanonicalName(), this);
     this.selectionHandler = selectionHandler;
+    this.lifeCycleMgr = lifeCycleMgr;
   }
 
+  @Override
+  public void onResume(UILifecycleManager lifeCycleMgr) {
+    refresh();
+  }
+
+  @Override
+  public void onPause(UILifecycleManager lifeCycleMgr) { }
+
+  @Override
+  public void onDestroyed(UILifecycleManager lifeCycleMgr) {
+    release(lifeCycleMgr);
+  }
+
+  @Override
+  public void release() {
+    release(lifeCycleMgr);
+  }
+
+  @Override
   public synchronized void refresh() {
     if (isRefreshing)
       return ;
@@ -56,7 +75,7 @@ public abstract class HubRows implements IServerObserver, ILifecycleListener, IH
     task.execute();
   }
 
-  public synchronized void release() {
+  private synchronized void release(UILifecycleManager lifeCycleMgr) {
 
     lifeCycleMgr.unregister(HubRows.class.getCanonicalName());
     if (task != null)
@@ -69,19 +88,6 @@ public abstract class HubRows implements IServerObserver, ILifecycleListener, IH
       if (o instanceof IServerObserver)
         ((IServerObserver) o).release();
     }
-  }
-
-  @Override
-  public void onResume() {
-    refresh();
-  }
-
-  @Override
-  public void onPause() { }
-
-  @Override
-  public void onDestroyed() {
-    release();
   }
 
   protected abstract int getRowStartIndex();

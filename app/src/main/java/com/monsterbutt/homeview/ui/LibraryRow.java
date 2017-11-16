@@ -81,11 +81,15 @@ public abstract class LibraryRow extends ListRow
         statusWatcher.release(Collections.singletonList((media)));
       }
       else {
+        boolean update;
         if (status != C.StatusChanged.Refresh) {
-          ((PosterCard) adapter.get(index)).setWatchState(status == C.StatusChanged.SetWatched ?
+          update = ((PosterCard) adapter.get(index)).setWatchState(status == C.StatusChanged.SetWatched ?
            PlexLibraryItem.WatchedState.Watched : PlexLibraryItem.WatchedState.Unwatched);
         }
-        adapter.notifyItemRangeChanged(index, 1);
+        else
+          update = true;
+        if (update)
+          adapter.notifyItemRangeChanged(index, 1);
       }
     }
   }

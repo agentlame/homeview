@@ -60,6 +60,10 @@ public class Show extends PlexContainerItem implements Parcelable {
         }
     }
 
+    public boolean hasSeasons() {
+        return mDirectories != null && !mDirectories.isEmpty();
+    }
+
     public int getSeasonIndex(int offset) {
 
         int index = 0;

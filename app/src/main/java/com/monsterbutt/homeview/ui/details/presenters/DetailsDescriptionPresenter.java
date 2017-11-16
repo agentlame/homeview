@@ -23,7 +23,7 @@ import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.plex.media.Stream;
 import com.monsterbutt.homeview.plex.media.VideoFormat;
-import com.monsterbutt.homeview.ui.details.interfaces.IDetailObject;
+import com.monsterbutt.homeview.ui.details.interfaces.IDetailsItem;
 
 import us.nineworlds.plex.rest.model.impl.Media;
 
@@ -37,9 +37,9 @@ public class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPrese
     @Override
     protected void onBindDescription(ViewHolder viewHolder, Object obj) {
 
-        if (obj != null && obj instanceof IDetailObject) {
+        if (obj != null && obj instanceof IDetailsItem) {
 
-            PlexLibraryItem video = ((IDetailObject) obj).item();
+            PlexLibraryItem video = ((IDetailsItem) obj).item();
             viewHolder.Title.setText(video.getDetailTitle(context));
             viewHolder.Subtitle.setText(video.getDetailSubtitle(context));
             viewHolder.Description.setText(video.getSummary());
@@ -62,7 +62,7 @@ public class DetailsDescriptionPresenter extends AbstractDetailsDescriptionPrese
                     viewHolder.FrameRate.setVisibility(View.INVISIBLE);
                 }
 
-                MediaTrackSelector tracks = ((IDetailObject) obj).tracks();
+                MediaTrackSelector tracks = ((IDetailsItem) obj).tracks();
                 if (tracks != null) {
                     Stream videoStream = tracks.getSelectedTrack(Stream.Video_Stream);
                     if (videoStream != null) {

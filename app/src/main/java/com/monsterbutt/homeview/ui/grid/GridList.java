@@ -108,11 +108,16 @@ public class GridList implements CardPresenter.LongClickWatchStatusCallback, IGr
         statusWatcher.release(Collections.singletonList((media)));
       }
       else {
+        boolean update;
         int index = adapter.indexOf(media);
-        if (status != C.StatusChanged.Refresh)
-          ((PosterCard) adapter.get(index)).setWatchState(status == C.StatusChanged.SetWatched ?
+        if (status != C.StatusChanged.Refresh) {
+          update = ((PosterCard) adapter.get(index)).setWatchState(status == C.StatusChanged.SetWatched ?
            PlexLibraryItem.WatchedState.Watched : PlexLibraryItem.WatchedState.Unwatched);
-        adapter.notifyItemRangeChanged(index, 1);
+        }
+        else
+          update = true;
+        if (update)
+          adapter.notifyItemRangeChanged(index, 1);
       }
     }
   }

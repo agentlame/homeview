@@ -99,8 +99,8 @@ public class LibraryList {
         map.put(jumpKey, new QuickJumpRow(jumpKey, newIndex));
       int currIndex = adapter.indexOf(item);
       if (currIndex >= 0) {
-        ((CardObject) adapter.get(currIndex)).setWatchState(item.getWatchedState());
-        adapter.notifyItemRangeChanged(currIndex, 1);
+        if (((CardObject) adapter.get(currIndex)).setWatchState(item.getWatchedState()))
+          adapter.notifyItemRangeChanged(currIndex, 1);
       }
       else {
         adapter.add(newIndex, item);

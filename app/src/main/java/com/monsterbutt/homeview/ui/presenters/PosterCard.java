@@ -96,8 +96,8 @@ public class PosterCard extends CardObject {
     }
 
     @Override
-    public void setWatchState(PlexLibraryItem.WatchedState updateStatus) {
-        item.setStatus(updateStatus);
+    public boolean setWatchState(PlexLibraryItem.WatchedState updateStatus) {
+        return item.setStatus(updateStatus);
     }
 
     @Override

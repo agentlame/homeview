@@ -138,7 +138,7 @@ public abstract class PlexLibraryItem {
     public int getViewedProgress() { return 0; }
     public long getViewedOffset() { return 0; }
 
-    public void setStatus(WatchedState status) { }
+    public boolean setStatus(WatchedState status) { return false; }
 
     public String getThemeKey(PlexServer server) {
         return "";
@@ -263,8 +263,7 @@ public abstract class PlexLibraryItem {
             new SetProgressTask(server, PlexLibraryItem.this.getKey(),
                     Long.toString(PlexLibraryItem.this.getRatingKey()),
              SetUnwatched).execute(obj.getContext());
-            setStatus(WatchedState.Unwatched);
-            if (callback != null)
+            if (setStatus(WatchedState.Unwatched) && callback != null)
                 callback.resetSelected(obj);
         }
     }
@@ -285,8 +284,7 @@ public abstract class PlexLibraryItem {
             new SetProgressTask(server, PlexLibraryItem.this.getKey(),
                     Long.toString(PlexLibraryItem.this.getRatingKey()),
              SetWatched).execute(obj.getContext());
-            setStatus(WatchedState.Watched);
-            if (callback != null)
+            if (setStatus(WatchedState.Watched) && callback != null)
                 callback.resetSelected(obj);
         }
     }

@@ -72,7 +72,7 @@ public abstract class CardObject implements IRegisteredMedia {
         return false;
     }
 
-    public void setWatchState(PlexLibraryItem.WatchedState updateStatus) { }
+    public boolean setWatchState(PlexLibraryItem.WatchedState updateStatus) { return false; }
 
     public boolean onLongClicked(Fragment fragment, Bundle extras, View transitionView,
                                  CardPresenter.LongClickWatchStatusCallback callback) {

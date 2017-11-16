@@ -9,12 +9,6 @@ import java.util.Map;
 
 public class UILifecycleManager {
 
-  private enum State {
-      Active,
-      Paused,
-      Destroyed
-  }
-
   private Map<String, ILifecycleListener> listeners = new HashMap<>();
 
   private List<ILifecycleListener> getList() {
@@ -40,17 +34,17 @@ public class UILifecycleManager {
 
   public void resumed() {
     for (ILifecycleListener listener : getList())
-      listener.onResume();
+      listener.onResume(this);
   }
 
   public void paused() {
     for (ILifecycleListener listener : getList())
-      listener.onPause();
+      listener.onPause(this);
   }
 
   public void destroyed() {
     for (ILifecycleListener listener : getList())
-      listener.onDestroyed();
+      listener.onDestroyed(this);
   }
 
 }

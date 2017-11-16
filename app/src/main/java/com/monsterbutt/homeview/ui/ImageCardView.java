@@ -41,6 +41,7 @@ public class ImageCardView extends BaseCardView {
 
     private boolean mAllowDoubleLine = false;
 
+    private String mainImagePath = "";
     private SimpleTarget<GlideDrawable> mTarget = null;
     public SimpleTarget<GlideDrawable> getTarget() { return mTarget; }
     public void  setTarget(SimpleTarget<GlideDrawable> target) { mTarget = target; }
@@ -211,14 +212,19 @@ public class ImageCardView extends BaseCardView {
 
     public void allowDoubleLine() { mAllowDoubleLine = true;}
 
+    public boolean shouldUpdateMain(String path) {
+        return TextUtils.isEmpty(mainImagePath) ||
+         !mainImagePath.equals(path);
+    }
     /**
      * Sets the image drawable with fade-in animation.
      */
-    public void setMainImage(Drawable drawable) {
+    public void setMainImage(String path, Drawable drawable) {
 
         if (mImageView == null) {
             return;
         }
+        mainImagePath = path;
 
         mImageView.setImageDrawable(drawable);
         if (drawable == null) {

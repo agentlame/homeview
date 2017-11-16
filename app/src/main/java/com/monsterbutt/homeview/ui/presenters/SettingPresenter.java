@@ -85,7 +85,7 @@ public class SettingPresenter extends Presenter implements OnItemViewClickedList
         int width = res.getDimensionPixelSize(obj.getWidth());
         int height = res.getDimensionPixelSize(obj.getHeight());
         cardView.setMainImageDimensions(width, height);
-        cardView.setMainImage(obj.getImage(cardView.getContext()));
+        cardView.setMainImage(null, obj.getImage(cardView.getContext()));
         cardView.getMainImageView().setScaleType(ImageView.ScaleType.CENTER);
     }
 
@@ -95,7 +95,7 @@ public class SettingPresenter extends Presenter implements OnItemViewClickedList
 
         // Remove references to images so that the garbage collector can free up memory.
         cardView.setBadgeImage(null);
-        cardView.setMainImage(null);
+        cardView.setMainImage(null, null);
     }
 
 

@@ -18,7 +18,6 @@ import us.nineworlds.plex.rest.model.impl.Hub;
 public class DetailsRelatedRows implements ILifecycleListener {
 
   private final List<DetailsRelatedRow> rows = new ArrayList<>();
-  private final UILifecycleManager lifecycleManager;
 
   DetailsRelatedRows(Context context, UILifecycleManager lifecycleManager, PlexServer server,
                      PlexLibraryItem item, ArrayObjectAdapter adapter, Presenter presenter) {
@@ -30,7 +29,6 @@ public class DetailsRelatedRows implements ILifecycleListener {
       }
       lifecycleManager.register(DetailsRelatedRows.class.getCanonicalName(), this);
     }
-    this.lifecycleManager = lifecycleManager;
     refresh();
   }
 
@@ -40,19 +38,16 @@ public class DetailsRelatedRows implements ILifecycleListener {
   }
 
   @Override
-  public void onResume() {
+  public void onResume(UILifecycleManager lifecycleMgr) {
     refresh();
   }
 
   @Override
-  public void onPause() { }
+  public void onPause(UILifecycleManager lifecycleMgr) { }
 
   @Override
-  public void onDestroyed() { release(); }
-
-  @Override
-  public void release() {
-    lifecycleManager.unregister(DetailsRelatedRows.class.getCanonicalName());
+  public void onDestroyed(UILifecycleManager lifecycleMgr) {
+    lifecycleMgr.unregister(DetailsRelatedRows.class.getCanonicalName());
     for(DetailsRelatedRow row : rows)
       row.release();
   }

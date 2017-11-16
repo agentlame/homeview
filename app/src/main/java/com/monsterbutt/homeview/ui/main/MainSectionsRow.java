@@ -51,13 +51,13 @@ public class MainSectionsRow extends ListRow implements IServerObserver, ILifecy
   }
 
   @Override
-  public void onResume() { refresh(); }
+  public void onResume(UILifecycleManager lifecycleMgr) { refresh(); }
 
   @Override
-  public void onPause() { }
+  public void onPause(UILifecycleManager lifecycleMgr) { }
 
   @Override
-  public void onDestroyed() { release(); }
+  public void onDestroyed(UILifecycleManager lifecycleMgr) { release(lifecycleMgr); }
 
   @Override
   public synchronized void refresh() {
@@ -69,7 +69,11 @@ public class MainSectionsRow extends ListRow implements IServerObserver, ILifecy
   }
 
   @Override
-  public synchronized void release() {
+  public void release() {
+    release(lifeCycleMgr);
+  }
+
+  private synchronized void release(UILifecycleManager lifeCycleMgr) {
     lifeCycleMgr.unregister(MainSectionsRow.class.getCanonicalName());
     if (task != null)
       task.cancel(true);

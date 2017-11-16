@@ -67,7 +67,7 @@ public class UpnpCardPresenter extends Presenter {
         cardView.setTitleText(obj.getTitle());
         cardView.setContentText(obj.getContent());
 
-        String imageURL = obj.getImageUrl(null);
+        final String imageURL = obj.getImageUrl(null);
         // Set card size from dimension resources.
         final Resources res = cardView.getResources();
         int width = res.getDimensionPixelSize(obj.getWidth());
@@ -88,21 +88,23 @@ public class UpnpCardPresenter extends Presenter {
 
         Drawable drawable = obj.getImage(context);
         if (drawable != null)
-            cardView.setMainImage(drawable);
+            cardView.setMainImage(null, drawable);
         else if (TextUtils.isEmpty(imageURL))
-            cardView.setMainImage(context.getDrawable(R.drawable.default_background));
+            cardView.setMainImage(null, context.getDrawable(R.drawable.default_background));
         else {
 
-            cardView.setTarget(new SimpleTarget<GlideDrawable>(width, height) {
-                @Override
-                public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
-                    cardView.setMainImage(resource);
-                    cardView.setTarget(null);
-                }
-            });
-            Glide.with(context)
-                    .load(imageURL)
-                    .into(cardView.getTarget());
+            if (cardView.shouldUpdateMain(imageURL)) {
+                cardView.setTarget(new SimpleTarget<GlideDrawable>(width, height) {
+                    @Override
+                    public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
+                        cardView.setMainImage(imageURL, resource);
+                        cardView.setTarget(null);
+                    }
+                });
+                Glide.with(context)
+                 .load(imageURL)
+                 .into(cardView.getTarget());
+            }
         }
     }
 
@@ -119,7 +121,7 @@ public class UpnpCardPresenter extends Presenter {
         // Remove references to images so that the garbage collector can free up memory.
         // or we could not forever lose our images and not have them reload...
         cardView.setBadgeImage(null);
-        cardView.setMainImage(null);
+        cardView.setMainImage(null, null);
         cardView.setFlag(null, "");
         cardView.setProgress(0);
     }

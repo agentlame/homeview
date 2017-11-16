@@ -1,7 +1,7 @@
 package com.monsterbutt.homeview.ui.details.interfaces;
 
 
-public interface IDetailTrackingRow {
+public interface IDetailsScrollRow {
 
   int getCurrentIndex();
 }

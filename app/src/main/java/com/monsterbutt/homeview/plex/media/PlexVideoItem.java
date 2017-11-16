@@ -271,19 +271,24 @@ public abstract class PlexVideoItem extends PlexLibraryItem implements Parcelabl
     }
 
     @Override
-    public void setStatus(WatchedState status) {
+    public boolean setStatus(WatchedState status) {
         if (mVideo == null)
-            return;
+            return false;
+
+        boolean update = false;
         switch (status) {
             case Watched:
+                update = mWatchedState != WatchedState.Watched || mVideo.getViewOffset() != 0;
                 mWatchedState = WatchedState.Watched;
                 mVideo.setViewOffset(0);
                 break;
             case Unwatched:
+                update = mWatchedState != WatchedState.Unwatched || mVideo.getViewOffset() != 0;
                 mWatchedState = WatchedState.Unwatched;
                 mVideo.setViewOffset(0);
                 break;
         }
+        return update;
     }
 
     @Override
