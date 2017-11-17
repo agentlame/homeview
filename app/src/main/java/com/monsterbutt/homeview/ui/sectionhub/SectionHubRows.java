@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.ui.SelectionHandler;
 import com.monsterbutt.homeview.ui.HubRows;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
@@ -16,9 +17,9 @@ class SectionHubRows extends HubRows {
 
   private final String sectionId;
 
-  SectionHubRows(String sectionId, Fragment fragment, PlexServer server, UILifecycleManager lifeCycleMgr,
-                 SelectionHandler selectionHandler, ArrayObjectAdapter adapter) {
-    super(fragment, server, lifeCycleMgr, selectionHandler, adapter);
+  SectionHubRows(String sectionId, Fragment fragment, StatusWatcher statusWatcher, PlexServer server,
+                 UILifecycleManager lifeCycleMgr, SelectionHandler selectionHandler, ArrayObjectAdapter adapter) {
+    super(fragment, statusWatcher, server, lifeCycleMgr, selectionHandler, adapter);
     this.sectionId = sectionId;
   }
 

@@ -55,9 +55,6 @@ public class PlexServerManager {
     public boolean setSelectedServer(PlexServer server) {
 
         if (server.verifyInstance()) {
-
-            if (mSelectedServer != null)
-                mSelectedServer.release();
             mSelectedServer = server;
             server.saveAsLastServer(Homeview.getAppContext());
             addServer(server);

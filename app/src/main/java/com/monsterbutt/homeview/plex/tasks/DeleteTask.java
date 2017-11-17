@@ -13,8 +13,6 @@ import android.widget.Toast;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
-import com.monsterbutt.homeview.ui.presenters.CardObject;
-import com.monsterbutt.homeview.ui.presenters.CardPresenter;
 
 public class DeleteTask {
 
@@ -24,16 +22,11 @@ public class DeleteTask {
 
   private final Fragment fragment;
   private final boolean finishAfterDelete;
-  private final CardPresenter.LongClickWatchStatusCallback callback;
-  private final CardObject card;
 
   public DeleteTask(final PlexLibraryItem item, final PlexServer server, Fragment fragment,
-                             final boolean finishAfterDelete, final CardObject card,
-                             final CardPresenter.LongClickWatchStatusCallback callback) {
+                             final boolean finishAfterDelete) {
     this.fragment = fragment;
     this.finishAfterDelete = finishAfterDelete;
-    this.callback = callback;
-    this.card = card;
 
     if (item != null && !TextUtils.isEmpty(item.getKey())) {
 
@@ -43,12 +36,10 @@ public class DeleteTask {
           Toast.makeText(DeleteTask.this.fragment.getContext(),
            success ? R.string.delete_success : R.string.delete_failed,
            Toast.LENGTH_LONG).show();
-          if (DeleteTask.this.callback == null && DeleteTask.this.finishAfterDelete &&
+          if (DeleteTask.this.finishAfterDelete &&
            !DeleteTask.this.fragment.isDetached() && !DeleteTask.this.fragment.getActivity().isFinishing() &&
            !DeleteTask.this.fragment.getActivity().isDestroyed()) {
             DeleteTask.this.fragment.getActivity().finish();
-          } else if (DeleteTask.this.callback != null && !DeleteTask.this.finishAfterDelete && DeleteTask.this.card != null) {
-            DeleteTask.this.callback.removeSelected(DeleteTask.this.card);
           }
         }
       };

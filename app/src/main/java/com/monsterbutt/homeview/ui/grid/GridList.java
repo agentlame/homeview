@@ -1,5 +1,6 @@
 package com.monsterbutt.homeview.ui.grid;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.text.TextUtils;
@@ -8,12 +9,10 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
-import com.monsterbutt.homeview.ui.presenters.CardObject;
 import com.monsterbutt.homeview.ui.presenters.CardPresenter;
 import com.monsterbutt.homeview.ui.presenters.PosterCard;
 import com.monsterbutt.homeview.ui.presenters.PosterCardExpanded;
 import com.monsterbutt.homeview.ui.presenters.SceneCardExpanded;
-import com.monsterbutt.homeview.ui.C;
 import com.monsterbutt.homeview.ui.CardObjectList;
 import com.monsterbutt.homeview.ui.grid.interfaces.IGridSorter;
 import com.monsterbutt.homeview.ui.SelectionHandler;
@@ -30,20 +29,17 @@ import java.util.Map;
 
 import us.nineworlds.plex.rest.model.impl.IContainer;
 
-public class GridList implements CardPresenter.LongClickWatchStatusCallback, IGridSorter,
- ICardObjectListCallback, IMediaObserver {
+public class GridList implements IGridSorter, ICardObjectListCallback, IMediaObserver {
 
   private ArrayObjectAdapter adapter = new ArrayObjectAdapter();
   private Map<String, PosterCard> map = new HashMap<>();
-  private final Context context;
+  private final Activity activity;
   private final StatusWatcher.StatusWatcherObserver statusWatcher;
 
-  GridList(Context context, PlexServer server, SelectionHandler listener) {
-    CardPresenter presenter = new CardPresenter(server, listener, true);
-    presenter.setLongClickWatchStatusCallback(this);
-    this.adapter = new ArrayObjectAdapter(presenter);
-    this.context = context;
-    statusWatcher = server.registerUIObserver(this);
+  GridList(Activity activity, PlexServer server, StatusWatcher statusWatcher, SelectionHandler listener) {
+    this.adapter = new ArrayObjectAdapter(new CardPresenter(server, listener, true));
+    this.activity = activity;
+    this.statusWatcher = statusWatcher.registerObserver(this);
   }
 
   public ArrayObjectAdapter getAdapter() { return adapter; }
@@ -55,24 +51,6 @@ public class GridList implements CardPresenter.LongClickWatchStatusCallback, IGr
       return 0;
     PosterCard card = map.get(key);
     return card != null ? adapter.indexOf(card) : 0;
-  }
-
-  @Override
-  public void resetSelected(CardObject card) {
-    if (card != null) {
-      int index = adapter.indexOf(card);
-      if (index != -1)
-        adapter.notifyArrayItemRangeChanged(index, 1);
-    }
-  }
-
-  @Override
-  public void removeSelected(CardObject card) {
-    if (card != null) {
-      adapter.remove(card);
-      statusWatcher.release(Collections.singletonList((IRegisteredMedia) card));
-      map.remove(card.getKey());
-    }
   }
 
   public void release() {
@@ -89,10 +67,10 @@ public class GridList implements CardPresenter.LongClickWatchStatusCallback, IGr
       PosterCard card;
       if (item instanceof Episode) {
         ((Episode) item).setSeasonNum(container.getParentIndex());
-        card = new SceneCardExpanded(context, item);
+        card = new SceneCardExpanded(activity, item);
       }
       else
-        card = new PosterCardExpanded(context, item);
+        card = new PosterCardExpanded(activity, item);
       if (!map.containsKey(item.getKey()))
         map.put(item.getKey(), card);
       objects.add(item.getKey(), card);
@@ -100,25 +78,22 @@ public class GridList implements CardPresenter.LongClickWatchStatusCallback, IGr
   }
 
   @Override
-  public void statusChanged(IRegisteredMedia media, C.StatusChanged status) {
-    PosterCard card = map.get(media.getKey());
+  public void statusChanged(final IRegisteredMedia media, final PlexLibraryItem.WatchedState status) {
+    final PosterCard card = map.get(media.getKey());
     if (card != null) {
-      if (status == C.StatusChanged.SetDeleted) {
-        adapter.remove(media);
-        statusWatcher.release(Collections.singletonList((media)));
-      }
-      else {
-        boolean update;
-        int index = adapter.indexOf(media);
-        if (status != C.StatusChanged.Refresh) {
-          update = ((PosterCard) adapter.get(index)).setWatchState(status == C.StatusChanged.SetWatched ?
-           PlexLibraryItem.WatchedState.Watched : PlexLibraryItem.WatchedState.Unwatched);
+      activity.runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          if (status == PlexLibraryItem.WatchedState.Removed) {
+            adapter.remove(media);
+            statusWatcher.release(Collections.singletonList((media)));
+          }
+          else {
+            int index = adapter.indexOf(media);
+            adapter.notifyItemRangeChanged(index, 1);
+          }
         }
-        else
-          update = true;
-        if (update)
-          adapter.notifyItemRangeChanged(index, 1);
-      }
+      });
     }
   }
 

@@ -346,7 +346,7 @@ public final class Video extends CardObject implements Parcelable, Serializable,
     }
 
     @Override
-    public boolean updateStatus(C.StatusChanged status, int totalCount, int unwatchedCount) {
+    public boolean updateStatus(PlexLibraryItem.WatchedState status, int totalCount, int unwatchedCount) {
         return false;
     }
 

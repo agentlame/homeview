@@ -16,13 +16,13 @@ import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.TvUtil;
 import com.monsterbutt.homeview.model.MockDatabase;
 import com.monsterbutt.homeview.model.Subscription;
+import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.services.UpdateRecommendationsService;
 import com.monsterbutt.homeview.settings.SettingArray;
 import com.monsterbutt.homeview.settings.SettingBoolean;
 import com.monsterbutt.homeview.settings.SettingLaunch;
 import com.monsterbutt.homeview.settings.SettingText;
 import com.monsterbutt.homeview.settings.SettingValue;
-import com.monsterbutt.homeview.ui.C;
 import com.monsterbutt.homeview.ui.settings.SettingEditTextActivity;
 import com.monsterbutt.homeview.ui.settings.SettingsArrayActivity;
 import com.monsterbutt.homeview.ui.ImageCardView;
@@ -63,7 +63,7 @@ public class SettingCard extends CardObject {
     }
 
     @Override
-    public boolean updateStatus(C.StatusChanged status, int totalCount, int unwatchedCount) {
+    public boolean updateStatus(PlexLibraryItem.WatchedState status, int totalCount, int unwatchedCount) {
         return false;
     }
 

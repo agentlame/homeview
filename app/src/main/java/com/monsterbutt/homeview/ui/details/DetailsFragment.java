@@ -36,6 +36,7 @@ import android.widget.ImageView;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.track.MediaCodecCapabilities;
 import com.monsterbutt.homeview.player.track.MediaTrackSelector;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.Show;
 import com.monsterbutt.homeview.plex.media.Stream;
@@ -115,6 +116,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
   private Notifier notifier;
   private Scroller scrollerSeasons = new Scroller();
   private Scroller scrollerChapters = new Scroller();
+  private StatusWatcher statusWatcher = new StatusWatcher();
 
   private boolean wasSetup = false;
 
@@ -200,7 +202,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     if (!TextUtils.isEmpty(backgroundURL))
       backgroundHandler = new BackgroundHandler(getActivity(), server, lifeCycleMgr, backgroundURL);
-    selectionHandler = new SelectionHandler(this, this, item, poster);
+    selectionHandler = new SelectionHandler(this, statusWatcher, this, item, poster);
     notifier = new Notifier(new Container(item, null, server, key));
     setupAdapter(notifier, item != null ? item.getType() : intent.getStringExtra(C.TYPE),
      scrollerSeasons, scrollerChapters);
@@ -250,8 +252,8 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
 
     String title = item.getHeaderForChildren(context);
     if (item instanceof Show && ((Show) item).hasSeasons()) {
-      adapter.add(new DetailsSeasonsRow(context, notifier, server, title, scrollerSeasons,
-       new CardPresenter(server, selectionHandler, true)));
+      adapter.add(new DetailsSeasonsRow(getActivity(), statusWatcher, notifier, server, title,
+       scrollerSeasons, new CardPresenter(server, selectionHandler, true)));
     }
     else if (item instanceof PlexVideoItem && ((PlexVideoItem) item).hasChapters()) {
       adapter.add(new DetailsChaptersRow(context, notifier, title, scrollerChapters,
@@ -263,7 +265,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     themeKey = item.getThemeKey(server);
     themeHandler.startTheme(themeKey);
 
-    new DetailsRelatedRows(context, lifeCycleMgr, server, item, adapter,
+    new DetailsRelatedRows(getActivity(), statusWatcher, lifeCycleMgr, server, item, adapter,
      new CardPresenter(server, selectionHandler, true));
   }
 
@@ -324,7 +326,7 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
     presenterSelector.addClassPresenter(ListRow.class, new ListRowPresenter());
 
     detailPresenter.setInitialState(FullWidthDetailsOverviewRowPresenter.STATE_SMALL);
-    DetailsOverviewRow row = new DetailsOverviewRow(this, container, notifier);
+    DetailsOverviewRow row = new DetailsOverviewRow(this, statusWatcher, container, notifier);
     detailPresenter.setOnActionClickedListener(row);
     ArrayObjectAdapter adapter = new ArrayObjectAdapter(presenterSelector);
     adapter.add(row);

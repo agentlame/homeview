@@ -1,10 +1,11 @@
 package com.monsterbutt.homeview.ui.details;
 
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.v17.leanback.widget.Presenter;
 
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.plex.media.Show;
@@ -24,9 +25,10 @@ class DetailsSeasonsRow extends LibraryRow implements IDetailsScrollRow, IDetail
   private final boolean skipAll;
   private final IDetailsScrollRowNotifier scroller;
 
-  DetailsSeasonsRow(Context context, IDetailsItemUpdateNotifier notifier, PlexServer server,
-                    String title, IDetailsScrollRowNotifier scroller, Presenter presenter) {
-    super(context, server, title, false, presenter);
+  DetailsSeasonsRow(Activity activity, StatusWatcher statusWatcher,
+                    IDetailsItemUpdateNotifier notifier, PlexServer server, String title,
+                    IDetailsScrollRowNotifier scroller, Presenter presenter) {
+    super(activity, statusWatcher, server, title, false, presenter);
     this.skipAll = SettingsManager.getInstance().getBoolean("preferences_navigation_showallseason");
     this.scroller = scroller;
     notifier.register(this);

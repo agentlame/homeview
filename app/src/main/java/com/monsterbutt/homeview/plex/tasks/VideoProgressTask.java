@@ -1,8 +1,8 @@
 package com.monsterbutt.homeview.plex.tasks;
 
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
-import com.monsterbutt.homeview.ui.C;
 
 public class VideoProgressTask {
 
@@ -38,11 +38,11 @@ public class VideoProgressTask {
 
     if (progressMs > finishedLimitStart) {
       if (previousProgressMs < finishedLimitStart)
-        new SetProgressTask(server, key, ratingsKey, C.StatusChanged.SetWatched).execute();
+        new SetProgressTask(server, key, ratingsKey, PlexLibraryItem.WatchedState.Watched).execute();
     }
     else if (progressMs < startedLimitEnd) {
       if (!isFinished && progressMs < previousProgressMs && previousProgressMs > startedLimitEnd)
-        new SetProgressTask(server, key, ratingsKey, C.StatusChanged.SetUnwatched).execute();
+        new SetProgressTask(server, key, ratingsKey, PlexLibraryItem.WatchedState.Unwatched).execute();
     }
     else
       new SetProgressTask(server, key, ratingsKey, progressMs).execute();

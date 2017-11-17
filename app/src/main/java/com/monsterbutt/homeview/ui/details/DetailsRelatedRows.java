@@ -1,11 +1,12 @@
 package com.monsterbutt.homeview.ui.details;
 
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import android.support.v17.leanback.widget.Presenter;
 
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.interfaces.ILifecycleListener;
@@ -19,11 +20,11 @@ public class DetailsRelatedRows implements ILifecycleListener {
 
   private final List<DetailsRelatedRow> rows = new ArrayList<>();
 
-  DetailsRelatedRows(Context context, UILifecycleManager lifecycleManager, PlexServer server,
-                     PlexLibraryItem item, ArrayObjectAdapter adapter, Presenter presenter) {
+  DetailsRelatedRows(Activity activity, StatusWatcher statusWatcher, UILifecycleManager lifecycleManager,
+                     PlexServer server, PlexLibraryItem item, ArrayObjectAdapter adapter, Presenter presenter) {
     if (item.getRelated() != null && !item.getRelated().isEmpty()) {
       for (Hub hub : item.getRelated()) {
-        DetailsRelatedRow row = new DetailsRelatedRow(context, server, hub, presenter);
+        DetailsRelatedRow row = new DetailsRelatedRow(activity, statusWatcher, server, hub, presenter);
         rows.add(row);
         adapter.add(row);
       }
@@ -32,7 +33,7 @@ public class DetailsRelatedRows implements ILifecycleListener {
     refresh();
   }
 
-  public void refresh() {
+  private void refresh() {
     for (DetailsRelatedRow row : rows)
       row.refresh();
   }

@@ -3,7 +3,6 @@ package com.monsterbutt.homeview.plex;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.JsonReader;
 import android.util.Log;
@@ -13,9 +12,7 @@ import com.monsterbutt.homeview.plex.media.PlexContainerItem;
 import com.monsterbutt.homeview.plex.media.Season;
 import com.monsterbutt.homeview.plex.media.Show;
 import com.monsterbutt.homeview.services.UpdateRecommendationsService;
-import com.monsterbutt.homeview.ui.C;
 import com.monsterbutt.homeview.ui.HubInfo;
-import com.monsterbutt.homeview.ui.interfaces.IMediaObserver;
 
 import java.io.BufferedOutputStream;
 import java.io.InputStreamReader;
@@ -58,8 +55,6 @@ public class PlexServer {
     private long mCurrentPlayingRatingKey = INVALID_RATING_KEY;
     private HashMap<String, String> mTokens = new HashMap<>();
     private String mServerKey;
-
-    private StatusWatcher statusWatcher = null;
 
     public PlexServer(Context context) {
 
@@ -382,8 +377,6 @@ public class PlexServer {
     }
 
     public boolean deleteMedia(String key) {
-        if (statusWatcher != null)
-            statusWatcher.changeStatus(key, C.StatusChanged.SetDeleted);
         boolean ret = false;
         if (mFactory != null) {
 
@@ -540,9 +533,6 @@ public class PlexServer {
     }
 
     public boolean setUnwatched(String key, String ratingKey, Context context) {
-
-        if (statusWatcher != null)
-            statusWatcher.changeStatus(key, C.StatusChanged.SetUnwatched);
         if (mFactory != null) {
             Log.d("PlexServer", "Setting UnWatched for : " + ratingKey);
             try {
@@ -557,10 +547,7 @@ public class PlexServer {
     }
 
     public boolean setWatched(String key, String ratingKey, Context context) {
-
         boolean ret = false;
-        if (statusWatcher != null)
-            statusWatcher.changeStatus(key, C.StatusChanged.SetWatched);
         if (mFactory != null) {
             Log.d("PlexServer", "Setting Watched for : " + ratingKey);
             try {
@@ -689,13 +676,4 @@ public class PlexServer {
         return ret;
     }
 
-    public synchronized StatusWatcher.StatusWatcherObserver registerUIObserver(@NonNull IMediaObserver observer) {
-        if (statusWatcher == null)
-            statusWatcher = new StatusWatcher();
-        return statusWatcher.registerObserver(observer);
-    }
-
-    void release() {
-        statusWatcher = null;
-    }
 }

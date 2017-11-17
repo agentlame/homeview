@@ -4,26 +4,26 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import com.monsterbutt.homeview.plex.PlexServer;
-import com.monsterbutt.homeview.ui.C;
+import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 
 public class SetProgressTask extends AsyncTask<Context, Void, Boolean> {
 
   private final PlexServer server;
   private final String     key;
   private final String     ratingKey;
-  private final C.StatusChanged status;
+  private final PlexLibraryItem.WatchedState status;
   private final long offset;
 
   SetProgressTask(PlexServer server, String key, String ratingKey, long offset) {
-    this(server, key, ratingKey, C.StatusChanged.Refresh, offset);
+    this(server, key, ratingKey, PlexLibraryItem.WatchedState.Refreshed, offset);
   }
 
-  public SetProgressTask(PlexServer server, String key, String ratingKey, C.StatusChanged status) {
+  public SetProgressTask(PlexServer server, String key, String ratingKey, PlexLibraryItem.WatchedState status) {
     this(server, key, ratingKey, status, 0);
   }
 
   private SetProgressTask(PlexServer server, String key, String ratingKey,
-                          C.StatusChanged status, long offset) {
+                          PlexLibraryItem.WatchedState status, long offset) {
     this.server = server;
     this.key = key;
     this.ratingKey = ratingKey;
@@ -36,13 +36,13 @@ public class SetProgressTask extends AsyncTask<Context, Void, Boolean> {
     Context context = params != null && params.length > 0 ? params[0] : null;
     boolean ret = false;
     switch (status) {
-      case SetWatched:
+      case Watched:
         ret = server.setWatched(key, ratingKey, context);
         break;
-      case SetUnwatched:
+      case Unwatched:
         ret = server.setUnwatched(key, ratingKey, context);
         break;
-      case Refresh:
+      case Refreshed:
         ret = server.setProgress(key, ratingKey, offset);
         break;
     }

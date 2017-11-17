@@ -45,7 +45,7 @@ public class SearchFragment extends android.support.v17.leanback.app.SearchFragm
         super.onCreate(savedInstanceState);
 
         PlexServer server = PlexServerManager.getInstance().getSelectedServer();
-        SelectionHandler selectionHandler = new SelectionHandler(this,
+        SelectionHandler selectionHandler = new SelectionHandler(this, null,
          new BackgroundHandler(getActivity(), server, mLifeCycleMgr));
 
         mVideoCursorAdapter = new CursorObjectAdapter(new CardPresenter(server, selectionHandler, false));

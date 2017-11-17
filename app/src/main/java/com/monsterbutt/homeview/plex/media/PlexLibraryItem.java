@@ -19,18 +19,15 @@ import com.google.gson.annotations.SerializedName;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.plex.tasks.DeleteTask;
 import com.monsterbutt.homeview.plex.tasks.SetProgressTask;
 import com.monsterbutt.homeview.ui.presenters.CardObject;
-import com.monsterbutt.homeview.ui.presenters.CardPresenter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import us.nineworlds.plex.rest.model.impl.Hub;
-
-import static com.monsterbutt.homeview.ui.C.StatusChanged.SetUnwatched;
-import static com.monsterbutt.homeview.ui.C.StatusChanged.SetWatched;
 
 public abstract class PlexLibraryItem {
 
@@ -46,7 +43,9 @@ public abstract class PlexLibraryItem {
         @SerializedName("3")
         WatchedAndPartial(3),
         @SerializedName("4")
-        Removed(4);
+        Removed(4),
+        @SerializedName("5")
+        Refreshed(5);
 
         private final int value;
         public int getValue() {
@@ -167,18 +166,18 @@ public abstract class PlexLibraryItem {
 
     public void toggleWatched() {}
 
-    public boolean onLongClicked(CardObject obj, final Fragment fragment, final Bundle extras,
-                                 final View transitionView, CardPresenter.LongClickWatchStatusCallback callback) {
+    public boolean onLongClicked(StatusWatcher statusWatcher, CardObject obj, final Fragment fragment, final Bundle extras,
+                                 final View transitionView) {
         PlexServer server = PlexServerManager.getInstance().getSelectedServer();
         final List<ActionChoice> values = new ArrayList<>();
         values.add(new PlayChoice());
         values.add(new DetailsChoice());
-        values.add(new DeleteChoice(server, obj, callback));
         WatchedState state = getWatchedState();
         if (state != WatchedState.Unwatched)
-            values.add(new SetUnwatchedChoice(obj, server, callback));
+            values.add(new SetUnwatchedChoice(obj, server, statusWatcher));
         if (state != WatchedState.Watched)
-            values.add(new SetWatchedChoice(obj, server, callback));
+            values.add(new SetWatchedChoice(obj, server, statusWatcher));
+        values.add(new DeleteChoice(server, statusWatcher));
         DialogInterface.OnClickListener dialogCB = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -228,20 +227,17 @@ public abstract class PlexLibraryItem {
     private class DeleteChoice extends ActionChoice {
 
         private final PlexServer server;
-        private final CardPresenter.LongClickWatchStatusCallback callback;
-        private final CardObject obj;
+        private final StatusWatcher statusWatcher;
 
-        DeleteChoice(PlexServer server, CardObject obj,
-                            CardPresenter.LongClickWatchStatusCallback callback) {
+        DeleteChoice(PlexServer server, StatusWatcher statusWatcher) {
             super(R.drawable.ic_delete_white_48dp, R.string.delete);
             this.server = server;
-            this.callback = callback;
-            this.obj = obj;
+            this.statusWatcher = statusWatcher;
         }
         @Override
         public void selected(final Fragment fragment, final Bundle extras, final View transitionView) {
-            new DeleteTask(PlexLibraryItem.this, server, fragment,
-             false, obj, callback);
+            new DeleteTask(PlexLibraryItem.this, server, fragment, false);
+            statusWatcher.changeStatus(PlexLibraryItem.this.getKey(), WatchedState.Removed);
         }
 
     }
@@ -250,21 +246,21 @@ public abstract class PlexLibraryItem {
 
         final CardObject obj;
         final PlexServer server;
-        final CardPresenter.LongClickWatchStatusCallback callback;
-        SetUnwatchedChoice(CardObject obj, PlexServer server,
-                                  CardPresenter.LongClickWatchStatusCallback callback) {
+        final StatusWatcher statusWatcher;
+
+        SetUnwatchedChoice(CardObject obj, PlexServer server, StatusWatcher statusWatcher) {
             super(R.drawable.ic_bookmark_white_48dp, R.string.action_choice_setunwatched);
-            this.callback = callback;
+            this.statusWatcher = statusWatcher;
             this.obj = obj;
             this.server = server;
         }
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
-            new SetProgressTask(server, PlexLibraryItem.this.getKey(),
-                    Long.toString(PlexLibraryItem.this.getRatingKey()),
-             SetUnwatched).execute(obj.getContext());
-            if (setStatus(WatchedState.Unwatched) && callback != null)
-                callback.resetSelected(obj);
+            String key = PlexLibraryItem.this.getKey();
+            new SetProgressTask(server, key,Long.toString(PlexLibraryItem.this.getRatingKey()),
+             WatchedState.Unwatched).execute(obj.getContext());
+            setStatus(WatchedState.Unwatched);
+            statusWatcher.changeStatus(key, WatchedState.Unwatched);
         }
     }
 
@@ -272,20 +268,21 @@ public abstract class PlexLibraryItem {
 
         final CardObject obj;
         final PlexServer server;
-        final CardPresenter.LongClickWatchStatusCallback callback;
-        SetWatchedChoice(CardObject obj, PlexServer server, CardPresenter.LongClickWatchStatusCallback callback) {
+        final StatusWatcher statusWatcher;
+
+        SetWatchedChoice(CardObject obj, PlexServer server, StatusWatcher statusWatcher) {
             super(R.drawable.ic_visibility_white_48dp, R.string.action_choice_setwatched);
             this.server = server;
             this.obj = obj;
-            this.callback = callback;
+            this.statusWatcher = statusWatcher;
         }
         @Override
         public void selected(Fragment fragment, final Bundle extras, final View transitionView) {
-            new SetProgressTask(server, PlexLibraryItem.this.getKey(),
-                    Long.toString(PlexLibraryItem.this.getRatingKey()),
-             SetWatched).execute(obj.getContext());
-            if (setStatus(WatchedState.Watched) && callback != null)
-                callback.resetSelected(obj);
+            String key = PlexLibraryItem.this.getKey();
+            new SetProgressTask(server, key, Long.toString(PlexLibraryItem.this.getRatingKey()),
+             WatchedState.Watched).execute(obj.getContext());
+            setStatus(WatchedState.Watched);
+            statusWatcher.changeStatus(key, WatchedState.Watched);
         }
     }
 

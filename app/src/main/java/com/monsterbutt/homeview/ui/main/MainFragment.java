@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.PlexServerManager;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.ui.main.tasks.GetRandomArtWorkTask;
 import com.monsterbutt.homeview.ui.presenters.CardPresenter;
 import com.monsterbutt.homeview.ui.presenters.CustomListRowPresenter;
@@ -42,10 +43,10 @@ public class MainFragment extends BrowseFragment
 
   private ArrayObjectAdapter rowsAdapter = new ArrayObjectAdapter(new CustomListRowPresenter(this));
   private final UILifecycleManager lifeCycleMgr = new UILifecycleManager();
+  private final StatusWatcher statusWatcher = new StatusWatcher();
   private HubRows hubRows = null;
   private MainSectionsRow mainSectionsRow;
   private BackgroundHandler backgroundHandler;
-
   private SelectionHandler selectionHandler;
 
   @Override
@@ -82,7 +83,7 @@ public class MainFragment extends BrowseFragment
       }
     });
     backgroundHandler = new BackgroundHandler(getActivity(), null, lifeCycleMgr);
-    selectionHandler = new SelectionHandler(this, backgroundHandler);
+    selectionHandler = new SelectionHandler(this, statusWatcher, backgroundHandler);
 
     setServer(PlexServerManager.getInstance().getSelectedServer());
   }
@@ -117,7 +118,7 @@ public class MainFragment extends BrowseFragment
       mainSectionsRow = new MainSectionsRow(getContext(), server, lifeCycleMgr,
        new CardPresenter(server, selectionHandler, false));
       rowsAdapter.add(0, mainSectionsRow);
-      hubRows = new MainHubRows(this, server, lifeCycleMgr, selectionHandler, rowsAdapter);
+      hubRows = new MainHubRows(this, statusWatcher, server, lifeCycleMgr, selectionHandler, rowsAdapter);
     }
     else
       setHeaderTitle("");

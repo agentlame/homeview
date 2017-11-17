@@ -1,9 +1,10 @@
 package com.monsterbutt.homeview.ui.details;
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.v17.leanback.widget.Presenter;
 
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.ui.LibraryList;
 import com.monsterbutt.homeview.ui.LibraryRow;
 
@@ -15,10 +16,11 @@ public class DetailsRelatedRow extends LibraryRow {
 
   private final Hub hub;
 
-  DetailsRelatedRow(Context context, PlexServer server, Hub hub, Presenter presenter) {
-    super(context, server, hub.getTitle(), false, presenter);
+  DetailsRelatedRow(Activity activity, StatusWatcher statusWatcher, PlexServer server, Hub hub,
+                    Presenter presenter) {
+    super(activity, statusWatcher, server, hub.getTitle(), false, presenter);
     this.hub = hub;
-    LibraryList.update(adapter, statusWatcher, this, hub, null);
+    LibraryList.update(adapter, this.statusWatcher, this, hub, null);
   }
 
   @Override

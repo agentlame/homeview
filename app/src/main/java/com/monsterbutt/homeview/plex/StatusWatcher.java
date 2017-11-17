@@ -6,7 +6,6 @@ import android.text.TextUtils;
 
 
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
-import com.monsterbutt.homeview.ui.C;
 import com.monsterbutt.homeview.ui.interfaces.IMediaObserver;
 import com.monsterbutt.homeview.ui.interfaces.IRegisteredMedia;
 
@@ -33,8 +32,10 @@ public class StatusWatcher {
     public void attach(@NonNull Collection<IRegisteredMedia> media) {
       for (IRegisteredMedia item : media) {
         MediaEntry entry = map.get(item.getKey());
-        if (entry == null)
+        if (entry == null) {
           entry = new MediaEntry(item, map);
+          map.put(item.getKey(), entry);
+        }
         entry.attach(new Observer(observer, item), map);
       }
     }
@@ -46,10 +47,9 @@ public class StatusWatcher {
           entry.release(observer);
       }
     }
-
   }
 
-  void changeStatus(String key, C.StatusChanged status) {
+  public void changeStatus(String key, PlexLibraryItem.WatchedState status) {
     MediaEntry entry = map.get(key);
     if (entry != null)
       entry.changeStatus(status);
@@ -100,7 +100,7 @@ public class StatusWatcher {
     void attach(Observer observer, ObserversMap map) {
 
       if (media != null) {
-        notifyObservers(C.StatusChanged.Refresh,
+        notifyObservers(PlexLibraryItem.WatchedState.Refreshed,
          observer.media.getTotalLeaves(), observer.media.getUnwatchedLeaves());
       }
       else
@@ -116,27 +116,7 @@ public class StatusWatcher {
       }
     }
 
-    private boolean shouldUpdate(C.StatusChanged status) {
-
-      boolean shouldUpdate = false;
-      if (media != null) {
-        PlexLibraryItem.WatchedState state = media.getWatchedState();
-        switch (status) {
-          case SetDeleted:
-            shouldUpdate = true;
-            break;
-          case SetWatched:
-            shouldUpdate = state != PlexLibraryItem.WatchedState.Watched;
-            break;
-          case SetUnwatched:
-            shouldUpdate = state != PlexLibraryItem.WatchedState.Unwatched;
-            break;
-        }
-      }
-      return shouldUpdate;
-    }
-
-    private void notifyObservers(C.StatusChanged status, int totalCount, int unwatchedCount) {
+    private void notifyObservers(PlexLibraryItem.WatchedState status, int totalCount, int unwatchedCount) {
       if (media.updateStatus(status, totalCount, unwatchedCount)) {
         for (Observer observer : observers.values()) {
           observer.media.updateStatus(status, totalCount, unwatchedCount);
@@ -145,16 +125,14 @@ public class StatusWatcher {
       }
     }
 
-    void changeStatus(C.StatusChanged status) {
+    void changeStatus(PlexLibraryItem.WatchedState status) {
 
-      if (!shouldUpdate(status))
-       return;
 
       final int priorLeafTotal = media.getTotalLeaves();
       final int priorLeafUnwatched = media.getUnwatchedLeaves();
       notifyObservers(status,
-       status == C.StatusChanged.SetDeleted ? 0 : priorLeafTotal,
-       status == C.StatusChanged.SetUnwatched ? priorLeafTotal : 0);
+       status == PlexLibraryItem.WatchedState.Removed? 0 : priorLeafTotal,
+       status == PlexLibraryItem.WatchedState.Unwatched ? priorLeafTotal : 0);
 
       if (!children.isEmpty()) {
         for (MediaEntry media : children.values())
@@ -162,12 +140,12 @@ public class StatusWatcher {
       }
 
       if (parent != null && parent.media != null) {
-        final int newParentLeafTotal = status == C.StatusChanged.SetDeleted ?
+        final int newParentLeafTotal = status == PlexLibraryItem.WatchedState.Removed?
          parent.media.getTotalLeaves() - priorLeafTotal : parent.media.getTotalLeaves();
         final int newParentLeafUnwatched = parent.media.getUnwatchedLeaves() +
-         (status == C.StatusChanged.SetUnwatched ?
+         (status == PlexLibraryItem.WatchedState.Unwatched ?
           priorLeafTotal - priorLeafUnwatched :  -priorLeafUnwatched);
-        parent.notifyObservers(C.StatusChanged.Refresh,
+        parent.notifyObservers(PlexLibraryItem.WatchedState.Refreshed,
          newParentLeafTotal,
          newParentLeafUnwatched);
       }

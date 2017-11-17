@@ -1,13 +1,14 @@
 package com.monsterbutt.homeview.ui;
 
 
+import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.support.v17.leanback.widget.ArrayObjectAdapter;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.ui.presenters.CardPresenter;
 import com.monsterbutt.homeview.ui.interfaces.IHubRows;
 import com.monsterbutt.homeview.ui.interfaces.ILifecycleListener;
@@ -25,24 +26,26 @@ import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 public abstract class HubRows implements IServerObserver, ILifecycleListener, IHubRows {
 
-  private final Context context;
+  private final Activity activity;
   protected final PlexServer server;
   private final ArrayObjectAdapter adapter;
   private final SelectionHandler selectionHandler;
   private final UILifecycleManager lifeCycleMgr;
+  private final StatusWatcher statusWatcher;
 
   private Map<String, IPlexList> map = new HashMap<>();
 
   private Task task = null;
   private boolean isRefreshing = false;
 
-  protected HubRows(Fragment fragment, PlexServer server, UILifecycleManager lifeCycleMgr,
-                    SelectionHandler selectionHandler, ArrayObjectAdapter adapter) {
-    this.context = fragment.getContext();
+  protected HubRows(Fragment fragment, StatusWatcher statusWatcher, PlexServer server,
+                    UILifecycleManager lifeCycleMgr, SelectionHandler selectionHandler, ArrayObjectAdapter adapter) {
+    this.activity = fragment.getActivity();
     this.server = server;
     this.adapter = adapter;
+    this.statusWatcher = statusWatcher;
 
-    new ThemeHandler(lifeCycleMgr, context, null, true);
+    new ThemeHandler(lifeCycleMgr, activity, null, true);
     lifeCycleMgr.register(HubRows.class.getCanonicalName(), this);
     this.selectionHandler = selectionHandler;
     this.lifeCycleMgr = lifeCycleMgr;
@@ -120,10 +123,10 @@ public abstract class HubRows implements IServerObserver, ILifecycleListener, IH
         boolean isLandscape = shouldBeLandscape(hub);
         String path = hub.getKey();
         String header = hub.getTitle();
-        for (String sub : context.getString(R.string.main_rows_header_strip).split(";"))
+        for (String sub : activity.getString(R.string.main_rows_header_strip).split(";"))
           header = header.replace(sub, "").trim();
-        item = new HubRow(context, server, new HubInfo(header, key, path), isLandscape,
-         new CardPresenter(server, selectionHandler, true));
+        item = new HubRow(activity, statusWatcher, server, new HubInfo(header, key, path),
+         isLandscape, new CardPresenter(server, selectionHandler, true));
         map.put(key, item);
         adapter.add(index, item);
       }

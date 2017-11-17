@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.ui.presenters.CardObject;
 import com.monsterbutt.homeview.ui.presenters.PosterCard;
 import com.monsterbutt.homeview.ui.C;
@@ -62,6 +63,7 @@ public class GridFragment extends VerticalGridFragment
     private ISummaryDisplay summaryDisplay;
     private IQuickJumpDisplay quickJumpDisplay;
     private SectionFilterView sectionFilterView;
+    private StatusWatcher statusWatcher = new StatusWatcher();
 
     @Override
     public void onResume() {
@@ -100,8 +102,8 @@ public class GridFragment extends VerticalGridFragment
       mServer = PlexServerManager.getInstance().getSelectedServer();
       mThemeHandler = new ThemeHandler(mLifeCycleMgr, getContext(), intent, !mIsEpisodeList);
       backgroundHandler = new BackgroundHandler(getActivity(), mServer, mLifeCycleMgr, intent.getStringExtra(C.BACKGROUND));
-      SelectionHandler mSelectionHandler = new SelectionHandler(this, this, backgroundHandler);
-      mGrid = new GridList(getContext(), mServer, mSelectionHandler);
+      SelectionHandler mSelectionHandler = new SelectionHandler(this, statusWatcher, backgroundHandler);
+      mGrid = new GridList(activity, mServer, statusWatcher, mSelectionHandler);
       mPassedSelectedKey = intent.getStringExtra(C.SELECTED);
     }
 

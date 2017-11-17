@@ -1,9 +1,10 @@
 package com.monsterbutt.homeview.ui;
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.v17.leanback.widget.Presenter;
 
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.settings.SettingsManager;
 
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
@@ -13,8 +14,9 @@ public class HubRow extends LibraryRow {
 
   private final HubInfo hub;
 
-  HubRow(Context context, PlexServer server, HubInfo hub, boolean useScene, Presenter presenter) {
-    super(context, server, hub.name, useScene, presenter);
+  HubRow(Activity activity, StatusWatcher statusWatcher, PlexServer server, HubInfo hub,
+         boolean useScene, Presenter presenter) {
+    super(activity, statusWatcher, server, hub.name, useScene, presenter);
     this.hub = hub;
     refresh();
   }

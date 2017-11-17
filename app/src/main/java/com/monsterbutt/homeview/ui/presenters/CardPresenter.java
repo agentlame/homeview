@@ -42,30 +42,20 @@ import com.monsterbutt.homeview.ui.SelectionHandler;
  */
 public class CardPresenter extends Presenter {
 
-    public interface LongClickWatchStatusCallback {
-        void resetSelected(CardObject card);
-        void removeSelected(CardObject card);
-    }
-
     private int mSelectedBackgroundColor = -1;
     private int mDefaultBackgroundColor = -1;
 
     final private PlexServer mPlex;
     final private SelectionHandler mListener;
-    private LongClickWatchStatusCallback mLongClickWatchStatusCallback;
     final private boolean posterOnly;
 
     public CardPresenter(PlexServer plex, SelectionHandler listener, boolean posterOnly) {
 
         mPlex = plex;
         mListener = listener;
-        mLongClickWatchStatusCallback = null;
         this.posterOnly = posterOnly;
     }
 
-    public void setLongClickWatchStatusCallback(LongClickWatchStatusCallback longClickWatchStatusCallback) {
-        mLongClickWatchStatusCallback = longClickWatchStatusCallback;
-    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent) {
@@ -120,7 +110,7 @@ public class CardPresenter extends Presenter {
                 @Override
                 public boolean onLongClick(View v) {
 
-                    return mListener.longClickOccured(obj, mLongClickWatchStatusCallback);
+                    return mListener.longClickOccured(obj);
                 }
             });
             cardView.setOnClickListener(new View.OnClickListener() {

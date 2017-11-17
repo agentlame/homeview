@@ -5,6 +5,7 @@ import android.support.v17.leanback.widget.ArrayObjectAdapter;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.ui.SelectionHandler;
 import com.monsterbutt.homeview.ui.HubRows;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
@@ -21,9 +22,10 @@ class MainHubRows extends HubRows {
 
   private final HashMap<String, Integer> landscape;
 
-  MainHubRows(Fragment fragment, PlexServer server, UILifecycleManager lifeCycleMgr,
-              SelectionHandler selectionHandler, ArrayObjectAdapter rowsAdapter) {
-    super(fragment, server, lifeCycleMgr, selectionHandler, rowsAdapter);
+  MainHubRows(Fragment fragment, StatusWatcher statusWatcher, PlexServer server,
+              UILifecycleManager lifeCycleMgr, SelectionHandler selectionHandler,
+              ArrayObjectAdapter rowsAdapter) {
+    super(fragment, statusWatcher, server, lifeCycleMgr, selectionHandler, rowsAdapter);
 
     landscape = makeOrderHashFromStringDelim(fragment.getString(R.string.main_landscape_rows));
   }

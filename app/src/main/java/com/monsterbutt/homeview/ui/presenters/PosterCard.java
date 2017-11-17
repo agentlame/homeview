@@ -9,9 +9,9 @@ import android.view.View;
 
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
-import com.monsterbutt.homeview.ui.C;
 
 public class PosterCard extends CardObject {
 
@@ -31,12 +31,6 @@ public class PosterCard extends CardObject {
     public String getParentKey() {
         return item.getParentKey();
     }
-
-    @Override
-    public String getRatingsKey() {
-        if (item.getRatingKey() == 0)
-            return getKey();
-        return Long.toString(item.getRatingKey()); }
 
     @Override
     public String getTitle() {
@@ -101,26 +95,26 @@ public class PosterCard extends CardObject {
     }
 
     @Override
-    public boolean updateStatus(C.StatusChanged status, int totalCount, int unwatchedCount) {
+    public boolean updateStatus(PlexLibraryItem.WatchedState status, int totalCount, int unwatchedCount) {
         boolean change = false;
 
         switch (status) {
-            case SetDeleted:
+            case Removed:
                 change = true;
                 break;
-            case SetWatched:
+            case Watched:
                 if (getWatchedState() != PlexLibraryItem.WatchedState.Watched) {
                     item.toggleWatched();
-                    change = true;
                 }
+                change = true;
                 break;
-            case SetUnwatched:
+            case Unwatched:
                 if (getWatchedState() != PlexLibraryItem.WatchedState.Unwatched) {
                     item.toggleWatched();
-                    change = true;
                 }
+                change = true;
                 break;
-            case Refresh:
+            case Refreshed:
                 change = item.updateCounts(totalCount, unwatchedCount);
                 break;
         }
@@ -166,9 +160,9 @@ public class PosterCard extends CardObject {
     }
 
     @Override
-    public boolean onLongClicked(Fragment fragment, Bundle extras, View transitionView,
-                                 CardPresenter.LongClickWatchStatusCallback callback) {
-        return item != null && item.onLongClicked(this, fragment, extras, transitionView, callback);
+    public boolean onLongClicked(StatusWatcher statusWatcher, Fragment fragment,
+                                 Bundle extras, View transitionView) {
+        return item != null && item.onLongClicked(statusWatcher, this, fragment, extras, transitionView);
     }
 
     String getDetailTitle() {

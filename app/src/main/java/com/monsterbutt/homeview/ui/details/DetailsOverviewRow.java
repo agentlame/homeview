@@ -16,6 +16,7 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.plex.tasks.DeleteTask;
@@ -23,20 +24,25 @@ import com.monsterbutt.homeview.ui.details.interfaces.IDetailsItem;
 import com.monsterbutt.homeview.ui.details.interfaces.IDetailsItemUpdateNotifier;
 import com.monsterbutt.homeview.ui.details.interfaces.IDetailsItemUpdateListener;
 import com.monsterbutt.homeview.ui.interfaces.ICardSelectionListener;
+import com.monsterbutt.homeview.ui.interfaces.IMediaObserver;
+import com.monsterbutt.homeview.ui.interfaces.IRegisteredMedia;
 
 
 public class DetailsOverviewRow extends android.support.v17.leanback.widget.DetailsOverviewRow
- implements OnActionClickedListener, IDetailsItemUpdateListener {
+ implements OnActionClickedListener, IDetailsItemUpdateListener, IMediaObserver {
 
   private final static int ACTION_PLAY        = 1;
   private final static int ACTION_VIEWSTATUS  = 2;
   private final static int ACTION_DELETE      = 5;
 
   private final BaseFragment fragment;
+  private final StatusWatcher statusWatcher;
 
-  DetailsOverviewRow(final BaseFragment fragment, IDetailsItem obj, IDetailsItemUpdateNotifier notifier) {
+  DetailsOverviewRow(final BaseFragment fragment, StatusWatcher statusWatcher,
+                     IDetailsItem obj, IDetailsItemUpdateNotifier notifier) {
     super(obj);
     this.fragment = fragment;
+    this.statusWatcher = statusWatcher;
 
     PlexServer server = obj.server();
     PlexLibraryItem item = obj.item();
@@ -81,7 +87,10 @@ public class DetailsOverviewRow extends android.support.v17.leanback.widget.Deta
 
   private void toggleWatched() {
     IDetailsItem item = getContainer();
-    new ToggleWatchedStateTask(getContainer().server(), item.item()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, fragment.getContext());
+    PlexLibraryItem libraryItem = item.item();
+    statusWatcher.changeStatus(libraryItem.getKey(), libraryItem.getWatchedState() == PlexLibraryItem.WatchedState.Watched ?
+     PlexLibraryItem.WatchedState.Unwatched : PlexLibraryItem.WatchedState.Watched);
+    new ToggleWatchedStateTask(getContainer().server(), libraryItem).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, fragment.getContext());
     update(item);
   }
 
@@ -120,8 +129,22 @@ public class DetailsOverviewRow extends android.support.v17.leanback.widget.Deta
         toggleWatched();
         break;
       case ACTION_DELETE:
-        new DeleteTask(item, obj.server(), fragment, true, null, null);
+        statusWatcher.changeStatus(item.getKey(), PlexLibraryItem.WatchedState.Removed);
+        new DeleteTask(item, obj.server(), fragment, true);
         break;
+    }
+  }
+
+  @Override
+  public void statusChanged(IRegisteredMedia media, PlexLibraryItem.WatchedState status) {
+    PlexLibraryItem item = getContainer().item();
+    if (item.getKey().equals(media.getKey())) {
+      if ((status == PlexLibraryItem.WatchedState.Watched || status == PlexLibraryItem.WatchedState.Unwatched) &&
+       item.getWatchedState() != status) {
+        item.setStatus(status);
+        update(getContainer());
+      }
+
     }
   }
 

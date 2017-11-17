@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.monsterbutt.homeview.plex.PlexServer;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.ui.interfaces.IRegisteredMedia;
 
@@ -23,7 +24,6 @@ public abstract class CardObject implements IRegisteredMedia {
     }
 
     public abstract String getKey();
-    public          String getRatingsKey() { return getKey(); }
     public abstract String getTitle();
     public abstract String getSortTitle();
     public abstract String getContent();
@@ -74,8 +74,8 @@ public abstract class CardObject implements IRegisteredMedia {
 
     public boolean setWatchState(PlexLibraryItem.WatchedState updateStatus) { return false; }
 
-    public boolean onLongClicked(Fragment fragment, Bundle extras, View transitionView,
-                                 CardPresenter.LongClickWatchStatusCallback callback) {
+    public boolean onLongClicked(StatusWatcher statusWatcher,
+                                 Fragment fragment, Bundle extras, View transitionView) {
         return onClicked(fragment, extras, transitionView);
     }
 

@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.PlexServerManager;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.ui.presenters.CustomListRowPresenter;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
 import com.monsterbutt.homeview.ui.SelectionHandler;
@@ -19,6 +20,7 @@ import com.monsterbutt.homeview.ui.BackgroundHandler;
 public class SectionHubFragment extends BrowseFragment implements CustomListRowPresenter.Callback {
 
   private UILifecycleManager lifeCycleMgr = new UILifecycleManager();
+  private StatusWatcher statusWatcher = new StatusWatcher();
 
   @Override
   public void onActivityCreated(Bundle savedInstanceState) {
@@ -36,10 +38,10 @@ public class SectionHubFragment extends BrowseFragment implements CustomListRowP
     setAdapter(rowsAdapter);
 
     PlexServer server = PlexServerManager.getInstance().getSelectedServer();
-    SelectionHandler selectionHandler = new SelectionHandler(this,
+    SelectionHandler selectionHandler = new SelectionHandler(this, statusWatcher,
      new BackgroundHandler(getActivity(), server, lifeCycleMgr));
     new SectionHubRows(intent.getStringExtra(SectionHubActivity.SECTIONID),
-     this, server, lifeCycleMgr, selectionHandler, rowsAdapter);
+     this, statusWatcher, server, lifeCycleMgr, selectionHandler, rowsAdapter);
   }
 
   @Override

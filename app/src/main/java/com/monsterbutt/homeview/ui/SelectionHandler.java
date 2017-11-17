@@ -19,12 +19,12 @@ import android.widget.ImageView;
 
 import com.monsterbutt.homeview.model.Video;
 import com.monsterbutt.homeview.player.notifier.ChapterSelectionNotifier;
+import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.plex.media.Chapter;
 import com.monsterbutt.homeview.plex.media.Episode;
 import com.monsterbutt.homeview.plex.media.Movie;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.ui.presenters.CardObject;
-import com.monsterbutt.homeview.ui.presenters.CardPresenter;
 import com.monsterbutt.homeview.ui.presenters.CodecCard;
 import com.monsterbutt.homeview.ui.presenters.PosterCard;
 import com.monsterbutt.homeview.ui.presenters.SceneCard;
@@ -43,7 +43,7 @@ public class SelectionHandler
     private final ImageView mMainItemImage;
     private final Fragment mFragment;
     private final ICardSelectionListener mCardListener;
-
+    private final StatusWatcher statusWatcher;
     private final BackgroundHandler backgroundHandler;
     private final ChapterSelectionNotifier mChapterClickListener;
 
@@ -52,29 +52,32 @@ public class SelectionHandler
         this(fragment, null, null);
     }
 
-    public SelectionHandler(Fragment fragment, BackgroundHandler backgroundHandler) {
-        this(fragment, null, null, null, null, backgroundHandler);
+    public SelectionHandler(Fragment fragment, StatusWatcher statusWatcher, BackgroundHandler backgroundHandler) {
+        this(fragment, statusWatcher, null, null, null, null, backgroundHandler);
     }
 
     public SelectionHandler(Fragment fragment, ICardSelectionListener cardListener) {
-        this(fragment, cardListener, null, null);
+        this(fragment, null, cardListener, null, null);
     }
 
-    public SelectionHandler(Fragment fragment, ICardSelectionListener cardListener,
+    public SelectionHandler(Fragment fragment, StatusWatcher statusWatcher, ICardSelectionListener cardListener,
                             BackgroundHandler backgroundHandler) {
-        this(fragment, cardListener, null, null, null, backgroundHandler);
+        this(fragment, statusWatcher, cardListener, null, null, null, backgroundHandler);
     }
 
-    public SelectionHandler(Fragment fragment, ICardSelectionListener cardListener,
+    public SelectionHandler(Fragment fragment, StatusWatcher statusWatcher, ICardSelectionListener cardListener,
                             PlexLibraryItem mainItem, ImageView mainItemImage) {
-        this(fragment, cardListener, null, mainItem, mainItemImage, null);
+        this(fragment, statusWatcher, cardListener, null, mainItem, mainItemImage, null);
     }
 
-    private SelectionHandler(Fragment fragment, ICardSelectionListener cardListener,
+    private SelectionHandler(Fragment fragment,
+                             StatusWatcher statusWatcher,
+                             ICardSelectionListener cardListener,
                              ChapterSelectionNotifier chapterListener,
-                             PlexLibraryItem mainItem, ImageView mainItemImage,
+                             PlexLibraryItem mainItem,
+                             ImageView mainItemImage,
                              BackgroundHandler backgroundHandler) {
-
+        this.statusWatcher = statusWatcher;
         this.backgroundHandler = backgroundHandler;
         mCardListener = cardListener;
         mChapterClickListener = chapterListener;
@@ -112,16 +115,15 @@ public class SelectionHandler
         return ret;
     }
 
-    public boolean longClickOccured(CardObject obj, CardPresenter.LongClickWatchStatusCallback callback) {
+    public boolean longClickOccured(CardObject obj) {
 
         if (obj != null) {
             if (obj instanceof SceneCard && ((SceneCard) obj).getItem() instanceof Chapter)
                 return playKeyPressed();
             else if (obj instanceof PosterCard) {
-
                 boolean currIsScene = obj instanceof SceneCard;
                 Bundle extra = mCardListener != null ? mCardListener.getPlaySelectionBundle(currIsScene) : null;
-                return obj.onLongClicked(mFragment, extra,mCurrentCardTransitionImage, callback);
+                return obj.onLongClicked(statusWatcher, mFragment, extra,mCurrentCardTransitionImage);
             }
         }
         return false;

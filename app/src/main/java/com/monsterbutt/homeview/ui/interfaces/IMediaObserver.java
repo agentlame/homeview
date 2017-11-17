@@ -1,8 +1,8 @@
 package com.monsterbutt.homeview.ui.interfaces;
 
 
-import com.monsterbutt.homeview.ui.C;
+import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 
 public interface IMediaObserver {
-  void statusChanged(IRegisteredMedia media, C.StatusChanged status);
+  void statusChanged(IRegisteredMedia media, PlexLibraryItem.WatchedState status);
 }
