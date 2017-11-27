@@ -220,16 +220,12 @@ public class PlaybackFragment extends VideoFragment implements VideoChangedNotif
       float aspectDeformation = videoAspectRatio / viewAspectRatio - 1;
       if (Math.abs(aspectDeformation) > MAX_ASPECT_RATIO_DEFORMATION_FRACTION) {
         if (aspectDeformation > 0) {
-          if (screenWidth != videoWidth) {
-            float ratio =  (float) screenWidth / videoWidth;
-            p.height = (int) (videoHeight * ratio);
-          }
+          float ratio =  (float) screenWidth / videoWidth;
+          p.height = (int) (videoHeight * ratio);
         }
         else {
-          if (screenHeight != videoHeight) {
-            float ratio = (float) screenHeight / videoHeight;
-            p.width = (int) (videoWidth * ratio);
-          }
+          float ratio = (float) screenHeight / videoHeight;
+          p.width = (int) (videoWidth * ratio);
         }
       }
     }
