@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -249,6 +250,23 @@ public class ImageCardView extends BaseCardView {
             mFlagText.setVisibility(View.INVISIBLE);
         else {
             mFlagText.setText(text);
+            int len = text.length();
+            LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            switch (len) {
+                case 1:
+                    mFlagText.setTextSize((float) 16.0);
+                    llp.setMargins(0, -2, 2, 0);
+                    mFlagText.setLayoutParams(llp);
+                    break;
+                case 2:
+                    mFlagText.setTextSize((float) 12.0);
+                    break;
+                case 3:
+                default:
+                    mFlagText.setTextSize((float) 12.0);
+                    mFlagText.setPadding(0, 4, 0, 0);
+                    break;
+            }
             mFlagText.setVisibility(View.VISIBLE);
         }
     }
