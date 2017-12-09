@@ -6,9 +6,11 @@ import android.graphics.drawable.Drawable;
 import android.support.v17.leanback.widget.BaseCardView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -251,19 +253,22 @@ public class ImageCardView extends BaseCardView {
         else {
             mFlagText.setText(text);
             int len = text.length();
-            LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            FrameLayout.LayoutParams llp = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
+             LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.RIGHT);
             switch (len) {
                 case 1:
                     mFlagText.setTextSize((float) 16.0);
-                    llp.setMargins(0, -2, 2, 0);
+                    llp.setMargins(0, -6, 2, 0);
                     mFlagText.setLayoutParams(llp);
                     break;
                 case 2:
                     mFlagText.setTextSize((float) 12.0);
+                    llp.setMargins(0, -4, 2, 0);
+                    mFlagText.setLayoutParams(llp);
                     break;
                 case 3:
                 default:
-                    mFlagText.setTextSize((float) 12.0);
+                    mFlagText.setTextSize((float) 10.0);
                     mFlagText.setPadding(0, 4, 0, 0);
                     break;
             }
