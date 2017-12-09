@@ -102,7 +102,7 @@ public class GridFragment extends VerticalGridFragment
       mServer = PlexServerManager.getInstance().getSelectedServer();
       mThemeHandler = new ThemeHandler(mLifeCycleMgr, getContext(), intent, !mIsEpisodeList);
       backgroundHandler = new BackgroundHandler(getActivity(), mServer, mLifeCycleMgr, intent.getStringExtra(C.BACKGROUND));
-      SelectionHandler mSelectionHandler = new SelectionHandler(this, statusWatcher, backgroundHandler);
+      SelectionHandler mSelectionHandler = new SelectionHandler(this, statusWatcher, this, backgroundHandler);
       mGrid = new GridList(activity, mServer, statusWatcher, mSelectionHandler);
       mPassedSelectedKey = intent.getStringExtra(C.SELECTED);
     }
