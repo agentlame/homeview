@@ -6,18 +6,22 @@ import android.support.v17.leanback.widget.Presenter;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.settings.SettingsManager;
+import com.monsterbutt.homeview.ui.interfaces.IRegisteredRow;
+import com.monsterbutt.homeview.ui.interfaces.IRowManager;
 
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 
-public class HubRow extends LibraryRow {
+public class HubRow extends LibraryRow implements IRegisteredRow {
 
   private final HubInfo hub;
+  private final IRowManager rowManager;
 
   HubRow(Activity activity, StatusWatcher statusWatcher, PlexServer server, HubInfo hub,
-         boolean useScene, Presenter presenter) {
+         boolean useScene, Presenter presenter, IRowManager rowManager) {
     super(activity, statusWatcher, server, hub.name, useScene, presenter);
     this.hub = hub;
+    this.rowManager = rowManager;
     refresh();
   }
 
@@ -28,6 +32,11 @@ public class HubRow extends LibraryRow {
 
   @Override
   protected void refreshData() { new MainHubTask(this).execute(); }
+
+  @Override
+  public void update() {
+    refresh();
+  }
 
   private static class MainHubTask extends LibraryRow.Task {
 
@@ -43,12 +52,20 @@ public class HubRow extends LibraryRow {
       this.maxCount = SettingsManager.getInstance().getString("preferences_navigation_hubsizelimit");
     }
 
+    @Override
     protected MediaContainer getData() {
       HubInfo hub = row.hub;
       if (hub.path.contains(recentlyAddedKey) && Long.valueOf(maxCount) > 0)
         hub = new HubInfo(hub.name, hub.key, hub.path + limitResultsKey + maxCount);
       return row.server.getHubsData(hub);
     }
+
+    @Override
+    protected void onPostExecute() {
+      if (row.adapter.size() == 0 && row.rowManager != null)
+        row.rowManager.removeRow(row);
+    }
+
   }
 
 }

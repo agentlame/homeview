@@ -11,6 +11,8 @@ import android.support.v17.leanback.widget.Presenter;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
+import com.monsterbutt.homeview.ui.interfaces.IRegisteredRow;
+import com.monsterbutt.homeview.ui.presenters.CardObject;
 import com.monsterbutt.homeview.ui.presenters.PosterCardExpanded;
 import com.monsterbutt.homeview.ui.presenters.SceneCardExpanded;
 import com.monsterbutt.homeview.ui.interfaces.ICardObjectListCallback;
@@ -93,8 +95,11 @@ public abstract class LibraryRow extends ListRow
   @Override
   public void shouldAdd(IContainer container, PlexLibraryItem item, CardObjectList objects) {
     if (item != null && shouldAdd(item)) {
-      objects.add(item.getKey(), useScene ?
-       new SceneCardExpanded(activity, item) : new PosterCardExpanded(activity, item));
+      CardObject card = useScene ?
+       new SceneCardExpanded(activity, item) : new PosterCardExpanded(activity, item);
+      if (this instanceof IRegisteredRow)
+        card.setRegisteredRow((IRegisteredRow) this);
+      objects.add(item.getKey(), card);
     }
   }
 
@@ -107,6 +112,7 @@ public abstract class LibraryRow extends ListRow
     }
 
     protected abstract MediaContainer getData();
+    protected void onPostExecute() {}
 
     @Override
     protected MediaContainer doInBackground(Void... voids) {
@@ -116,6 +122,7 @@ public abstract class LibraryRow extends ListRow
     @Override
     protected void onPostExecute(MediaContainer mc) {
       LibraryList.update(row.adapter, row.statusWatcher, row, mc, null);
+      onPostExecute();
       row.isRefreshing = false;
     }
 

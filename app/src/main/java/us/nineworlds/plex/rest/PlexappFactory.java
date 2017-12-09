@@ -123,8 +123,17 @@ public class PlexappFactory {
 
 			List<Hub> toRemove = new ArrayList<>();
 			for (Hub hub : mediaContainer.getHubs()) {
-				if (hub.getSize() == 0)
+				if (hub.getSize() == 0) {
+					if (hub.getHubIdentifier().equals("home.continue")) {
+						MediaContainer mc = retrieveMetaData(hub.getKey(), false);
+						if (mc != null && mc.getVideos() != null && !mc.getVideos().isEmpty()) {
+							hub.setVideos(mc.getVideos());
+							hub.setSize(mc.getVideos().size());
+							continue;
+						}
+					}
 					toRemove.add(hub);
+				}
 			}
 			for(Hub hub : toRemove)
 				mediaContainer.getHubs().remove(hub);

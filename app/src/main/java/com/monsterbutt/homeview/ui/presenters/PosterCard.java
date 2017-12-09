@@ -96,7 +96,10 @@ public class PosterCard extends CardObject {
 
     @Override
     public boolean setWatchState(PlexLibraryItem.WatchedState updateStatus, long viewedOffset) {
-        return item.setStatus(updateStatus, viewedOffset);
+        boolean change = item.setStatus(updateStatus, viewedOffset);
+        if (change && registeredRow != null)
+            registeredRow.update();
+        return change;
     }
 
     @Override
@@ -123,6 +126,9 @@ public class PosterCard extends CardObject {
                 change = item.updateCounts(totalCount, unwatchedCount);
                 break;
         }
+
+        if (change && registeredRow != null)
+            registeredRow.update();
 
         return change;
     }

@@ -9,6 +9,8 @@ import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.ui.SelectionHandler;
 import com.monsterbutt.homeview.ui.HubRows;
 import com.monsterbutt.homeview.ui.UILifecycleManager;
+import com.monsterbutt.homeview.ui.interfaces.IPlexList;
+import com.monsterbutt.homeview.ui.interfaces.IRowManager;
 
 import java.util.HashMap;
 
@@ -16,7 +18,7 @@ import us.nineworlds.plex.rest.model.impl.Hub;
 import us.nineworlds.plex.rest.model.impl.MediaContainer;
 
 
-class MainHubRows extends HubRows {
+class MainHubRows extends HubRows implements IRowManager {
 
   private final static int ROW_START_INDEX = 1;
 
@@ -50,4 +52,8 @@ class MainHubRows extends HubRows {
     return map;
   }
 
+  @Override
+  public void removeRow(IPlexList row) {
+    remove(row);
+  }
 }

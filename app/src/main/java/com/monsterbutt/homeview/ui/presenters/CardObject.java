@@ -10,11 +10,13 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.StatusWatcher;
 import com.monsterbutt.homeview.plex.media.PlexLibraryItem;
 import com.monsterbutt.homeview.ui.interfaces.IRegisteredMedia;
+import com.monsterbutt.homeview.ui.interfaces.IRegisteredRow;
 
 
 public abstract class CardObject implements IRegisteredMedia {
 
     Context mContext;
+    protected IRegisteredRow registeredRow;
 
     protected CardObject() {
 
@@ -27,6 +29,8 @@ public abstract class CardObject implements IRegisteredMedia {
     public abstract String getTitle();
     public abstract String getSortTitle();
     public abstract String getContent();
+
+    public void setRegisteredRow(IRegisteredRow row) { registeredRow = row; }
 
     public abstract Drawable getImage(Context context);
 

@@ -9,6 +9,7 @@ import android.support.v17.leanback.widget.ArrayObjectAdapter;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.StatusWatcher;
+import com.monsterbutt.homeview.ui.interfaces.IRowManager;
 import com.monsterbutt.homeview.ui.presenters.CardPresenter;
 import com.monsterbutt.homeview.ui.interfaces.IHubRows;
 import com.monsterbutt.homeview.ui.interfaces.ILifecycleListener;
@@ -97,23 +98,27 @@ public abstract class HubRows implements IServerObserver, ILifecycleListener, IH
 
   protected abstract boolean shouldBeLandscape(Hub hub);
 
+  protected void remove(IPlexList row) {
+    if (row != null && map.containsKey(row.getKey())) {
+      row.release();
+      map.remove(row.getKey());
+      adapter.remove(row);
+    }
+  }
+
   @Override
   public void updateHubs(List<Hub> hubs) {
     Map<String, Hub> newKeys = new HashMap<>();
     for (Hub hub : hubs)
       newKeys.put(hub.getHubIdentifier(), hub);
 
-    List<String> toRemove = new ArrayList<>();
+    List<IPlexList> toRemove = new ArrayList<>();
     for (IPlexList item : map.values()) {
-      String key = item.getKey();
-      if (null == newKeys.get(key)) {
-        item.release();
-        adapter.remove(item);
-        toRemove.add(key);
-      }
+      if (null == newKeys.get(item.getKey()))
+        toRemove.add(item);
     }
-    for(String key : toRemove)
-      map.remove(key);
+    for(IPlexList row : toRemove)
+      remove(row);
 
     int index = getRowStartIndex();
     for (Hub hub : hubs) {
@@ -126,7 +131,8 @@ public abstract class HubRows implements IServerObserver, ILifecycleListener, IH
         for (String sub : activity.getString(R.string.main_rows_header_strip).split(";"))
           header = header.replace(sub, "").trim();
         item = new HubRow(activity, statusWatcher, server, new HubInfo(header, key, path),
-         isLandscape, new CardPresenter(server, selectionHandler, true));
+         isLandscape, new CardPresenter(server, selectionHandler, true),
+         this instanceof IRowManager ? (IRowManager) this : null);
         map.put(key, item);
         adapter.add(index, item);
       }
