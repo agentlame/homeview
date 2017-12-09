@@ -29,7 +29,7 @@ class DetailsSeasonsRow extends LibraryRow implements IDetailsScrollRow, IDetail
                     IDetailsItemUpdateNotifier notifier, PlexServer server, String title,
                     IDetailsScrollRowNotifier scroller, Presenter presenter) {
     super(activity, statusWatcher, server, title, false, presenter);
-    this.skipAll = SettingsManager.getInstance().getBoolean("preferences_navigation_showallseason");
+    this.skipAll = !SettingsManager.getInstance().getBoolean("preferences_navigation_showallseason");
     this.scroller = scroller;
     notifier.register(this);
   }
