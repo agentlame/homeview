@@ -53,6 +53,8 @@ public abstract class CardObject implements IRegisteredMedia {
         return 0;
     }
 
+    public long getViewedOffset() { return 0; }
+
     public boolean useItemBackgroundArt() { return false; }
 
     public abstract boolean onClicked(Fragment fragment, Bundle extras, View transitionView);
@@ -72,7 +74,7 @@ public abstract class CardObject implements IRegisteredMedia {
         return false;
     }
 
-    public boolean setWatchState(PlexLibraryItem.WatchedState updateStatus) { return false; }
+    public boolean setWatchState(PlexLibraryItem.WatchedState updateStatus, long viewedProgress) { return false; }
 
     public boolean onLongClicked(StatusWatcher statusWatcher,
                                  Fragment fragment, Bundle extras, View transitionView) {

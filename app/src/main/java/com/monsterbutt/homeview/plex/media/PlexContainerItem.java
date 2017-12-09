@@ -343,10 +343,10 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
     }
 
     @Override
-    public boolean setStatus(WatchedState status) {
+    public boolean setStatus(WatchedState status, long viewedOffset) {
         if (null == mDirectory || null == mDirectory.getLeafCount() || null == mDirectory.getViewedLeafCount())
             return false;
-        boolean update = false;
+        boolean update;
         switch(status) {
             case Watched:
                 update = getWatchedState() != WatchedState.Watched;
@@ -355,6 +355,11 @@ public class PlexContainerItem extends PlexLibraryItem implements Parcelable {
             case Unwatched:
                 update = getWatchedState() != WatchedState.Unwatched;
                 mDirectory.setViewedLeafCount("0");
+                break;
+            default:
+                String viewed = Long.toString(viewedOffset);
+                update = !mDirectory.getViewedLeafCount().equals(viewed);
+                mDirectory.setViewedLeafCount(viewed);
                 break;
         }
         return update;

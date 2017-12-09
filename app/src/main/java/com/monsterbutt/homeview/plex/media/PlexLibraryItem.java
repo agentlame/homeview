@@ -32,7 +32,7 @@ import us.nineworlds.plex.rest.model.impl.Hub;
 public abstract class PlexLibraryItem {
 
 
-    public enum WatchedState {
+  public enum WatchedState {
 
         @SerializedName("0")
         Watched(0),
@@ -137,7 +137,7 @@ public abstract class PlexLibraryItem {
     public int getViewedProgress() { return 0; }
     public long getViewedOffset() { return 0; }
 
-    public boolean setStatus(WatchedState status) { return false; }
+    public boolean setStatus(WatchedState status, long viewedOffset) { return false; }
 
     public String getThemeKey(PlexServer server) {
         return "";
@@ -259,7 +259,7 @@ public abstract class PlexLibraryItem {
             String key = PlexLibraryItem.this.getKey();
             new SetProgressTask(server, key,Long.toString(PlexLibraryItem.this.getRatingKey()),
              WatchedState.Unwatched).execute(obj.getContext());
-            setStatus(WatchedState.Unwatched);
+            setStatus(WatchedState.Unwatched, 0);
             statusWatcher.changeStatus(key, WatchedState.Unwatched);
         }
     }
@@ -281,7 +281,7 @@ public abstract class PlexLibraryItem {
             String key = PlexLibraryItem.this.getKey();
             new SetProgressTask(server, key, Long.toString(PlexLibraryItem.this.getRatingKey()),
              WatchedState.Watched).execute(obj.getContext());
-            setStatus(WatchedState.Watched);
+            setStatus(WatchedState.Watched, 0);
             statusWatcher.changeStatus(key, WatchedState.Watched);
         }
     }

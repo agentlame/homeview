@@ -139,9 +139,10 @@ public class DetailsOverviewRow extends android.support.v17.leanback.widget.Deta
   public void statusChanged(IRegisteredMedia media, PlexLibraryItem.WatchedState status) {
     PlexLibraryItem item = getContainer().item();
     if (item.getKey().equals(media.getKey())) {
-      if ((status == PlexLibraryItem.WatchedState.Watched || status == PlexLibraryItem.WatchedState.Unwatched) &&
-       item.getWatchedState() != status) {
-        item.setStatus(status);
+      if (((status == PlexLibraryItem.WatchedState.Watched ||
+       status == PlexLibraryItem.WatchedState.Unwatched) && item.getWatchedState() != status)
+       || status == PlexLibraryItem.WatchedState.Refreshed) {
+        item.setStatus(status, item.getViewedOffset());
         update(getContainer());
       }
 

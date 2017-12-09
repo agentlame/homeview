@@ -90,8 +90,13 @@ public class PosterCard extends CardObject {
     }
 
     @Override
-    public boolean setWatchState(PlexLibraryItem.WatchedState updateStatus) {
-        return item.setStatus(updateStatus);
+    public long getViewedOffset() {
+        return item.getViewedOffset();
+    }
+
+    @Override
+    public boolean setWatchState(PlexLibraryItem.WatchedState updateStatus, long viewedOffset) {
+        return item.setStatus(updateStatus, viewedOffset);
     }
 
     @Override
