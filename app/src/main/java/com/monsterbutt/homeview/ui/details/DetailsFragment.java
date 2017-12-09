@@ -231,12 +231,15 @@ public class DetailsFragment extends android.support.v17.leanback.app.DetailsFra
   @Override
   public void setItem(PlexServer server, PlexLibraryItem item) {
     MediaTrackSelector tracks = null;
+    if (item == null || server == null)
+      return;
     if (item instanceof PlexVideoItem) {
       tracks = ((PlexVideoItem) item).fillTrackSelector(Locale.getDefault().getISO3Language(),
        MediaCodecCapabilities.getInstance(getActivity()));
     }
     shouldSetupRows(item, tracks, server);
-    notifier.setObject(new Container(item, tracks, server, item.getKey()));
+    if (notifier != null)
+      notifier.setObject(new Container(item, tracks, server, item.getKey()));
   }
 
   private void shouldSetupRows(PlexLibraryItem item, MediaTrackSelector tracks, PlexServer server) {
