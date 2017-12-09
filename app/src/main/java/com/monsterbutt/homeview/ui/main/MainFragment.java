@@ -159,7 +159,11 @@ public class MainFragment extends BrowseFragment
   }
 
   public void setHeaderTitle(String title) {
-    setTitle(!TextUtils.isEmpty(title) ? title : getString(R.string.app_name));
+    try {
+      setTitle(!TextUtils.isEmpty(title) ? title : getString(R.string.app_name));
+    } catch (IllegalStateException e) {
+      setTitle("");
+    }
   }
 
 
