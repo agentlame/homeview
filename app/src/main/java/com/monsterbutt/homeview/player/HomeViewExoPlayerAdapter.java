@@ -6,14 +6,17 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.Renderer;
+import com.google.android.exoplayer2.audio.AudioCapabilities;
 import com.google.android.exoplayer2.audio.AudioProcessor;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
-import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
+import com.google.android.exoplayer2.audio.AudioSink;
+import com.google.android.exoplayer2.audio.DefaultAudioSink;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
@@ -44,6 +47,7 @@ import com.monsterbutt.homeview.plex.PlexServer;
 import com.monsterbutt.homeview.plex.media.PlexVideoItem;
 import com.monsterbutt.homeview.plex.media.Stream;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 
 import static com.google.android.exoplayer2.ExoPlaybackException.TYPE_SOURCE;
@@ -196,19 +200,33 @@ public class HomeViewExoPlayerAdapter extends ExoPlayerAdapter {
                                        AudioRendererEventListener eventListener, @ExtensionRendererMode int extensionRendererMode,
                                        ArrayList<Renderer> out) {
 
-      super.buildAudioRenderers(context, drmSessionManager, audioProcessors, eventHandler,
-       eventListener, extensionRendererMode, out);
+      AudioCapabilities audioCapabilities = AudioCapabilities.getCapabilities(context);
+      boolean enableFloatOutput = audioCapabilities != null && audioCapabilities.supportsEncoding(C.ENCODING_PCM_FLOAT);
+
       mDeviceAudioRenderer = new DeviceAudioTrackRenderer(MediaCodecSelector.DEFAULT,
-       drmSessionManager, true, eventHandler, eventListener, MediaCodecCapabilities.getInstance(context));
-
-      for (Renderer renderer : out) {
-
-        if (renderer instanceof MediaCodecAudioRenderer) {
-          int index = out.indexOf(renderer);
-          out.remove(index);
-          out.add(index, mDeviceAudioRenderer);
-          break;
-        }
+       drmSessionManager, true, eventHandler, eventListener,
+       MediaCodecCapabilities.getInstance(context), audioCapabilities, enableFloatOutput, audioProcessors);
+      out.add(mDeviceAudioRenderer);
+      if (extensionRendererMode == EXTENSION_RENDERER_MODE_OFF) {
+        return;
+      }
+      int extensionRendererIndex = out.size();
+      if (extensionRendererMode == EXTENSION_RENDERER_MODE_PREFER) {
+        extensionRendererIndex--;
+      }
+      try {
+        Class<?> clazz =
+         Class.forName("com.google.android.exoplayer2.ext.ffmpeg.FfmpegAudioRenderer");
+        Constructor<?> constructor = clazz.getConstructor(Handler.class,
+         AudioRendererEventListener.class, AudioSink.class, boolean.class);
+        Renderer renderer = (Renderer) constructor.newInstance(eventHandler, eventListener,
+         new DefaultAudioSink(null, audioProcessors), enableFloatOutput);
+        out.add(extensionRendererIndex, renderer);
+        Log.i(TAG, "Loaded FfmpegAudioRenderer.");
+      } catch (ClassNotFoundException e) {
+        // Expected if the app was built without the extension.
+      } catch (Exception e) {
+        throw new RuntimeException(e);
       }
     }
 
