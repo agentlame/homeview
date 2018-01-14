@@ -5,12 +5,10 @@ import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.Renderer;
 import com.google.android.exoplayer2.audio.AudioCapabilities;
 import com.google.android.exoplayer2.audio.AudioProcessor;
@@ -25,17 +23,11 @@ import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.text.CaptionStyleCompat;
-import com.google.android.exoplayer2.text.SubtitleDecoder;
-import com.google.android.exoplayer2.text.SubtitleDecoderFactory;
-import com.google.android.exoplayer2.text.TextOutput;
-import com.google.android.exoplayer2.text.TextRenderer;
-import com.google.android.exoplayer2.text.cea.Cea608Decoder;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.ui.SubtitleView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
-import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
 import com.monsterbutt.homeview.R;
 import com.monsterbutt.homeview.player.notifier.SeekOccuredNotifier;
@@ -129,62 +121,6 @@ public class HomeViewExoPlayerAdapter extends ExoPlayerAdapter {
     }
   }
 
-  private static SubtitleDecoderFactory DEFAULT_SUBS = new SubtitleDecoderFactory() {
-
-    @Override
-    public boolean supportsFormat(Format format) {
-      return getDecoderClass(format.sampleMimeType) != null;
-    }
-
-    @Override
-    public SubtitleDecoder createDecoder(Format format) {
-      try {
-        Class<?> clazz = getDecoderClass(format.sampleMimeType);
-        if (clazz == null) {
-          throw new IllegalArgumentException("Attempted to create decoder for unsupported format");
-        }
-        if (clazz == Cea608Decoder.class) {
-          return clazz.asSubclass(SubtitleDecoder.class).getConstructor(String.class, Integer.TYPE)
-           .newInstance(format.sampleMimeType, format.accessibilityChannel);
-        } else {
-          return clazz.asSubclass(SubtitleDecoder.class).getConstructor().newInstance();
-        }
-      } catch (Exception e) {
-        throw new IllegalStateException("Unexpected error instantiating decoder", e);
-      }
-    }
-
-    private Class<?> getDecoderClass(String mimeType) {
-      if (mimeType == null) {
-        return null;
-      }
-      try {
-        switch (mimeType) {
-          case MimeTypes.TEXT_VTT:
-            return Class.forName("com.google.android.exoplayer2.text.webvtt.WebvttDecoder");
-          case MimeTypes.APPLICATION_TTML:
-            return Class.forName("com.google.android.exoplayer2.text.ttml.TtmlDecoder");
-          case MimeTypes.APPLICATION_MP4VTT:
-            return Class.forName("com.google.android.exoplayer2.text.webvtt.Mp4WebvttDecoder");
-          case MimeTypes.APPLICATION_SUBRIP:
-            return Class.forName("com.google.android.exoplayer2.text.subrip.SubripDecoder");
-          case MimeTypes.APPLICATION_TX3G:
-            return Class.forName("com.google.android.exoplayer2.text.tx3g.Tx3gDecoder");
-          case MimeTypes.APPLICATION_CEA608:
-          case MimeTypes.APPLICATION_MP4CEA608:
-            return Class.forName("com.google.android.exoplayer2.text.cea.Cea608Decoder");
-          case MimeTypes.APPLICATION_PGS:
-            return Class.forName("com.monsterbutt.homeview.player.text.pgs.PgsDecoder");
-          default:
-            return null;
-        }
-      } catch (ClassNotFoundException e) {
-        return null;
-      }
-    }
-
-  };
-
   private static class HomeViewRendererFactory extends DefaultRenderersFactory {
 
     DeviceAudioTrackRenderer mDeviceAudioRenderer;
@@ -228,13 +164,6 @@ public class HomeViewExoPlayerAdapter extends ExoPlayerAdapter {
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-    }
-
-    @Override
-    protected void buildTextRenderers(Context context, TextOutput output,
-                                      Looper outputLooper, @ExtensionRendererMode int extensionRendererMode,
-                                      ArrayList<Renderer> out) {
-      out.add(new TextRenderer(output, outputLooper, DEFAULT_SUBS));
     }
   }
 

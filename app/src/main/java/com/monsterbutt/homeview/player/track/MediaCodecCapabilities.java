@@ -121,23 +121,23 @@ public class MediaCodecCapabilities {
 
         switch (mimeType) {
             case MimeTypes.AUDIO_AC3:
-                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_AC3))
+                if (audioCapabilities.supportsEncoding(C.ENCODING_AC3))
                     return AudioFormat.ENCODING_AC3;
                 break;
             case MimeTypes.AUDIO_E_AC3:
-                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_E_AC3))
+                if (audioCapabilities.supportsEncoding(C.ENCODING_E_AC3))
                     return AudioFormat.ENCODING_E_AC3;
                 break;
             case MimeTypes.AUDIO_TRUEHD:
-                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DOLBY_TRUEHD))
-                    return C.ENCODING_TRUE_HD;
+                if (audioCapabilities.supportsEncoding(C.ENCODING_DOLBY_TRUEHD))
+                    return C.ENCODING_DOLBY_TRUEHD;
                 break;
             case MimeTypes.AUDIO_DTS:
-                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DTS))
+                if (audioCapabilities.supportsEncoding(C.ENCODING_DTS))
                     return AudioFormat.ENCODING_DTS;
                 break;
             case MimeTypes.AUDIO_DTS_HD:
-                if (audioCapabilities.supportsEncoding(AudioFormat.ENCODING_DTS_HD))
+                if (audioCapabilities.supportsEncoding(C.ENCODING_DTS_HD))
                     return AudioFormat.ENCODING_DTS_HD;
                 break;
             case MimeTypes.AUDIO_RAW:

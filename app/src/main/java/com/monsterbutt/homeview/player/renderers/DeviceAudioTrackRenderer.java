@@ -8,6 +8,7 @@ import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.audio.AudioCapabilities;
 import com.google.android.exoplayer2.audio.AudioProcessor;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
+import com.google.android.exoplayer2.audio.DefaultAudioSink;
 import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.drm.DrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
@@ -26,9 +27,9 @@ public class DeviceAudioTrackRenderer extends MediaCodecAudioRenderer {
   public DeviceAudioTrackRenderer(MediaCodecSelector mediaCodecSelector,
       DrmSessionManager<FrameworkMediaCrypto> drmSessionManager, boolean playClearSamplesWithoutKeys,
       Handler eventHandler, AudioRendererEventListener eventListener,  MediaCodecCapabilities mcc,
-      AudioCapabilities audioCapabilities, boolean convert24bitPcmToFloat, AudioProcessor... audioProcessors) {
+      AudioCapabilities audioCapabilities, boolean convertHiResPcmToFloat, AudioProcessor... audioProcessors) {
     super(mediaCodecSelector, drmSessionManager, playClearSamplesWithoutKeys, eventHandler,
-     eventListener, audioCapabilities, convert24bitPcmToFloat, audioProcessors);
+      eventListener, new DefaultAudioSink(audioCapabilities, audioProcessors, convertHiResPcmToFloat));
     usePassthroughAudio = mcc.usePassthroughAudioIfAvailable();
     mCaps = mcc.getSystemAudioCapabilities();
   }
