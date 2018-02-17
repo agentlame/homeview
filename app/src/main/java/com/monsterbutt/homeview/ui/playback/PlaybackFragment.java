@@ -13,6 +13,7 @@ import android.support.v17.leanback.app.VideoFragmentGlueHost;
 import android.support.v4.app.FragmentActivity;
 import android.transition.TransitionInflater;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,7 +84,6 @@ public class PlaybackFragment extends VideoFragment implements VideoChangedNotif
       Log.w(TAG, "video player cannot obtain audio focus!");
     }
     //PlaybackSeekDiskDataProvider.setDemoSeekProvider(mMediaPlayerGlue);
-    setBackgroundType(BG_NONE);
     setSharedElementEnterTransition(TransitionInflater.from(getContext()).inflateTransition(android.R.transition.move));
     setControlsOverlayAutoHideEnabled(true);
     setFadeCompleteListener(new OnFadeCompleteListener() {

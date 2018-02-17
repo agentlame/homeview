@@ -85,6 +85,8 @@
     <string name="preferences_playback_playnext_entries_default">always</string>
     <string name="preferences_device_refreshrate">Refresh Rate Switching</string>
     <string name="preferences_device_refreshrate_summary">Switch refrsh rate, if available, to media\'s native rate?</string>
+    <string name="preferences_device_upconvert">Device Upconvert</string>
+    <string name="preferences_device_upconvert_summary">Allow device to upconvert video, if available and applicable, to displays\'s native resolution?</string>
     <string name="preferences_device_passthrough">Audio Passthrough</string>
     <string name="preferences_device_passthrough_summary">Passthrough audio tracks, if available, to receiver/display?</string>
     <string name="preferences_device_speakers">Speaker Setup</string>

@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.monsterbutt.homeview.R;
+import com.monsterbutt.homeview.player.display.DesiredVideoMode;
 import com.monsterbutt.homeview.player.display.FrameRateSwitcher;
 import com.monsterbutt.homeview.player.HomeViewExoPlayerAdapter;
 import com.monsterbutt.homeview.player.notifier.ChapterSelectionNotifier;
@@ -354,7 +355,8 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
 
   public boolean setRefreshRateToCurrentVideo(Activity activity, boolean force) {
     PlexVideoItem video = getCurrentVideo();
-    if (!SettingsManager.getInstance().getBoolean("preferences_device_refreshrate") ||
+    SettingsManager settings = SettingsManager.getInstance();
+    if (!settings.getBoolean("preferences_device_refreshrate") ||
      video == null || !video.hasSourceStats() || video.getMedia() == null)
       return false;
     Media media = video.getMedia().get(0);
@@ -372,8 +374,11 @@ public class VideoHandler implements PlexServerTaskCaller, VideoChangedNotifier.
       return false;
     FrameRateSwitchNotifier notifier = new FrameRateSwitchNotifier();
     notifier.register(this);
+    boolean allowUpconvert = settings.getBoolean("preferences_device_upconvert");
     return FrameRateSwitcher.setDisplayRefreshRate(activity,
-     video.getMedia().get(0).getVideoFrameRate(), videoStream.getFrameRate(), force, notifier);
+     new DesiredVideoMode(video.getMedia().get(0), videoStream.getFrameRate(), allowUpconvert),
+     force,
+     notifier);
   }
 
   private class VideoHolder {

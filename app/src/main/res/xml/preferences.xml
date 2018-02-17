@@ -151,22 +151,19 @@
             android:defaultValue="@string/preferences_device_refreshrate_delay_entries_default" />
 
         <CheckBoxPreference
+            android:key="preferences_device_upconvert"
+            android:drawable="@drawable/ic_switch_video_white_48dp"
+            android:dependency="preferences_device_refreshrate"
+            android:title="@string/preferences_device_upconvert"
+            android:summary="@string/preferences_device_upconvert_summary"
+            android:defaultValue="true" />
+
+        <CheckBoxPreference
             android:key="preferences_device_passthrough"
             android:drawable="@drawable/ic_surround_sound_white_48dp"
             android:title="@string/preferences_device_passthrough"
             android:summary="@string/preferences_device_passthrough_summary"
             android:defaultValue="true" />
-
-        <ListPreference
-            android:key="preferences_device_speakers"
-            android:drawable="@drawable/ic_volume_up_white_48dp"
-            android:title="@string/preferences_device_speakers"
-            android:summary="@string/preferences_device_speakers_summary"
-            android:entries="@array/preferences_device_speakers_entries_text"
-            android:entryValues="@array/preferences_device_speakers_entries"
-            android:dialogTitle="@string/preferences_device_speakers_dialog"
-            android:defaultValue="@string/preferences_device_speakers_entries_default"
-            android:enabled="false" />
 
     </PreferenceCategory>
 

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.hardware.display.DisplayManager;
 import android.os.Handler;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
@@ -16,26 +15,22 @@ public class FrameRateSwitcher {
 
     private static final String Tag = "HV_FrameRateSwitcher";
 
-    public static boolean setDisplayRefreshRate(Activity activity, String refreshRateFormat,
-                                                String refreshRateNumber, boolean force,
-                                                FrameRateSwitchNotifier notifier) {
-
-        if (!TextUtils.isEmpty(refreshRateFormat) || !TextUtils.isEmpty(refreshRateNumber)) {
-            Display.Mode currentMode = RefreshRateChooser.getCurrentMode(activity);
-            Display.Mode newMode = RefreshRateChooser.getBestFitMode(activity, refreshRateFormat, refreshRateNumber);
-            if (currentMode != null) {
-                if (force || newMode != null && currentMode.getRefreshRate() != newMode.getRefreshRate())
-                    return changeMode(activity, newMode, notifier);
-                Log.i(Tag, "Frame rate left alone");
-            }
-            else {
-                Log.e(Tag, "Forcing change, Current Mode is bad");
-                return changeMode(activity, newMode, notifier);
-            }
-        }
-        else
+    public static boolean setDisplayRefreshRate(Activity activity, DesiredVideoMode desired,
+                                                boolean force, FrameRateSwitchNotifier notifier) {
+        Display.Mode newMode = RefreshRateChooser.getBestFitMode(activity, desired);
+        if (newMode == null) {
             Log.i(Tag, "Not attempting to change frame rate");
-        return false;
+            return false;
+        }
+        Display.Mode currentMode = RefreshRateChooser.getCurrentMode(activity);
+        if (currentMode != null) {
+            if (force || currentMode.getModeId() != newMode.getModeId())
+                return changeMode(activity, newMode, notifier);
+            Log.i(Tag, "Frame rate left alone");
+            return false;
+        }
+        Log.e(Tag, "Forcing change, Current Mode is bad");
+        return changeMode(activity, newMode, notifier);
     }
 
     private static boolean changeMode(Activity activity, Display.Mode requestedMode,
