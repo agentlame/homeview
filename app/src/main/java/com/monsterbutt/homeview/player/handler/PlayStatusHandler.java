@@ -113,6 +113,8 @@ public class PlayStatusHandler extends PlaybackGlue.PlayerCallback
   }
 
   public synchronized void release() {
+    if (mGlue != null && mGlue.isPlaying())
+      mGlue.pause();
     if (mServerStatus != null)
       mServerStatus.stop();
     if (mRemainingTime != null)

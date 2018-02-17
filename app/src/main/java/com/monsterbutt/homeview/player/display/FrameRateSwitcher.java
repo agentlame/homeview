@@ -3,7 +3,6 @@ package com.monsterbutt.homeview.player.display;
 import android.app.Activity;
 import android.content.Context;
 import android.hardware.display.DisplayManager;
-import android.os.Build;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
@@ -16,12 +15,6 @@ import com.monsterbutt.homeview.settings.SettingsManager;
 public class FrameRateSwitcher {
 
     private static final String Tag = "HV_FrameRateSwitcher";
-
-    /*
-    private static boolean isRightMode(Context context, Display.Mode requestedMode) {
-        Display.Mode currentMode = RefreshRateChooser.getCurrentMode(context);
-        return (requestedMode != null && currentMode != null && currentMode.getModeId() == requestedMode.getModeId());
-    }*/
 
     public static boolean setDisplayRefreshRate(Activity activity, String refreshRateFormat,
                                                 String refreshRateNumber, boolean force,
@@ -76,11 +69,9 @@ public class FrameRateSwitcher {
 
             this.context = activity;
             this.notifier = notifier;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                DisplayManager displayManager = context.getSystemService(DisplayManager.class);
-                if (displayManager != null) {
-                    displayManager.registerDisplayListener(this, null);
-                }
+            DisplayManager displayManager = context.getSystemService(DisplayManager.class);
+            if (displayManager != null) {
+                displayManager.registerDisplayListener(this, null);
             }
 
             WindowManager.LayoutParams params = activity.getWindow().getAttributes();
