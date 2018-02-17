@@ -194,10 +194,11 @@ public class VideoMediaPlayerGlue<T extends PlayerAdapter> extends PlaybackTrans
   @Override
   public void previous() {
     if (mVideoHandler.hasVideo()) {
+      long current = getCurrentPosition();
       long position = mVideoHandler.getPreviousChapterPosition(getCurrentPosition());
-      if (position != BAD_CHAPTER_START && getCurrentPosition() > START_CHAPTER_THRESHOLD)
+      if (position != BAD_CHAPTER_START && current > START_CHAPTER_THRESHOLD)
         seekTo(position);
-      else if (!mVideoHandler.playPrevious())
+      else if (current > START_CHAPTER_THRESHOLD || !mVideoHandler.playPrevious())
         seekTo(0);
     }
   }
