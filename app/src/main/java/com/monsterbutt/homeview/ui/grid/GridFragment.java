@@ -148,8 +148,11 @@ public class GridFragment extends VerticalGridFragment
 
     @Override
     public void onCardSelected(CardObject card) {
-      if (card instanceof PosterCard)
-        summaryDisplay.setCurrentItem(((PosterCard) card).getItem());
+      if (card instanceof PosterCard) {
+        PosterCard poster = (PosterCard) card;
+        summaryDisplay.setCurrentItem(poster.getItem());
+        quickJumpDisplay.setCurrentSelectionName(poster.getItem().getSortTitle());
+      }
     }
 
     @Override

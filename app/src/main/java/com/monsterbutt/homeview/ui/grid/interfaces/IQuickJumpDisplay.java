@@ -8,4 +8,5 @@ import java.util.List;
 public interface IQuickJumpDisplay {
   void setQuickListVisible(boolean visible);
   void setQuickJumpList(List<QuickJumpRow> quickjumpList);
+  void setCurrentSelectionName(String name);
 }

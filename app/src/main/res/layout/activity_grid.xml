@@ -27,15 +27,14 @@
         <ListView
             android:id="@+id/list_shortcut"
             android:paddingTop="@dimen/toolbar_list_padding_top"
+            android:layout_marginStart="10dp"
             android:layout_gravity="start|center_vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="@dimen/container_item_textsize"
             android:divider="@android:color/transparent"
             android:dividerHeight="@dimen/jumprow_dividerheight"
-            android:focusableInTouchMode="true"
-            android:clickable="true"
-            android:focusable="true" />
+            android:listSelector="@drawable/quickrow_selector" />
 
     </FrameLayout>
 
